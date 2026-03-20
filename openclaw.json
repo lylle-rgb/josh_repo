@@ -1,0 +1,110 @@
+{
+  "meta": {
+    "lastTouchedVersion": "2026.3.13",
+    "lastTouchedAt": "2026-03-20T07:06:00.388Z"
+  },
+  "wizard": {
+    "lastRunAt": "2026-03-20T07:05:56.323Z",
+    "lastRunVersion": "2026.3.13",
+    "lastRunCommand": "onboard",
+    "lastRunMode": "local"
+  },
+  "auth": {
+    "profiles": {
+      "google:default": {
+        "provider": "google",
+        "mode": "api_key"
+      }
+    }
+  },
+  "agents": {
+    "defaults": {
+      "model": {
+        "primary": "google/gemini-3.1-pro-preview"
+      },
+      "models": {
+        "google/gemini-3.1-pro-preview": {}
+      },
+      "workspace": "/data/.openclaw/workspace"
+    }
+  },
+  "tools": {
+    "profile": "full"
+  },
+  "commands": {
+    "native": "auto",
+    "nativeSkills": "auto",
+    "restart": true,
+    "ownerDisplay": "raw"
+  },
+  "session": {
+    "dmScope": "per-channel-peer"
+  },
+  "gateway": {
+    "port": 18789,
+    "mode": "local",
+    "bind": "loopback",
+    "auth": {
+      "mode": "token",
+      "token": "${OPENCLAW_GATEWAY_TOKEN}"
+    },
+    "tailscale": {
+      "mode": "off",
+      "resetOnExit": false
+    },
+    "trustedProxies": [
+      "127.0.0.1"
+    ],
+    "controlUi": {
+      "allowedOrigins": [
+        "https://5.78.142.81.sslip.io"
+      ]
+    }
+  },
+  "skills": {
+    "install": {
+      "nodeManager": "npm"
+    }
+  },
+  "channels": {
+    "discord": {
+      "enabled": true,
+      "token": "${DISCORD_BOT_TOKEN}",
+      "dmPolicy": "pairing",
+      "groupPolicy": "allowlist"
+    }
+  },
+  "plugins": {
+    "allow": [
+      "discord",
+      "usage-tracker"
+    ],
+    "load": {
+      "paths": [
+        "/app/node_modules/@chrysb/alphaclaw/lib/plugin/usage-tracker"
+      ]
+    },
+    "entries": {
+      "discord": {
+        "enabled": true
+      },
+      "usage-tracker": {
+        "enabled": true
+      }
+    }
+  },
+  "hooks": {
+    "internal": {
+      "entries": {
+        "bootstrap-extra-files": {
+          "enabled": true,
+          "paths": [
+            "hooks/bootstrap/AGENTS.md",
+            "hooks/bootstrap/TOOLS.md"
+          ]
+        }
+      },
+      "enabled": true
+    }
+  }
+}
