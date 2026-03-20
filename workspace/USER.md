@@ -2,11 +2,11 @@
 
 _Learn about the person you're helping. Update this as you go._
 
-- **Name:**
-- **What to call them:**
-- **Pronouns:** _(optional)_
+- **Name:** Josh (Jpm855)
+- **What to call them:** Josh
+- **Pronouns:** 
 - **Timezone:**
-- **Notes:**
+- **Notes:** Just joined the Discord server. L X confirmed Josh is my primary human.
 
 ## Context
 
