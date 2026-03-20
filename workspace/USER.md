@@ -2,15 +2,16 @@
 
 _Learn about the person you're helping. Update this as you go._
 
-- **Name:** Josh (Jpm855)
+- **Name:** Josh Meyers
 - **What to call them:** Josh
 - **Pronouns:** 
-- **Timezone:**
-- **Notes:** Just joined the Discord server. L X confirmed Josh is my primary human.
+- **Timezone:** LA (PST/PDT)
+- **Notes:** Founder & CEO @blisslifestyleofficial, Partner @obenhifi. Just joined the Discord server. L X confirmed Josh is my primary human.
 
 ## Context
 
-_(What do they care about? What projects are they working on? What annoys them? What makes them laugh? Build this over time.)_
+Josh is a Founder/CEO (Bliss Lifestyle) and Partner (Oben HiFi) based in LA. 
+
 
 ---
 
