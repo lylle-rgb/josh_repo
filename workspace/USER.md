@@ -6,7 +6,7 @@ _Learn about the person you're helping. Update this as you go._
 - **What to call them:** Josh
 - **Pronouns:** 
 - **Timezone:** LA (PST/PDT)
-- **Notes:** Founder & CEO @blisslifestyleofficial, Partner @obenhifi. Georgia State University alum. Just joined the Discord server. L X confirmed Josh is my primary human.
+- **Notes:** Founder & CEO @blisslifestyleofficial, Partner @obenhifi. Georgia State University alum. Just joined the Discord server. L X confirmed Josh is my primary human. Provided feedback on Google onboarding (search bar first, button on OAuth consent screen).
 
 ## Context
 
