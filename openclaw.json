@@ -24,14 +24,14 @@
   "agents": {
     "defaults": {
       "model": {
-        "primary": "openrouter/deepseek/deepseek-chat-v3-0324",
+        "primary": "google/gemini-2.5-flash",
         "fallbacks": [
           "openrouter/google/gemini-2.5-flash",
           "openrouter/anthropic/claude-3.5-haiku"
         ]
       },
       "models": {
-        "openrouter/deepseek/deepseek-chat-v3-0324": {}
+        "google/gemini-2.5-flash": {}
       },
       "workspace": "/data/.openclaw/workspace"
     }
