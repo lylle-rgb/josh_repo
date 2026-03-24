@@ -1,7 +1,7 @@
 {
   "meta": {
     "lastTouchedVersion": "2026.3.22",
-    "lastTouchedAt": "2026-03-23T12:27:21.941Z"
+    "lastTouchedAt": "2026-03-24T01:21:31.933Z"
   },
   "wizard": {
     "lastRunAt": "2026-03-20T07:05:56.323Z",
@@ -26,8 +26,8 @@
       "model": {
         "primary": "openrouter/deepseek/deepseek-chat-v3-0324",
         "fallbacks": [
-          "deepseek/deepseek-chat",
-          "moonshot/kimi-k2.5"
+          "openrouter/google/gemini-2.5-flash",
+          "openrouter/anthropic/claude-3.5-haiku"
         ]
       },
       "models": {
