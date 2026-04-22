@@ -1,8 +1,88 @@
 # Fleet Research Findings — Josh / Heather Schwartz
 
-> Scan date: 2026-04-21 | Agent: AlphaClaw Fleet Research
+> Morning scan: 2026-04-21 | Evening update: 2026-04-22 | Agent: AlphaClaw Fleet Research
 
 ---
+
+## EVENING SCAN — 2026-04-22
+
+### Morning Findings Status Check
+
+None of the morning findings have been applied yet. All 6 items remain pending as of the evening scan.
+
+| # | Finding | Status |
+|---|---------|--------|
+| 1 | Update OpenClaw 2026.3.22 → 2026.4.14 | ⏳ Pending |
+| 2 | Install memory-lancedb | ⏳ Pending |
+| 3 | Enable Discord streaming | ⏳ Pending |
+| 4 | Add cron.json morning briefing | ⏳ Pending |
+| 5 | Upgrade fallback model (claude-3.5-haiku → claude-haiku-4-5) | ⏳ Pending |
+| 6 | Fill in TOOLS.md | ⏳ Pending |
+
+---
+
+### Evening Finding E1: MEMORY.md Missing — Continuity Broken
+
+**Finding:** No `workspace/MEMORY.md` file exists. The `memory/` directory contains only `memory/onboarding-google.md` from initial setup. No daily session logs (`memory/YYYY-MM-DD.md`) exist either.
+
+**Why it matters:** AGENTS.md explicitly instructs Heather to read `MEMORY.md` at session startup for long-term context — but the file doesn't exist. Every session starts completely cold regardless of what's been learned in prior sessions. The memory directory is present but effectively unused.
+
+**Action:** In the next live session, prompt Heather to:
+1. Read `memory/onboarding-google.md`
+2. Create `workspace/MEMORY.md` with distilled facts from onboarding (Josh's name, timezone, businesses, no emoji reactions preference)
+3. Create today's daily log `memory/2026-04-22.md`
+
+**Risk:** None. High impact.
+
+---
+
+### Evening Finding E2: SOUL.md ↔ USER.md Contradiction — Emoji Reactions (Active Bug)
+
+**Finding:** A direct behavioral contradiction exists between two files loaded at bootstrap:
+
+- **USER.md:** `"STRICT: DO NOT SEND EMOJI REACTIONS TO MESSAGES."`
+- **AGENTS.md:** Has a full section "React Like a Human!" explicitly instructing Heather to use emoji reactions on Discord (👍, ❤️, 😂, etc.)
+
+**Why it matters:** Both files are loaded at every session bootstrap. These instructions directly conflict. Heather's behavior on emoji reactions is currently unpredictable — she may react to Josh's messages despite his explicit request not to. This is an active UX bug.
+
+**Action:** Add an explicit override to SOUL.md. See `soul-improvements.md` for the exact recommended text.
+**Risk:** Medium — active behavioral conflict affecting user experience today.
+
+---
+
+### Evening Finding E3: Active Memory Plugin Available (2026.4.15 Beta)
+
+**Finding:** OpenClaw 2026.4.15 beta introduces a dedicated **Active Memory Plugin** — a memory sub-agent with configurable context modes (`message`, `recent`, `full`). Unlike basic LanceDB (embedding retrieval), the sub-agent actively decides what past context is relevant to surface during each conversation.
+
+**Why it matters for Heather:** Personal assistant is the highest-value use case for this. The sub-agent proactively surfaces things like "Josh mentioned the Oben HiFi board meeting is this week" during relevant calendar conversations — without requiring explicit retrieval triggers.
+
+**Action:** Install `memory-lancedb` first (morning finding #2, still pending). Watch for 2026.4.15 stable release to evaluate Active Memory Plugin as an upgrade.
+**Risk:** None — future upgrade path.
+
+---
+
+### Evening Finding E4: Plugin Storage Path — Memory May Not Survive Restarts
+
+**Finding:** A recent AlphaClaw managed fix now correctly exports `OPENCLAW_STATE_DIR` through startup so plugins write durable artifacts to `/data/.openclaw` instead of ephemeral `/tmp`. Older deployments may not have received this fix properly.
+
+**Why it matters:** If memory-lancedb is installed without explicit path configuration, it may write indexes to `/tmp` — wiped on every container restart. Memory would appear to work but silently reset after every host restart or Railway redeploy.
+
+**Action:** When installing memory-lancedb, explicitly configure the storage path:
+```json
+"memory-lancedb": {
+  "config": {
+    "autoRecall": true,
+    "autoCapture": true,
+    "storagePath": "/data/.openclaw/memory"
+  }
+}
+```
+Ensure AlphaClaw is on the latest managed version (self-updates handle the OPENCLAW_STATE_DIR fix — no manual step needed).
+**Risk:** Low — only relevant once memory-lancedb is installed.
+
+---
+
+## MORNING SCAN — 2026-04-21
 
 ## 1. OpenClaw Version — UPDATE NEEDED
 
@@ -30,7 +110,6 @@ New in `2026.4.15` beta: `memory-lancedb` now supports **cloud/remote object sto
 
 **Action (install memory plugin):**
 ```bash
-# In alphaclaw shell or workspace
 npm install @openclaw/plugin-memory-lancedb
 ```
 
@@ -43,7 +122,8 @@ Add to `openclaw.json`:
       "enabled": true,
       "config": {
         "autoRecall": true,
-        "autoCapture": true
+        "autoCapture": true,
+        "storagePath": "/data/.openclaw/memory"
       }
     }
   }
@@ -77,7 +157,7 @@ Add to `openclaw.json`:
 
 **Why it matters:** A personal assistant should push information to Josh proactively — not just respond reactively. Josh is a founder/CEO in LA (PST), so timed briefings add significant value.
 
-**Suggested starter cron.json** (`workspace/cron.json`):
+**Suggested starter `workspace/cron.json`:**
 ```json
 {
   "jobs": [
@@ -100,7 +180,7 @@ Add to `openclaw.json`:
 
 ## 5. Fallback Model Upgrade
 
-**Finding:** OpenRouter fallback is `openrouter/anthropic/claude-3.5-haiku` — this model is retired/old. The current equivalent is `claude-haiku-4-5`.
+**Finding:** OpenRouter fallback is `openrouter/anthropic/claude-3.5-haiku` — this model is retired/old. The current equivalent is `claude-haiku-4-5-20251001`.
 
 **Action:** In `openclaw.json` `agents.defaults.model.fallbacks`:
 ```json
@@ -129,10 +209,12 @@ Add to `openclaw.json`:
 
 ---
 
-## Priority Summary
+## Priority Summary (Updated Evening)
 
 | # | Item | Impact | Risk | Effort |
 |---|------|--------|------|--------|
+| E1 | Create MEMORY.md with seed data | **High** — fixes broken continuity | None | 15 min |
+| E2 | Fix emoji reaction contradiction (SOUL.md) | **High** — active behavioral bug | None | 5 min |
 | 1 | Install memory-lancedb plugin | **High** — core reliability for personal assistant | Low | 15 min |
 | 2 | Add cron.json morning briefing | **High** — transforms reactive → proactive | Medium | 30 min |
 | 3 | Enable Discord streaming | Medium — UX quality | Very Low | 5 min |
