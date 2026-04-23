@@ -1,6 +1,12 @@
 # Soul Improvement Recommendations — Josh / Heather Schwartz
 
-> Generated: 2026-04-22 (Evening Scan) | Agent: AlphaClaw Fleet Research
+> Generated: 2026-04-22 (Evening Scan) | Updated: 2026-04-23 (Evening Scan) | Agent: AlphaClaw Fleet Research
+
+---
+
+## Status as of 2026-04-23 Evening
+
+All 5 recommendations from the April 22 scan remain unimplemented. SOUL.md, AGENTS.md, and MEMORY.md are unchanged. The emoji reaction contradiction (Rec #1) is the highest priority — it is an active behavioral bug observable in every session.
 
 ---
 
@@ -139,9 +145,9 @@ _(Populate during sessions)_
 
 ## 5. HEARTBEAT.md — Create to Enable Proactive Behavior
 
-**Current state:** AGENTS.md describes a heartbeat system with a `HEARTBEAT.md` config file, but the file doesn't exist. Heather has no defined proactive check cadence.
+**Current state:** AGENTS.md describes a heartbeat system with a `HEARTBEAT.md` config file, but the file is empty (just a skip-comment). Heather has no defined proactive check cadence. As of the 2026-04-23 evening scan, this has been empty for 3+ days.
 
-**Recommended: Create `workspace/HEARTBEAT.md`**:
+**Recommended: Overwrite `workspace/HEARTBEAT.md` with:**
 
 ```markdown
 # HEARTBEAT.md
@@ -155,16 +161,7 @@ _(Populate during sessions)_
 
 ## State Tracking
 
-Use `memory/heartbeat-state.json` to track last check times:
-```json
-{
-  "lastChecks": {
-    "email": null,
-    "calendar": null,
-    "memory_maintenance": null
-  }
-}
-```
+Use `memory/heartbeat-state.json` to track last check times.
 
 ## Quiet Hours
 
@@ -184,10 +181,10 @@ Stay quiet 23:00–08:00 PST unless genuinely urgent.
 
 ## Priority
 
-| Recommendation | Impact | Effort | Who Does It |
-|----------------|--------|--------|-------------|
-| Fix emoji contradiction in SOUL.md | **High** — resolves active bug | 5 min | Fleet operator |
-| Create MEMORY.md with seed data | **High** — fixes broken continuity | 15 min | Heather (in-session) |
-| Create HEARTBEAT.md | Medium — enables proactive checks | 10 min | Fleet operator |
-| Populate TOOLS.md | Medium | 20 min | Heather + Josh |
-| Document USER.md override in AGENTS.md | Low — prevents future conflicts | 5 min | Fleet operator |
+| Recommendation | Impact | Effort | Who Does It | Status |
+|----------------|--------|--------|-------------|--------|
+| #1 Fix emoji contradiction in SOUL.md | **High** — resolves active bug | 5 min | Fleet operator | ⏳ Pending |
+| #3 Create MEMORY.md with seed data | **High** — fixes broken continuity | 15 min | Heather (in-session) | ⏳ Pending |
+| #5 Populate HEARTBEAT.md | Medium — enables proactive checks | 10 min | Fleet operator | ⏳ Pending |
+| #4 Populate TOOLS.md | Medium — better grounding | 20 min | Heather + Josh | ⏳ Pending |
+| #2 Document USER.md override in AGENTS.md | Low — prevents future conflicts | 5 min | Fleet operator | ⏳ Pending |

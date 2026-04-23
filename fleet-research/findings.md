@@ -1,6 +1,67 @@
 # Fleet Research Findings — Josh / Heather Schwartz
 
-> Morning scan: 2026-04-21 | Evening update: 2026-04-22 | Agent: AlphaClaw Fleet Research
+> Morning scan: 2026-04-21 | Evening scans: 2026-04-22, 2026-04-23 | Agent: AlphaClaw Fleet Research
+
+---
+
+## EVENING SCAN — 2026-04-23
+
+### Implementation Status — All Findings Still Pending
+
+No changes have been applied to Josh's instance since the first scan. `openclaw.json` `meta.lastTouchedVersion` remains `2026.3.22`, confirming zero updates.
+
+| ID | Finding | First Raised | Status |
+|----|---------|-------------|--------|
+| E1 | Create MEMORY.md with seed data | 2026-04-22 | ⏳ Pending |
+| E2 | Fix emoji reaction contradiction in SOUL.md | 2026-04-22 | ⏳ Pending |
+| E3 | Active Memory Plugin (watch for stable) | 2026-04-22 | ⬜ Future |
+| E4 | Memory plugin storage path config | 2026-04-22 | ⏳ Pending |
+| M1 | Update OpenClaw | 2026-04-21 | ⏳ Pending |
+| M2 | Install memory-lancedb | 2026-04-21 | ⏳ Pending |
+| M3 | Enable Discord streaming | 2026-04-21 | ⏳ Pending |
+| M4 | Add cron.json morning briefing | 2026-04-21 | ⏳ Pending |
+| M5 | Upgrade fallback model | 2026-04-21 | ⏳ Pending |
+| M6 | Fill in TOOLS.md | 2026-04-21 | ⏳ Pending |
+
+---
+
+### E5: OpenClaw 2026.4.21 Released — Update Target Bumped
+
+**Finding:** OpenClaw released `2026.4.21` on April 21, 2026. Josh's instance is still at `2026.3.22`. The update target from the previous morning scan (`2026.4.14`) is now itself 7 patch versions stale. Heather is now running 29+ days behind the latest stable.
+
+**New in 2026.4.21 relevant to Heather:**
+- Instant `ax<N>` accessibility tree validation during browser automation — immediate rejection of invalid element references with a clear error instead of a silent timeout hang. More reliable browser-based email and calendar actions.
+- Browser automation speed improvements overall.
+- Plugin dependency recovery — plugins with missing peer deps are now recoverable instead of silently broken on restart.
+- Slack thread routing fix (not relevant to Discord, but reflects overall platform stability work on channel delivery).
+- npm install warning cleanup — cleaner plugin installs when adding memory-lancedb or other plugins.
+
+**Action:** Update upgrade target from `2026.4.14` to `2026.4.21`.
+```bash
+alphaclawctl update   # preferred via AlphaClaw managed update
+# or: npm install -g openclaw@2026.4.21
+```
+**Risk:** Low. No breaking changes in this range for Discord setups.
+
+---
+
+### E6: HEARTBEAT.md Still Empty — Proactive System Has Been Dormant for 3 Days
+
+**Finding:** `workspace/HEARTBEAT.md` still contains only the stock skip-comment. No heartbeat tasks have been configured since the first scan on April 21. Heather has been running as a purely reactive Discord bot despite AGENTS.md describing a full proactive email/calendar/memory heartbeat cadence.
+
+**Why it matters:** Heather's highest value for Josh (founder/CEO with email, calendar, and iMessage access) comes from proactive behavior — surfacing an important email before he asks, flagging a calendar clash, noticing something worth mentioning. The infrastructure for all of this is built and described in AGENTS.md. It's just not active because HEARTBEAT.md is empty.
+
+**Action:** Apply Recommendation #5 from `soul-improvements.md`. The full HEARTBEAT.md content is already drafted there — it is a copy-paste operation.
+**Risk:** None. Zero cost when empty; very low cost once active (1-2 API calls per heartbeat interval).
+
+---
+
+### E7: Preview Model Risk — gemini-3-flash-preview Has No GA Fallback
+
+**Finding:** Josh's primary model is `google/gemini-3-flash-preview`. Preview models operate outside standard deprecation notice cycles and can be retired with short lead time. The configured fallback (`openrouter/google/gemini-2.5-flash`) covers a Gemini outage but is a different model tier than the preview. There is no pinned GA equivalent of `gemini-3-flash` in the fallback chain.
+
+**Action:** No immediate change needed. Monitor Google's preview model lifecycle announcements. If `gemini-3-flash-preview` is deprecated or enters EOL notice, update `agents.defaults.model.primary` to `google/gemini-3-flash` (GA). Set a reminder to re-check this during the next major OpenClaw update cycle.
+**Risk:** Low today. Medium if preview is deprecated without a config update.
 
 ---
 
@@ -209,15 +270,17 @@ Add to `openclaw.json`:
 
 ---
 
-## Priority Summary (Updated Evening)
+## Priority Summary (Updated Evening 2026-04-23)
 
-| # | Item | Impact | Risk | Effort |
-|---|------|--------|------|--------|
-| E1 | Create MEMORY.md with seed data | **High** — fixes broken continuity | None | 15 min |
-| E2 | Fix emoji reaction contradiction (SOUL.md) | **High** — active behavioral bug | None | 5 min |
-| 1 | Install memory-lancedb plugin | **High** — core reliability for personal assistant | Low | 15 min |
-| 2 | Add cron.json morning briefing | **High** — transforms reactive → proactive | Medium | 30 min |
-| 3 | Enable Discord streaming | Medium — UX quality | Very Low | 5 min |
-| 4 | Update OpenClaw to 2026.4.14 | Medium — bug fixes, stability | Low | 10 min |
-| 5 | Upgrade fallback model | Low — only hits on failures | Low | 5 min |
-| 6 | Fill in TOOLS.md | Low → Medium over time | None | Ongoing |
+| ID | Item | Impact | Risk | Effort | Status |
+|----|------|--------|------|--------|--------|
+| E2 | Fix emoji contradiction in SOUL.md | **High** — active behavioral bug | None | 5 min | ⏳ Pending |
+| E1 | Create MEMORY.md with seed data | **High** — fixes broken continuity | None | 15 min | ⏳ Pending |
+| M2/E4 | Install memory-lancedb (with storage path) | **High** — core reliability | Low | 15 min | ⏳ Pending |
+| M4 | Add cron.json morning briefing | **High** — reactive → proactive | Medium | 30 min | ⏳ Pending |
+| E6 | Populate HEARTBEAT.md | Medium — enables proactive checks | None | 10 min | ⏳ Pending |
+| M3 | Enable Discord streaming | Medium — UX quality | Very Low | 5 min | ⏳ Pending |
+| M1/E5 | Update OpenClaw to 2026.4.21 | Medium — stability + security | Low | 10 min | ⏳ Pending |
+| M5 | Upgrade fallback model | Low — fallback path only | Low | 5 min | ⏳ Pending |
+| E7 | Monitor gemini-3-flash-preview deprecation | Low | None | 0 | ⬜ Watch |
+| M6 | Fill in TOOLS.md | Low → Medium over time | None | Ongoing | ⏳ Pending |
