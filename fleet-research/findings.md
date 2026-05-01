@@ -1,6 +1,134 @@
 # Fleet Research Findings — Josh / Heather Schwartz
 
-> Morning scan: 2026-04-21 | Evening scans: 2026-04-22, 2026-04-23 | Agent: AlphaClaw Fleet Research
+> Morning scan: 2026-04-21 | Evening scans: 2026-04-22, 2026-04-23, 2026-05-01 | Agent: AlphaClaw Fleet Research
+
+---
+
+## EVENING SCAN — 2026-05-01
+
+### Implementation Status — All Findings Still Pending (Day 10)
+
+`openclaw.json` `meta.lastTouchedVersion` remains `2026.3.22`. Confirmed zero configuration changes since the first scan on April 21. All 10 prior findings remain unimplemented across 10 days.
+
+| ID | Finding | First Raised | Status |
+|----|---------|-------------|--------|
+| E2 | Fix emoji contradiction in SOUL.md | 2026-04-22 | ⏳ Pending |
+| E1 | Create MEMORY.md with seed data | 2026-04-22 | ⏳ Pending |
+| M2/E4 | Install memory-lancedb + storage path | 2026-04-21 | ⏳ Pending |
+| M4 | Add cron.json morning briefing | 2026-04-21 | ⏳ Pending |
+| E6 | Populate HEARTBEAT.md | 2026-04-23 | ⏳ Pending |
+| M3 | Enable Discord streaming | 2026-04-21 | ⏳ Pending |
+| M1/E5 | Update OpenClaw | 2026-04-21 | ⏳ Pending |
+| M5 | Upgrade fallback model | 2026-04-21 | ⏳ Pending |
+| E7 | Monitor gemini-3-flash-preview deprecation | 2026-04-23 | ⬜ Watch |
+| M6 | Fill in TOOLS.md | 2026-04-21 | ⏳ Pending |
+
+---
+
+### E8: OpenClaw 2026.4.27 Released — Josh Now 40 Days and 27+ Patch Versions Behind
+
+**Finding:** OpenClaw released `2026.4.27` on April 27, 2026. Josh's instance is at `2026.3.22` — 40 days and at minimum 27 patch versions behind the current stable release. This is the longest gap on the fleet.
+
+**New in 2026.4.22–2026.4.27 relevant to Heather:**
+- **Codex Computer Use** — AI-driven desktop control with fail-closed MCP checks. Potential path to richer Gmail/Google Calendar automation beyond the current API approach.
+- **DeepInfra bundled provider** — image/audio understanding, TTS, text-to-video. New provider option beyond Google/OpenRouter, less relevant for Heather's current use case but available.
+- **Manifest-first plugin/model catalogs** — reduces Gateway boot time; provider config (aliases, suppressions) easier to audit. Helps stability.
+- **Reliability fixes** — Gateway startup prewarm, session/history defaults, update sync. Directly improves Heather's session reliability.
+- **AlphaClaw Docker EBUSY self-update fix** — if Josh is on Railway/Docker, `alphaclawctl update` previously failed with an EBUSY error. This is now fixed. Self-updates via AlphaClaw now work correctly.
+
+**Action:** Update via AlphaClaw managed update:
+```bash
+alphaclawctl update
+```
+**Risk:** Low. No breaking config changes for Discord+Google setups in this version range.
+
+---
+
+### E9: Heather IS Running Proactive Checks — But Without Configuration Guardrails
+
+**Finding:** `workspace/memory/inbox-state.json` reveals Heather is actively performing proactive email and iMessage checks despite `HEARTBEAT.md` being empty:
+- **Email:** Last checked ~April 30 / May 1, 2026 (today or yesterday)
+- **iMessage:** Last checked ~April 27–28, 2026
+
+Heather has self-organized a proactive check routine using `inbox-state.json` as state tracking, exactly as AGENTS.md describes — but she is doing this without any `HEARTBEAT.md` instructions defining *what* to check, *when* to alert Josh, or *what quiet hours* to respect. She is operating on instinct, not on documented policy.
+
+**Why this matters:** The proactive behavior is alive and working — this is good. But without a HEARTBEAT.md config:
+- There is no documented policy to debug if she becomes noisy or too quiet
+- There are no explicit quiet hours (23:00–08:00 PST) to prevent late-night pings
+- There is no rotation policy across email / calendar / memory maintenance
+- Future-Heather in a fresh session won't know what cadence was in effect
+
+**Action:** Populating HEARTBEAT.md (soul-improvements.md Rec #5) is now more urgent than previously rated. Heather is running unconfigured. The config content is already drafted in `soul-improvements.md` — this is a copy-paste operation.
+**Risk:** None.
+
+---
+
+### E10: iMessage Monitoring Paused — Undocumented
+
+**Finding:** `workspace/memory/inbox-state.json` contains `"imessage_monitoring_paused": true`. No workspace file explains why iMessage monitoring was paused, when it happened, or under what conditions it should be resumed.
+
+**Why this matters:** iMessage is one of Josh's three core integrations (email, calendar, iMessage). If monitoring is silently paused with no documented reason:
+- Heather in a fresh session will not know if this was intentional or a bug
+- A permission error, expired token, or deliberate user request are three very different causes — each requiring a different response
+- Josh may be expecting iMessage awareness that is currently inactive
+
+**Action:** In the next live session:
+1. Ask Heather why iMessage monitoring is paused (or review memory for context)
+2. Check with Josh if this was intentional
+3. Document the reason in `memory/YYYY-MM-DD.md` and optionally in `TOOLS.md`
+4. Resume if appropriate, or leave paused with a documented reason
+
+**Risk:** None to investigate. Medium impact if it stays undocumented.
+
+---
+
+### E11: inbox-state.json — Duplicate Key Bug (Malformed JSON)
+
+**Finding:** `workspace/memory/inbox-state.json` contains a duplicate `last_email_check_ms` key:
+
+```json
+{
+  "last_email_check_ms": 1777087800000,   // first value (~April 25)
+  "already_drafted_thread_ids": [...],
+  "imessage_monitoring_paused": true,
+  "last_imessage_check_ms": 1777271400000,
+  "last_email_check_ms": 1777551900000    // duplicate (~April 30) — overrides first
+}
+```
+
+Most JSON parsers silently use the last occurrence (behavior is correct in practice), but this is a malformed file. Strict JSON parsers will error on it. The duplicate suggests Heather updated the file by appending a new key rather than updating the existing one in-place — a JSON write pattern issue.
+
+**Action:** Have Heather rewrite `inbox-state.json` cleanly in the next session:
+```json
+{
+  "already_drafted_imessage_guids": [],
+  "already_drafted_thread_ids": ["19db60d96d2118c8"],
+  "imessage_monitoring_paused": true,
+  "last_email_check_ms": 1777551900000,
+  "last_imessage_check_ms": 1777271400000
+}
+```
+See soul-improvements.md Rec #6 for a new AGENTS.md rule about atomic JSON file updates.
+**Risk:** Low — current behavior is correct due to last-key-wins parsing. Fix is trivial.
+
+---
+
+### Priority Summary (Updated Evening 2026-05-01)
+
+| ID | Item | Impact | Risk | Effort | Status |
+|----|------|--------|------|--------|--------|
+| E2 | Fix emoji contradiction in SOUL.md | **High** — active behavioral bug | None | 5 min | ⏳ Pending |
+| E1 | Create MEMORY.md with seed data | **High** — broken continuity | None | 15 min | ⏳ Pending |
+| M2/E4 | Install memory-lancedb (with storage path) | **High** — core persistence | Low | 15 min | ⏳ Pending |
+| M4 | Add cron.json morning briefing | **High** — reactive → proactive | Medium | 30 min | ⏳ Pending |
+| E6/E9 | Populate HEARTBEAT.md (now urgent — Heather running unconfigured) | **High** — enable guardrails on active behavior | None | 10 min | ⏳ Pending |
+| E10 | Investigate + document iMessage pause | Medium — undocumented gap in core integration | None | 10 min | ⏳ Pending |
+| M3 | Enable Discord streaming | Medium — UX quality | Very Low | 5 min | ⏳ Pending |
+| M1/E8 | Update OpenClaw to 2026.4.27 | Medium — stability, 40 days stale | Low | 10 min | ⏳ Pending |
+| E11 | Fix duplicate key in inbox-state.json | Low — malformed file | None | 2 min | ⏳ Pending |
+| M5 | Upgrade fallback model | Low — fallback path only | Low | 5 min | ⏳ Pending |
+| E7 | Monitor gemini-3-flash-preview deprecation | Low | None | 0 | ⬜ Watch |
+| M6 | Fill in TOOLS.md | Low → Medium over time | None | Ongoing | ⏳ Pending |
 
 ---
 
@@ -267,20 +395,3 @@ Add to `openclaw.json`:
 - Any SSH or home automation endpoints
 
 **Risk:** None.
-
----
-
-## Priority Summary (Updated Evening 2026-04-23)
-
-| ID | Item | Impact | Risk | Effort | Status |
-|----|------|--------|------|--------|--------|
-| E2 | Fix emoji contradiction in SOUL.md | **High** — active behavioral bug | None | 5 min | ⏳ Pending |
-| E1 | Create MEMORY.md with seed data | **High** — fixes broken continuity | None | 15 min | ⏳ Pending |
-| M2/E4 | Install memory-lancedb (with storage path) | **High** — core reliability | Low | 15 min | ⏳ Pending |
-| M4 | Add cron.json morning briefing | **High** — reactive → proactive | Medium | 30 min | ⏳ Pending |
-| E6 | Populate HEARTBEAT.md | Medium — enables proactive checks | None | 10 min | ⏳ Pending |
-| M3 | Enable Discord streaming | Medium — UX quality | Very Low | 5 min | ⏳ Pending |
-| M1/E5 | Update OpenClaw to 2026.4.21 | Medium — stability + security | Low | 10 min | ⏳ Pending |
-| M5 | Upgrade fallback model | Low — fallback path only | Low | 5 min | ⏳ Pending |
-| E7 | Monitor gemini-3-flash-preview deprecation | Low | None | 0 | ⬜ Watch |
-| M6 | Fill in TOOLS.md | Low → Medium over time | None | Ongoing | ⏳ Pending |
