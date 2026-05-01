@@ -1,6 +1,78 @@
 # Fleet Research Findings — Josh / Heather Schwartz
 
-> Morning scan: 2026-04-21 | Evening scans: 2026-04-22, 2026-04-23, 2026-05-01 | Agent: AlphaClaw Fleet Research
+> Morning scans: 2026-04-21, 2026-05-01 | Evening scans: 2026-04-22, 2026-04-23, 2026-05-01 | Agent: AlphaClaw Fleet Research
+
+---
+
+## MORNING SCAN — 2026-05-01
+
+### E12: OpenClaw 2026.4.29 Released — Josh Now 38 Days and 37+ Patch Versions Behind
+
+**Finding:** OpenClaw released `2026.4.29` on April 30, 2026. Josh's instance remains at `2026.3.22`. The previous update target from E8 (`2026.4.27`) is itself 2 patch versions stale.
+
+**New in 2026.4.28–2026.4.29 relevant to Heather:**
+- **Memory people-aware wiki with provenance views** — memory now organizes around people and entities, tracking who said what and when. For Heather, iMessage contacts, email correspondents, and calendar attendees become structured contact records with full history. This is the most impactful feature release for a personal assistant use case in the entire 2026.4.x series.
+- **Per-conversation Active Memory filters** — different conversation types surface different memories. Work emails recall professional context; casual messages recall personal preferences.
+- **Opt-in follow-up commitments for heartbeat-delivered reminders** — agents can register explicit commitments ("check back on this email thread Friday") that persist across session restarts and fire via heartbeat. Directly addresses E9's finding that Heather is running proactive checks without documented guardrails.
+- **Active-run steering by default** — users can redirect in-progress tasks without canceling and restarting. Relevant for long email drafting or calendar scheduling runs.
+- **Visible-reply enforcement** — prevents silent message drops on Discord. Improves delivery reliability.
+- **Tool security policy update** — configured tool sections can no longer implicitly widen restrictive profiles. Low direct impact for `tools.profile: "full"`, but overall platform stability improvement.
+
+**Action:**
+```bash
+alphaclawctl update
+```
+**Risk:** Low. No breaking config changes for Discord+Google setups in this version range.
+
+---
+
+### E13: Memory People-Aware Wiki — Step-Change Capability for Personal Assistant
+
+**Finding:** OpenClaw 2026.4.29 upgrades the memory architecture to a "people-aware wiki with provenance views." This moves from flat LanceDB text retrieval to a structured, contact-centric knowledge base.
+
+**Why this matters for Heather specifically:**
+- Every iMessage contact, email correspondent, and calendar attendee gets a persistent record with interaction history
+- Provenance tracking means Heather can recall "Josh mentioned Sarah from Oben HiFi last Tuesday in the context of the board meeting" — not just that Sarah exists as a contact
+- Per-conversation Active Memory filters allow work emails to recall professional context and personal messages to recall personal preferences, without cross-contamination
+- Once enabled, every future session compounds — the memory wiki grows richer with each conversation
+
+This is the single most impactful reason to install memory-lancedb and update OpenClaw. The capability gap between Heather-with-memory-wiki and Heather-without is the gap between a personal assistant that knows Josh and one that meets him anew every session.
+
+**Priority escalation:** M2/E4 (install memory-lancedb) upgrades from **High** to **Critical**. The prerequisite is updating OpenClaw to 2026.4.29 (E12).
+**Risk:** None — additive, non-breaking change.
+
+---
+
+### E14: Opt-In Follow-Up Commitments — Formalizes Heather's Unconfigured Proactive Behavior
+
+**Finding:** OpenClaw 2026.4.29 ships opt-in inferred follow-up commitments for heartbeat-delivered reminders. Agents can register explicit commitments with a date, context, and action that survive session restarts and fire via the heartbeat system.
+
+**Why this matters for E9:** Heather is already running proactive email and iMessage checks, but with no HEARTBEAT.md policy and no way to persist commitment context across sessions. With follow-up commitments:
+- When Josh asks Heather to follow up on something Friday, that commitment is registered and persists
+- The heartbeat fires the reminder at the right time even after a restart or compaction
+- Quiet hours, cadence, and alert conditions can be set as persistent policy rather than ad-hoc session behavior
+
+**Action:** After updating OpenClaw to 2026.4.29 and populating HEARTBEAT.md (E6/E9), check 2026.4.29 release docs for the commitments opt-in flag (likely `commitments.enabled: true` in heartbeat config or agent defaults).
+**Risk:** None until configured. Strictly opt-in — zero behavior change before enabling.
+
+---
+
+### Priority Table (Updated Morning 2026-05-01)
+
+| ID | Item | Impact | Risk | Effort | Status |
+|----|------|--------|------|--------|--------|
+| M2/E4/E13 | Install memory-lancedb (people-aware wiki in 2026.4.29) | **Critical** — step-change capability | Low | 15 min | ⏳ Pending |
+| M1/E8/E12 | Update OpenClaw to 2026.4.29 | **Critical** — prerequisite for memory wiki, 38 days stale | Low | 10 min | ⏳ Pending |
+| E2 | Fix emoji contradiction in SOUL.md | **High** — active behavioral bug | None | 5 min | ⏳ Pending |
+| E1 | Create MEMORY.md with seed data | **High** — broken session continuity | None | 15 min | ⏳ Pending |
+| M4 | Add cron.json morning briefing | **High** — reactive → proactive | Medium | 30 min | ⏳ Pending |
+| E6/E9/E14 | Populate HEARTBEAT.md + configure follow-up commitments | **High** — guardrails on active unconfigured behavior | None | 10 min | ⏳ Pending |
+| E10 | Investigate + document iMessage pause | Medium — undocumented gap in core integration | None | 10 min | ⏳ Pending |
+| M3 | Enable Discord streaming | Medium — UX quality | Very Low | 5 min | ⏳ Pending |
+| E11 | Fix duplicate key in inbox-state.json | Low — malformed file | None | 2 min | ⏳ Pending |
+| M5 | Upgrade fallback model | Low — fallback path only | Low | 5 min | ⏳ Pending |
+| E7 | Monitor gemini-3-flash-preview deprecation | Low | None | 0 | ⬜ Watch |
+| M6 | Fill in TOOLS.md | Low → Medium over time | None | Ongoing | ⏳ Pending |
 
 ---
 

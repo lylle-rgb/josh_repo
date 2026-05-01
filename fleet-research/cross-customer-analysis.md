@@ -1,7 +1,88 @@
 # Cross-Customer Fleet Analysis
 
-> Scan date: 2026-04-21 | Agent: AlphaClaw Fleet Research
+> Original scan: 2026-04-21 | Updated: 2026-05-01 (morning) | Agent: AlphaClaw Fleet Research
 > Fleet: Josh (Heather Schwartz) • Ricky (Pedro/Mikuna) • Noah (Market Catalyst Agent)
+
+---
+
+## UPDATE — MORNING SCAN 2026-05-01
+
+### Version Status Update
+
+Latest stable OpenClaw is now `2026.4.29` (released April 30, 2026). Previous latest referenced in this document (`2026.4.14`) is 15 patch versions stale.
+
+| Customer | Bot Name | OpenClaw Version | Latest Stable | Behind By |
+|----------|----------|-----------------|--------------|----------|
+| Josh | Heather Schwartz | 2026.3.22 | 2026.4.29 | **38 days, 37+ patch versions — longest gap on fleet** |
+| Noah | Market Catalyst Agent | 2026.4.15 | 2026.4.29 | 16 patch versions |
+| Ricky | Pedro | Not scanned this cycle | 2026.4.29 | Unknown |
+
+---
+
+### Fleet-Wide New Capability: Memory People-Aware Wiki (2026.4.29)
+
+OpenClaw 2026.4.29 ships a major memory architecture upgrade relevant to every instance on the fleet. Memory is now a "people-aware wiki with provenance views" — organizing stored knowledge around people and entities rather than flat text chunks.
+
+**Impact by use case:**
+- **Josh (personal assistant):** Highest fleet impact. Heather would build a contact wiki for every person Josh interacts with via iMessage, email, and calendar. Provenance tracking means context like "Josh mentioned the Oben HiFi board meeting last Tuesday" persists and is retrievable.
+- **Noah (career research):** Critical. The agent tracks companies, founders, investors, and hiring managers across research sessions. The people-aware wiki makes every AE target company a persistent, structured record that accumulates context across sessions — directly addresses the finding that the agent resets all research context on every restart.
+- **Ricky (brand ops):** High impact. Pedro would retain structured knowledge about team members, suppliers, platform contacts, and recurring partners.
+
+**Install sequence (same for all):** `memory-lancedb` plugin → update to OpenClaw 2026.4.29 → configure Active Memory filters per session type.
+
+---
+
+### Noah Use Case Clarification: Career Research, Not Stock Trading
+
+Evening scan 2026-05-01 (Noah's findings.md, E2) confirmed that Noah's agent is performing **career research and job search assistance**, not stock catalyst hunting. The agent produced a detailed 21KB AE target companies report on April 22 — ranking 10 startups in construction tech, PropTech, and field service for Noah Katz's next AE role after PermitFlow.
+
+**Fleet implications:**
+- The "Market Catalyst Agent" label in the fleet overview is misleading; the actual use case is job search intelligence
+- Noah's `gog-cli` skill (Google Workspace CLI) makes sense for this use case: email hiring managers via Gmail, track interview calendar events, manage research docs in Drive
+- The weekly cron recommendation in Noah's findings.md should target career research delivery (weekly AE target update) rather than market close debrief
+
+---
+
+### gog-cli Skill (Noah): Audited Clean ✓ — Google Workspace Access Confirmed
+
+Noah's `skills/gog-cli` skill has been audited. It is a legitimate Google Workspace CLI providing access to Gmail, Calendar, Drive, Sheets, Docs, Tasks, Contacts, and Meet — connected to `Ngkatz.ai@gmail.com`. No security concerns. The skill is well-structured, comprehensive, and appropriate for the career research use case.
+
+**Cross-fleet gap:** Josh also uses Google (google:default auth, Google Calendar, Gmail) but does not have the gog-cli skill installed. Heather currently accesses Google services via the native API integration. Adding gog-cli would give Heather scripted, batch-capable access to Gmail search, calendar management, Drive, and Contacts — significantly expanding what she can automate on behalf of Josh.
+
+**Recommendation:** Consider installing gog-cli on Josh's instance and connecting it to Josh's Google account. The skill has zero security concerns based on Noah's audit and would unlock capabilities like batch email operations, Drive file management, and Sheets integration for Josh's Bliss Lifestyle / Oben HiFi operations.
+
+---
+
+### Opt-In Follow-Up Commitments (2026.4.29) — Fleet-Wide Opportunity
+
+OpenClaw 2026.4.29 ships opt-in follow-up commitments for heartbeat-delivered reminders. Agents can register time-bound commitments that persist across session restarts.
+
+- **Josh:** Directly addresses E9/E14 — Heather is running proactive checks without any documented commitment tracking. This feature formalizes her behavior.
+- **Noah:** Directly addresses E3 — the agent set a self-deadline of April 29 for a weekly report that was missed. With persistent commitments, this would have fired a heartbeat reminder.
+- **Ricky:** Low hanging fruit — Pedro's Shopify cron jobs could register explicit follow-through commitments for monthly report deadlines.
+
+---
+
+### Updated Fleet-Wide Action Checklist
+
+- [ ] Update all instances to OpenClaw 2026.4.29
+- [ ] Install `memory-lancedb` on all instances (people-aware wiki unlocked in 2026.4.29)
+- [ ] Create `workspace/MEMORY.md` on all repos (pre-seeded with known context)
+- [ ] Fill in `workspace/TOOLS.md` on all repos (environment-specific notes)
+- [ ] Josh: Enable Discord streaming + add cron.json + populate HEARTBEAT.md
+- [ ] Josh: Investigate iMessage monitoring pause (E10)
+- [ ] Josh: Fix emoji contradiction in SOUL.md (E2)
+- [ ] Josh: Consider installing gog-cli for expanded Google Workspace automation
+- [ ] Noah: Fill USER.md + IDENTITY.md + create MEMORY.md (critical — all blank)
+- [ ] Noah: Trigger overdue AE target companies report update
+- [ ] Noah: Add cron.json for weekly career research report delivery
+- [ ] Noah: Configure HEARTBEAT.md with follow-up commitments (E11)
+- [ ] Noah: Increase contextPruning TTL from 5m to 15m (E7)
+- [ ] Ricky: Audit + update (not scanned this cycle)
+
+---
+
+## ORIGINAL ANALYSIS — 2026-04-21
 
 ---
 
