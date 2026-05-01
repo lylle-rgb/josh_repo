@@ -1,12 +1,15 @@
 # Soul Improvement Recommendations — Josh / Heather Schwartz
 
-> Generated: 2026-04-22 (Evening Scan) | Updated: 2026-04-23 (Evening Scan) | Agent: AlphaClaw Fleet Research
+> Generated: 2026-04-22 (Evening Scan) | Updated: 2026-04-23, 2026-05-01 (Evening Scans) | Agent: AlphaClaw Fleet Research
 
 ---
 
-## Status as of 2026-04-23 Evening
+## Status as of 2026-05-01 Evening (Day 10)
 
-All 5 recommendations from the April 22 scan remain unimplemented. SOUL.md, AGENTS.md, and MEMORY.md are unchanged. The emoji reaction contradiction (Rec #1) is the highest priority — it is an active behavioral bug observable in every session.
+All 5 original recommendations remain unimplemented after 10 days. Two new recommendations added this scan based on new findings:
+- **E9** reveals Heather IS running proactive checks without any HEARTBEAT.md config — Rec #5 is now more urgent
+- **E11** reveals a JSON file write pattern bug (duplicate keys) — new Rec #6
+- **E10** reveals iMessage monitoring was paused with no documentation — new Rec #7
 
 ---
 
@@ -125,6 +128,11 @@ _(Populate during sessions)_
 - Primary calendar: _(confirm — Google Calendar, which account?)_
 - Business calendars: Bliss calendar? Oben HiFi calendar?
 
+## iMessage
+
+- Monitoring status: Currently PAUSED (reason unknown — confirm with Josh)
+- Key contacts: _(build over time)_
+
 ## Key Contacts
 
 - _(Build over time from interactions)_
@@ -143,29 +151,30 @@ _(Populate during sessions)_
 
 ---
 
-## 5. HEARTBEAT.md — Create to Enable Proactive Behavior
+## 5. HEARTBEAT.md — Create to Enable Proactive Behavior (NOW URGENT)
 
-**Current state:** AGENTS.md describes a heartbeat system with a `HEARTBEAT.md` config file, but the file is empty (just a skip-comment). Heather has no defined proactive check cadence. As of the 2026-04-23 evening scan, this has been empty for 3+ days.
+**Current state as of 2026-05-01:** Heather IS running proactive email and iMessage checks (inbox-state.json confirms activity as recently as today), but HEARTBEAT.md is still empty. She is operating without guardrails: no documented quiet hours, no rotation policy, no explicit alert thresholds. This means her proactive behavior is undocumented and potentially inconsistent across sessions.
 
 **Recommended: Overwrite `workspace/HEARTBEAT.md` with:**
 
 ```markdown
 # HEARTBEAT.md
 
-## Rotating Checks (do 2-4 per day, rotate)
+## Rotating Checks (do 2-4 per day, rotate through)
 
 - **Email:** Any urgent unread messages? Flag to Josh in Discord if yes.
-- **Calendar:** Events in next 48h? Remind Josh if within 2h.
+- **Calendar:** Events in next 48h? Remind Josh 2h before.
+- **iMessage:** Check for urgent messages if monitoring is active.
 - **Memory maintenance:** Every 3 days — review recent daily files, update MEMORY.md with distilled insights.
 - **Daily log:** Ensure `memory/YYYY-MM-DD.md` for today exists.
 
 ## State Tracking
 
-Use `memory/heartbeat-state.json` to track last check times.
+Use `memory/heartbeat-state.json` to track last check times. Always update atomically (read entire file, modify, write entire file — never append new keys).
 
 ## Quiet Hours
 
-Stay quiet 23:00–08:00 PST unless genuinely urgent.
+Stay quiet 23:00–08:00 PST unless genuinely urgent (missed flight, critical email).
 
 ## When to Reach Out
 
@@ -173,9 +182,82 @@ Stay quiet 23:00–08:00 PST unless genuinely urgent.
 - Calendar event in <2h
 - Something time-sensitive discovered
 - >8h since last message to Josh
+
+## When to Stay Quiet (HEARTBEAT_OK)
+
+- Late night (23:00–08:00 PST)
+- Josh is clearly busy / in a meeting
+- Nothing new since last check
+- Checked <30 minutes ago
 ```
 
-**Risk:** None. Enables proactive behavior described in AGENTS.md but currently inert.
+**Risk:** None. Enables proactive behavior with explicit guardrails.
+
+---
+
+## 6. AGENTS.md — Add Atomic JSON File Write Rule (NEW — 2026-05-01)
+
+**Trigger finding:** E11 — `inbox-state.json` has a duplicate `last_email_check_ms` key caused by Heather appending a key rather than updating it in-place.
+
+**Problem:** When updating a JSON file, Heather appears to be using a pattern of reading the file and then appending new key-value pairs rather than modifying the existing value and rewriting the whole file. This produces malformed JSON with duplicate keys, which most parsers handle silently (using the last value) but strict parsers will reject.
+
+**Recommended addition to AGENTS.md** under the "Memory" section:
+
+```markdown
+### 📝 JSON File Updates — Always Atomic
+
+When updating any JSON file (inbox-state.json, heartbeat-state.json, etc.):
+1. **Read the entire file** into memory
+2. **Modify the specific value** in the parsed object
+3. **Write the entire object back** as valid JSON
+
+Never append new key-value pairs to an existing JSON file. This produces duplicate keys and malformed output.
+
+**Wrong:**
+```json
+// Original: {"last_check": 1000}
+// Appended: {"last_check": 1000, "last_check": 2000} ← malformed
+```
+
+**Right:**
+```json
+// Read, modify, rewrite: {"last_check": 2000} ← correct
+```
+```
+
+**Risk:** None. Prevents a class of subtle file corruption bugs.
+
+---
+
+## 7. AGENTS.md — Document Service Pauses and State Changes (NEW — 2026-05-01)
+
+**Trigger finding:** E10 — iMessage monitoring is paused (`imessage_monitoring_paused: true`) with no documented reason in any workspace file.
+
+**Problem:** When Heather pauses a service or changes a significant behavioral state (disabling iMessage monitoring, pausing email checks, deferring a cron job), there is no rule requiring her to document why and when. This creates invisible state changes that future-Heather (in a fresh session) will encounter without context.
+
+**Recommended addition to AGENTS.md** under the "Memory" section:
+
+```markdown
+### 📍 Document Service Pauses and State Changes
+
+Any time you pause, disable, or significantly change a service or behavioral mode:
+
+1. Note it in today's daily log: `memory/YYYY-MM-DD.md`
+2. Include: what changed, why, and under what conditions it should resume
+3. If the pause is indefinite, add a note to TOOLS.md or MEMORY.md so future sessions know
+
+**Example:**
+```markdown
+# 2026-05-01
+## iMessage Monitoring Pause
+Paused iMessage monitoring because Josh asked me to stop checking during the weekend.
+Resume: next Monday morning, or when Josh says so.
+```
+
+Silent state changes make debugging impossible and erode trust. Document them.
+```
+
+**Risk:** None. Essential for auditability and debugging.
 
 ---
 
@@ -185,6 +267,8 @@ Stay quiet 23:00–08:00 PST unless genuinely urgent.
 |----------------|--------|--------|-------------|--------|
 | #1 Fix emoji contradiction in SOUL.md | **High** — resolves active bug | 5 min | Fleet operator | ⏳ Pending |
 | #3 Create MEMORY.md with seed data | **High** — fixes broken continuity | 15 min | Heather (in-session) | ⏳ Pending |
-| #5 Populate HEARTBEAT.md | Medium — enables proactive checks | 10 min | Fleet operator | ⏳ Pending |
+| #5 Populate HEARTBEAT.md (URGENT — Heather running unconfigured) | **High** — adds guardrails to active behavior | 10 min | Fleet operator | ⏳ Pending |
+| #6 Add atomic JSON write rule to AGENTS.md | Medium — prevents file corruption class | 5 min | Fleet operator | ⏳ Pending |
+| #7 Add state change documentation rule to AGENTS.md | Medium — auditability | 5 min | Fleet operator | ⏳ Pending |
 | #4 Populate TOOLS.md | Medium — better grounding | 20 min | Heather + Josh | ⏳ Pending |
 | #2 Document USER.md override in AGENTS.md | Low — prevents future conflicts | 5 min | Fleet operator | ⏳ Pending |
