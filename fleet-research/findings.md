@@ -1,6 +1,143 @@
 # Fleet Research Findings — Josh / Heather Schwartz
 
-> Morning scans: 2026-04-21, 2026-05-01 | Evening scans: 2026-04-22, 2026-04-23, 2026-05-01, 2026-05-02 | Agent: AlphaClaw Fleet Research
+> Morning scans: 2026-04-21, 2026-05-01, 2026-05-02 | Evening scans: 2026-04-22, 2026-04-23, 2026-05-01, 2026-05-02 | Agent: AlphaClaw Fleet Research
+
+---
+
+## MORNING SCAN — 2026-05-02
+
+### Implementation Status — Day 12, 42 Days Stale
+
+`openclaw.json` `meta.lastTouchedVersion` remains `2026.3.22`. Morning check — no changes since last evening's scan. Josh's instance is now 42 days behind the current stable release.
+
+---
+
+### E18: Active Memory Plugin — Two-Step Install, Full Config Syntax Now Available
+
+**Finding:** The Active Memory plugin (tracked since E3, April 22) is confirmed stable in OpenClaw 2026.4.10+. The install path requires **two separate components**, which were previously documented as one step:
+
+1. **Storage layer:** `@openclaw/plugin-memory-lancedb` — the vector database that stores memories on disk
+2. **Recall agent:** The `active-memory` plugin entry — a sub-agent that intelligently queries memory before each reply
+
+The prior E4/M2 documentation only covered step 1. Step 2 is required to get the proactive, pre-reply memory surfacing behavior described in E13 (people-aware wiki with provenance views).
+
+**Complete corrected config:**
+```json
+"plugins": {
+  "allow": ["discord", "usage-tracker", "memory-lancedb", "active-memory"],
+  "entries": {
+    "memory-lancedb": {
+      "enabled": true,
+      "config": {
+        "autoRecall": true,
+        "autoCapture": true,
+        "storagePath": "/data/.openclaw/memory"
+      }
+    },
+    "active-memory": {
+      "enabled": true,
+      "config": {
+        "enabled": true,
+        "agents": ["main"],
+        "allowedChatTypes": ["direct"],
+        "modelFallback": "google/gemini-3-flash",
+        "queryMode": "recent",
+        "promptStyle": "balanced",
+        "timeoutMs": 15000,
+        "maxSummaryChars": 220,
+        "persistTranscripts": false,
+        "logging": true
+      }
+    }
+  }
+}
+```
+
+**Deprecation note:** Before 2026.4.10, lowercase `memory.md` was treated as a secondary fallback. This behavior is deprecated post-2026.4.10. When creating MEMORY.md (E1), the standard uppercase filename is already correct — no change needed.
+
+**Runtime rule:** Plugin enabled + agent targeted (`"main"`) + `allowedChatTypes` matches session type + eligible persistent session = active memory runs on every reply turn.
+
+**Risk:** Low. Same additive change as before, now correctly specified as two plugin entries.
+
+---
+
+### E19: memory-lancedb-pro — Enhanced Alternative with Hybrid Retrieval (Evaluate After Baseline)
+
+**Finding:** `memory-lancedb-pro` (GitHub: CortexReach/memory-lancedb-pro) is a production-grade enhanced memory plugin for OpenClaw with meaningfully better retrieval for complex personal assistant use cases:
+
+- **Hybrid Retrieval (Vector + BM25):** Combines semantic vector search with keyword matching. For Heather, "find everything Josh mentioned about Sarah from Oben HiFi" works even when the semantic vector doesn't surface the match — keyword search catches it.
+- **Cross-Encoder Rerank:** Re-ranks retrieval results for higher precision. Matters when Josh's contact graph grows to dozens of recurring people.
+- **Multi-Scope Isolation:** Separate memory scopes per context. Potential use: isolate professional contacts from personal ones, or iMessage history from email threads.
+- **Management CLI:** Direct memory inspection and pruning without going through the agent (`openclaw config validate`, log grep for `memory-lancedb-pro`).
+
+**Compatibility:** Requires OpenClaw 2026.3.22+. Josh's instance at 2026.3.22 qualifies.
+
+**Install method (after baseline memory-lancedb is stable):**
+```bash
+curl -fsSL https://raw.githubusercontent.com/CortexReach/toolbox/main/memory-lancedb-pro-setup/setup-memory.sh -o setup-memory.sh
+bash setup-memory.sh
+```
+
+**Recommendation:** Install standard `memory-lancedb` first (E13/M2 — use the correct two-step config from E18). Run it for 2–3 weeks. If recall precision is poor for contacts or specific conversation context, evaluate switching to `memory-lancedb-pro`. Don't pre-optimize before establishing a baseline.
+
+**Risk:** Low — future upgrade path. No action today.
+
+---
+
+### E20: No Exec Security Settings — Risk at Update Time (Post-2026.4.1)
+
+**Finding:** Josh's `openclaw.json` has no `tools.exec` configuration block at all. OpenClaw 2026.4.1 changed exec security defaults to strict allowlist mode. AlphaClaw's #49 fix seeds permissive defaults on boot — but only for instances that ran AlphaClaw after that fix was merged. Since Josh's instance is at 2026.3.22 (pre-dating 2026.4.1 by weeks), the exec seeding behavior may not have run in its current form.
+
+**Risk at update time:** When Josh updates to 2026.4.29, exec commands could silently fail with "allowlist miss" errors if:
+1. The AlphaClaw boot seeding (#49) did not run with the correct exec model
+2. `exec-approvals.json` doesn't exist or has mismatched defaults
+
+**Preventive action — add to `openclaw.json` before or during the update:**
+```json
+"tools": {
+  "profile": "full",
+  "exec": {
+    "security": "full"
+  }
+}
+```
+
+**Also verify `exec-approvals.json` exists after updating:**
+```json
+{
+  "defaults": {
+    "security": "full",
+    "ask": "off",
+    "askFallback": "full"
+  }
+}
+```
+
+**Risk:** Medium at update time if not addressed. Low effort to preemptively add the exec settings before running `alphaclawctl update`.
+
+---
+
+### Updated Priority Table (Morning 2026-05-02)
+
+| ID | Item | Impact | Risk | Effort | Status |
+|----|------|--------|------|--------|--------|
+| M2/E4/E13/E18 | Install memory-lancedb + active-memory (two-step, corrected config) | **Critical** — step-change capability | Low | 15 min | ⏳ Pending (Day 12) |
+| M1/E8/E12 | Update OpenClaw to 2026.4.29 | **Critical** — prerequisite for memory wiki, 42 days stale | Low | 10 min | ⏳ Pending (Day 12) |
+| E20 | Add `tools.exec.security: "full"` before update | **High** — prevents silent exec failures at update time | None | 5 min | ⏳ Pending (new) |
+| E2 | Fix emoji contradiction in SOUL.md | **High** — active behavioral bug | None | 5 min | ⏳ Pending (Day 12) |
+| E1 | Create MEMORY.md with seed data | **High** — broken session continuity | None | 15 min | ⏳ Pending (Day 12) |
+| M4 | Add cron.json morning briefing | **High** — reactive → proactive | Medium | 30 min | ⏳ Pending (Day 12) |
+| E6/E9/E14 | Populate HEARTBEAT.md + follow-up commitments | **High** — unconfigured proactive behavior | None | 10 min | ⏳ Pending (Day 12) |
+| E17 | Activate post-session skill distillation loop | **High** — prevents loss of 12 days accumulated knowledge | None | 5 min | ⏳ Pending |
+| E10 | Investigate + document iMessage pause | Medium | None | 10 min | ⏳ Pending |
+| M3 | Enable Discord streaming | Medium — UX quality | Very Low | 5 min | ⏳ Pending (Day 12) |
+| E11 | Fix duplicate key in inbox-state.json | Low | None | 2 min | ⏳ Pending |
+| M5 | Upgrade fallback model (claude-3.5-haiku → claude-haiku-4-5) | Low | Low | 5 min | ⏳ Pending (Day 12) |
+| E7 | Monitor gemini-3-flash-preview deprecation | Low | None | 0 | ⬜ Watch |
+| M6 | Fill in TOOLS.md | Low → Medium over time | None | Ongoing | ⏳ Pending (Day 12) |
+| E16 | API key rotation cadence + diagnostics hygiene | Low today | None | 30 min | ⬜ Upcoming |
+| E19 | Evaluate memory-lancedb-pro after baseline | Low — future upgrade | None | 0 | ⬜ Future |
+| E15 | Track OpenClaw 2026.4.29-beta.2 features → stable | Informational | None | 0 | ⬜ Watch |
 
 ---
 
