@@ -1,6 +1,100 @@
 # Fleet Research Findings — Josh / Heather Schwartz
 
-> Morning scans: 2026-04-21, 2026-05-01 | Evening scans: 2026-04-22, 2026-04-23, 2026-05-01 | Agent: AlphaClaw Fleet Research
+> Morning scans: 2026-04-21, 2026-05-01 | Evening scans: 2026-04-22, 2026-04-23, 2026-05-01, 2026-05-02 | Agent: AlphaClaw Fleet Research
+
+---
+
+## EVENING SCAN — 2026-05-02
+
+### Implementation Status — Day 11, All Findings Still Pending
+
+`openclaw.json` `meta.lastTouchedVersion` remains `2026.3.22`. No configuration changes since the first scan on April 21. Josh's instance is now **41 days stale** — the longest gap on the fleet.
+
+| ID | Finding | First Raised | Status |
+|----|---------|-------------|--------|
+| M2/E4/E13 | Install memory-lancedb (people-aware wiki) | 2026-04-21 | ⏳ Pending |
+| M1/E8/E12 | Update OpenClaw to 2026.4.29 | 2026-04-21 | ⏳ Pending |
+| E2 | Fix emoji contradiction in SOUL.md | 2026-04-22 | ⏳ Pending |
+| E1 | Create MEMORY.md with seed data | 2026-04-22 | ⏳ Pending |
+| M4 | Add cron.json morning briefing | 2026-04-21 | ⏳ Pending |
+| E6/E9/E14 | Populate HEARTBEAT.md + follow-up commitments | 2026-04-23 | ⏳ Pending |
+| E10 | Investigate + document iMessage pause | 2026-05-01 | ⏳ Pending |
+| M3 | Enable Discord streaming | 2026-04-21 | ⏳ Pending |
+| E11 | Fix duplicate key in inbox-state.json | 2026-05-01 | ⏳ Pending |
+| M5 | Upgrade fallback model | 2026-04-21 | ⏳ Pending |
+| E7 | Monitor gemini-3-flash-preview deprecation | 2026-04-23 | ⬜ Watch |
+| M6 | Fill in TOOLS.md | 2026-04-21 | ⏳ Pending |
+
+---
+
+### E15: OpenClaw 2026.4.29-beta.2 Released — Subagent Routing, NVIDIA Provider, Memory Diagnostics
+
+**Finding:** OpenClaw `2026.4.29-beta.2` is now available. Josh's instance (2026.3.22) is 41 days stale and still targeting 2026.4.29 stable as the update goal. The beta introduces additional features worth tracking:
+
+**New since 2026.4.29 stable:**
+- **Spawned subagent routing metadata** — when Heather spawns sub-agents (e.g., drafting an email while simultaneously checking calendar), session routing metadata makes these traceable and debuggable. Foundational infrastructure for future multi-task parallel workflows.
+- **NVIDIA provider with image/audio/video/embedding** — adds multimedia AI capabilities. For Josh (luxury lifestyle brand at Bliss), this opens future paths for image analysis and richer content workflows without custom skill installation.
+- **Partial recall on timeout + bounded REM preview diagnostics** — memory system now handles context timeouts gracefully with partial recall rather than a full reset. Makes it easier to diagnose memory gaps. Directly relevant once memory-lancedb is installed (E13/M2).
+- **Safer Codex/OpenAI-compatible replay and streaming** — improves streaming stability; relevant once streaming is enabled (M3).
+- **Active-run steering confirmed as default** — users can redirect in-progress tasks without canceling. Heather's long email drafting or calendar scheduling tasks can now be steered mid-run.
+
+**Update target:** 2026.3.22 → `2026.4.29` stable. Do not run beta.2 in production.
+**Risk:** Low. No breaking changes for Discord+Google setups.
+
+---
+
+### E16: Community Standard — Diagnostics Hygiene and Auth Boundary Cleanliness
+
+**Finding:** The OpenClaw community in May 2026 has converged on operational expectations that will affect fleet reliability going forward:
+
+- **Sanitized diagnostics exports**: The community now expects to export a diagnostic bundle when something breaks — without leaking credentials or personal data. Heather's `inbox-state.json` duplicate key bug (E11) is exactly the type of issue that surfaces cleanly in diagnostics bundles. Fixing it proactively is the right move.
+- **Auth boundary cleanliness**: Fewer copied credentials, no stale identities leaking between conversations. Josh's `auth.profiles` uses API keys for both Google and OpenRouter — these should be rotated on a regular cadence, not left indefinitely since first setup.
+- **Fail-fast behavior over silent failures**: The iMessage monitoring pause (E10) with no documented reason is a textbook example of the silent-failure pattern the community is moving away from. Every significant state change should have a logged reason.
+
+**Action:** No config changes required today. Apply these hygiene practices as part of the pending implementation batch:
+- Fix E11 (duplicate JSON key) when next in-session
+- Document E10 (iMessage pause reason) in daily memory log
+- Add an API key rotation note to TOOLS.md (see Rec #4 in soul-improvements.md)
+
+**Risk:** Low today. Increases over time as credentials age.
+
+---
+
+### E17: Hermes Procedural Memory — Heather's Skill Distillation Loop Is Inactive
+
+**Finding:** Hermes Agent (Nous Research, February 2026) uses a learning loop that reviews completed tasks and distills successful procedures into reusable skill documents — the same pattern described in Heather's AGENTS.md ("When you learn a lesson → update AGENTS.md, TOOLS.md, or the relevant skill"). Hermes formalizes this with an explicit post-task review step built into the heartbeat cycle.
+
+**The gap:** Heather has been operating 11+ days and has:
+- Successfully run proactive email and iMessage checks (inbox-state.json confirms activity as recently as April 30–May 1)
+- Completed Google Workspace onboarding (memory/onboarding-google.md)
+- Learned Josh's explicit preferences (no emoji reactions, direct communication style)
+
+None of these workflows have been distilled into TOOLS.md, AGENTS.md, or task-specific notes. Heather is executing the proactive behavior described in AGENTS.md but not running the post-session distillation cycle. The accumulated operational knowledge lives in session context only and will not survive a full restart.
+
+**Recommended action:** When implementing HEARTBEAT.md (Rec #5 in soul-improvements.md), add an explicit post-task distillation step. See Rec #8 in soul-improvements.md.
+**Risk:** None. Prevents accumulated knowledge loss on the next full restart.
+
+---
+
+### Priority Table (Updated Evening 2026-05-02)
+
+| ID | Item | Impact | Risk | Effort | Status |
+|----|------|--------|------|--------|--------|
+| M2/E4/E13 | Install memory-lancedb (people-aware wiki in 2026.4.29) | **Critical** — step-change capability | Low | 15 min | ⏳ Pending (Day 11) |
+| M1/E8/E12 | Update OpenClaw to 2026.4.29 stable | **Critical** — prerequisite for memory wiki, 41 days stale | Low | 10 min | ⏳ Pending (Day 11) |
+| E2 | Fix emoji contradiction in SOUL.md | **High** — active behavioral bug | None | 5 min | ⏳ Pending (Day 11) |
+| E1 | Create MEMORY.md with seed data | **High** — broken session continuity | None | 15 min | ⏳ Pending (Day 11) |
+| M4 | Add cron.json morning briefing | **High** — reactive → proactive | Medium | 30 min | ⏳ Pending (Day 11) |
+| E6/E9/E14 | Populate HEARTBEAT.md + configure follow-up commitments | **High** — guardrails on active unconfigured behavior | None | 10 min | ⏳ Pending (Day 11) |
+| E17 | Activate post-session skill distillation loop (Rec #8) | **High** — prevents loss of 11 days of accumulated knowledge | None | 5 min | ⏳ Pending |
+| E10 | Investigate + document iMessage pause | Medium — undocumented gap in core integration | None | 10 min | ⏳ Pending |
+| M3 | Enable Discord streaming | Medium — UX quality | Very Low | 5 min | ⏳ Pending (Day 11) |
+| E11 | Fix duplicate key in inbox-state.json | Low — malformed file | None | 2 min | ⏳ Pending |
+| M5 | Upgrade fallback model (claude-3.5-haiku → claude-haiku-4-5) | Low — fallback path only | Low | 5 min | ⏳ Pending (Day 11) |
+| E7 | Monitor gemini-3-flash-preview deprecation | Low | None | 0 | ⬜ Watch |
+| M6 | Fill in TOOLS.md | Low → Medium over time | None | Ongoing | ⏳ Pending (Day 11) |
+| E16 | API key rotation cadence + diagnostics hygiene | Low today | None | 30 min | ⬜ Upcoming |
+| E15 | Track OpenClaw 2026.4.29-beta.2 features → stable | Informational | None | 0 | ⬜ Watch |
 
 ---
 
@@ -160,11 +254,11 @@ Heather has self-organized a proactive check routine using `inbox-state.json` as
 
 ```json
 {
-  "last_email_check_ms": 1777087800000,   // first value (~April 25)
+  "last_email_check_ms": 1777087800000,
   "already_drafted_thread_ids": [...],
   "imessage_monitoring_paused": true,
   "last_imessage_check_ms": 1777271400000,
-  "last_email_check_ms": 1777551900000    // duplicate (~April 30) — overrides first
+  "last_email_check_ms": 1777551900000
 }
 ```
 
@@ -238,8 +332,7 @@ No changes have been applied to Josh's instance since the first scan. `openclaw.
 
 **Action:** Update upgrade target from `2026.4.14` to `2026.4.21`.
 ```bash
-alphaclawctl update   # preferred via AlphaClaw managed update
-# or: npm install -g openclaw@2026.4.21
+alphaclawctl update
 ```
 **Risk:** Low. No breaking changes in this range for Discord setups.
 
@@ -260,7 +353,7 @@ alphaclawctl update   # preferred via AlphaClaw managed update
 
 **Finding:** Josh's primary model is `google/gemini-3-flash-preview`. Preview models operate outside standard deprecation notice cycles and can be retired with short lead time. The configured fallback (`openrouter/google/gemini-2.5-flash`) covers a Gemini outage but is a different model tier than the preview. There is no pinned GA equivalent of `gemini-3-flash` in the fallback chain.
 
-**Action:** No immediate change needed. Monitor Google's preview model lifecycle announcements. If `gemini-3-flash-preview` is deprecated or enters EOL notice, update `agents.defaults.model.primary` to `google/gemini-3-flash` (GA). Set a reminder to re-check this during the next major OpenClaw update cycle.
+**Action:** No immediate change needed. Monitor Google's preview model lifecycle announcements. If `gemini-3-flash-preview` is deprecated or enters EOL notice, update `agents.defaults.model.primary` to `google/gemini-3-flash` (GA).
 **Risk:** Low today. Medium if preview is deprecated without a config update.
 
 ---
@@ -338,7 +431,6 @@ None of the morning findings have been applied yet. All 6 items remain pending a
   }
 }
 ```
-Ensure AlphaClaw is on the latest managed version (self-updates handle the OPENCLAW_STATE_DIR fix — no manual step needed).
 **Risk:** Low — only relevant once memory-lancedb is installed.
 
 ---
@@ -435,7 +527,7 @@ Add to `openclaw.json`:
   ]
 }
 ```
-**Risk:** Medium. Test the first cron manually with a `/cron run morning_briefing` before enabling. Ensure email/calendar tools are connected.
+**Risk:** Medium. Test the first cron manually with a `/cron run morning_briefing` before enabling.
 
 ---
 

@@ -1,15 +1,12 @@
 # Soul Improvement Recommendations — Josh / Heather Schwartz
 
-> Generated: 2026-04-22 (Evening Scan) | Updated: 2026-04-23, 2026-05-01 (Evening Scans) | Agent: AlphaClaw Fleet Research
+> Generated: 2026-04-22 (Evening Scan) | Updated: 2026-04-23, 2026-05-01, 2026-05-02 (Evening Scans) | Agent: AlphaClaw Fleet Research
 
 ---
 
-## Status as of 2026-05-01 Evening (Day 10)
+## Status as of 2026-05-02 Evening (Day 11)
 
-All 5 original recommendations remain unimplemented after 10 days. Two new recommendations added this scan based on new findings:
-- **E9** reveals Heather IS running proactive checks without any HEARTBEAT.md config — Rec #5 is now more urgent
-- **E11** reveals a JSON file write pattern bug (duplicate keys) — new Rec #6
-- **E10** reveals iMessage monitoring was paused with no documentation — new Rec #7
+All 7 original recommendations remain unimplemented after 11 days. One new recommendation added this scan based on E17 (Hermes procedural memory pattern — Heather's skill distillation loop is inactive).
 
 ---
 
@@ -82,10 +79,10 @@ _Load in main sessions only (direct DM with Josh). Do not load in group chats or
 
 ## About This Setup
 
-- Bot name: Heather  
-- Platform: Discord  
-- Auth: Google (API key), OpenRouter (API key)  
-- Guild: 1484448262290276464  
+- Bot name: Heather
+- Platform: Discord
+- Auth: Google (API key), OpenRouter (API key)
+- Guild: 1484448262290276464
 
 ## Preferences & Habits
 
@@ -142,6 +139,11 @@ _(Populate during sessions)_
 - Primary guild: 1484448262290276464
 - Josh's Discord handle: _(note once confirmed)_
 
+## API Key Rotation
+
+- Google API key: Set _(date)_ — rotate every 90 days
+- OpenRouter API key: Set _(date)_ — rotate every 90 days
+
 ## Notes
 
 - Never send emoji reactions (per Josh's explicit preference)
@@ -153,7 +155,7 @@ _(Populate during sessions)_
 
 ## 5. HEARTBEAT.md — Create to Enable Proactive Behavior (NOW URGENT)
 
-**Current state as of 2026-05-01:** Heather IS running proactive email and iMessage checks (inbox-state.json confirms activity as recently as today), but HEARTBEAT.md is still empty. She is operating without guardrails: no documented quiet hours, no rotation policy, no explicit alert thresholds. This means her proactive behavior is undocumented and potentially inconsistent across sessions.
+**Current state as of 2026-05-02:** Heather IS running proactive email and iMessage checks (inbox-state.json confirms activity as recently as April 30–May 1), but HEARTBEAT.md is still empty. She is operating without guardrails: no documented quiet hours, no rotation policy, no explicit alert thresholds. This means her proactive behavior is undocumented and potentially inconsistent across sessions.
 
 **Recommended: Overwrite `workspace/HEARTBEAT.md` with:**
 
@@ -166,6 +168,7 @@ _(Populate during sessions)_
 - **Calendar:** Events in next 48h? Remind Josh 2h before.
 - **iMessage:** Check for urgent messages if monitoring is active.
 - **Memory maintenance:** Every 3 days — review recent daily files, update MEMORY.md with distilled insights.
+- **Skill distillation:** After any significant task — update TOOLS.md with what you learned (email labels, calendar IDs, contact aliases). Don't wait for the next heartbeat.
 - **Daily log:** Ensure `memory/YYYY-MM-DD.md` for today exists.
 
 ## State Tracking
@@ -195,11 +198,11 @@ Stay quiet 23:00–08:00 PST unless genuinely urgent (missed flight, critical em
 
 ---
 
-## 6. AGENTS.md — Add Atomic JSON File Write Rule (NEW — 2026-05-01)
+## 6. AGENTS.md — Add Atomic JSON File Write Rule
 
 **Trigger finding:** E11 — `inbox-state.json` has a duplicate `last_email_check_ms` key caused by Heather appending a key rather than updating it in-place.
 
-**Problem:** When updating a JSON file, Heather appears to be using a pattern of reading the file and then appending new key-value pairs rather than modifying the existing value and rewriting the whole file. This produces malformed JSON with duplicate keys, which most parsers handle silently (using the last value) but strict parsers will reject.
+**Problem:** When updating a JSON file, Heather appears to be using a pattern of reading the file and then appending new key-value pairs rather than modifying the existing value and rewriting the whole file. This produces malformed JSON with duplicate keys.
 
 **Recommended addition to AGENTS.md** under the "Memory" section:
 
@@ -212,28 +215,17 @@ When updating any JSON file (inbox-state.json, heartbeat-state.json, etc.):
 3. **Write the entire object back** as valid JSON
 
 Never append new key-value pairs to an existing JSON file. This produces duplicate keys and malformed output.
-
-**Wrong:**
-```json
-// Original: {"last_check": 1000}
-// Appended: {"last_check": 1000, "last_check": 2000} ← malformed
-```
-
-**Right:**
-```json
-// Read, modify, rewrite: {"last_check": 2000} ← correct
-```
 ```
 
 **Risk:** None. Prevents a class of subtle file corruption bugs.
 
 ---
 
-## 7. AGENTS.md — Document Service Pauses and State Changes (NEW — 2026-05-01)
+## 7. AGENTS.md — Document Service Pauses and State Changes
 
 **Trigger finding:** E10 — iMessage monitoring is paused (`imessage_monitoring_paused: true`) with no documented reason in any workspace file.
 
-**Problem:** When Heather pauses a service or changes a significant behavioral state (disabling iMessage monitoring, pausing email checks, deferring a cron job), there is no rule requiring her to document why and when. This creates invisible state changes that future-Heather (in a fresh session) will encounter without context.
+**Problem:** When Heather pauses a service or changes a significant behavioral state, there is no rule requiring her to document why and when. This creates invisible state changes that future-Heather (in a fresh session) will encounter without context.
 
 **Recommended addition to AGENTS.md** under the "Memory" section:
 
@@ -246,14 +238,6 @@ Any time you pause, disable, or significantly change a service or behavioral mod
 2. Include: what changed, why, and under what conditions it should resume
 3. If the pause is indefinite, add a note to TOOLS.md or MEMORY.md so future sessions know
 
-**Example:**
-```markdown
-# 2026-05-01
-## iMessage Monitoring Pause
-Paused iMessage monitoring because Josh asked me to stop checking during the weekend.
-Resume: next Monday morning, or when Josh says so.
-```
-
 Silent state changes make debugging impossible and erode trust. Document them.
 ```
 
@@ -261,14 +245,41 @@ Silent state changes make debugging impossible and erode trust. Document them.
 
 ---
 
+## 8. HEARTBEAT.md / AGENTS.md — Activate Post-Task Skill Distillation Loop (NEW — 2026-05-02)
+
+**Trigger finding:** E17 — Heather has been operating for 11+ days and has accumulated significant operational knowledge (proactive email/iMessage check patterns, Google onboarding procedures, Josh's preferences) that has never been distilled into TOOLS.md or task-specific notes. On the next full restart, all of this accumulated knowledge will be lost.
+
+**Problem:** AGENTS.md already describes the post-session distillation pattern ("When you learn a lesson → update AGENTS.md, TOOLS.md, or the relevant skill"), but there is no enforcement mechanism. The Hermes Agent model (Nous Research, 2026) formalizes this with an explicit post-task review step.
+
+**Two-part fix:**
+
+**Part A — Add to HEARTBEAT.md** (already included in Rec #5 above as "Skill distillation" item):
+```markdown
+- **Skill distillation:** After any significant task — update TOOLS.md with what you learned (email labels, calendar IDs, contact aliases, what worked/what didn't). Don't wait for the next heartbeat.
+```
+
+**Part B — Add to AGENTS.md** under the "Proactive work you can do without asking" section:
+```markdown
+- **Distill completed task learnings** — after finishing a significant task (email check, calendar review, iMessage scan), write what you learned about the environment to TOOLS.md. Examples:
+  - Discovered Josh's primary Gmail label structure? Write it down.
+  - Found a recurring calendar pattern? Note it.
+  - Learned a contact's relationship to Josh? Add to TOOLS.md Key Contacts.
+  Don't rely on remembering this in future sessions. Files survive restarts; session memory does not.
+```
+
+**Risk:** None. Converts accumulated ephemeral knowledge into durable workspace state.
+
+---
+
 ## Priority
 
 | Recommendation | Impact | Effort | Who Does It | Status |
 |----------------|--------|--------|-------------|--------|
-| #1 Fix emoji contradiction in SOUL.md | **High** — resolves active bug | 5 min | Fleet operator | ⏳ Pending |
-| #3 Create MEMORY.md with seed data | **High** — fixes broken continuity | 15 min | Heather (in-session) | ⏳ Pending |
-| #5 Populate HEARTBEAT.md (URGENT — Heather running unconfigured) | **High** — adds guardrails to active behavior | 10 min | Fleet operator | ⏳ Pending |
-| #6 Add atomic JSON write rule to AGENTS.md | Medium — prevents file corruption class | 5 min | Fleet operator | ⏳ Pending |
-| #7 Add state change documentation rule to AGENTS.md | Medium — auditability | 5 min | Fleet operator | ⏳ Pending |
-| #4 Populate TOOLS.md | Medium — better grounding | 20 min | Heather + Josh | ⏳ Pending |
-| #2 Document USER.md override in AGENTS.md | Low — prevents future conflicts | 5 min | Fleet operator | ⏳ Pending |
+| #1 Fix emoji contradiction in SOUL.md | **High** — resolves active bug | 5 min | Fleet operator | ⏳ Pending (Day 11) |
+| #3 Create MEMORY.md with seed data | **High** — fixes broken continuity | 15 min | Heather (in-session) | ⏳ Pending (Day 11) |
+| #5 Populate HEARTBEAT.md (URGENT — Heather running unconfigured) | **High** — adds guardrails to active behavior | 10 min | Fleet operator | ⏳ Pending (Day 11) |
+| #8 Activate post-task skill distillation loop | **High** — prevents loss of 11 days of accumulated knowledge | 5 min | Fleet operator | ⏳ Pending |
+| #6 Add atomic JSON write rule to AGENTS.md | Medium — prevents file corruption class | 5 min | Fleet operator | ⏳ Pending (Day 11) |
+| #7 Add state change documentation rule to AGENTS.md | Medium — auditability | 5 min | Fleet operator | ⏳ Pending (Day 11) |
+| #4 Populate TOOLS.md (+ API key rotation note) | Medium — better grounding, credential hygiene | 20 min | Heather + Josh | ⏳ Pending (Day 11) |
+| #2 Document USER.md override in AGENTS.md | Low — prevents future conflicts | 5 min | Fleet operator | ⏳ Pending (Day 11) |
