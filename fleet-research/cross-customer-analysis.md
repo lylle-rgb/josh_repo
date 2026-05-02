@@ -1,7 +1,111 @@
 # Cross-Customer Fleet Analysis
 
-> Original scan: 2026-04-21 | Updated: 2026-05-01 (morning) | Agent: AlphaClaw Fleet Research
-> Fleet: Josh (Heather Schwartz) • Ricky (Pedro/Mikuna) • Noah (Market Catalyst Agent)
+> Original scan: 2026-04-21 | Updated: 2026-05-02 (morning) | Agent: AlphaClaw Fleet Research
+> Fleet: Josh (Heather Schwartz) • Noah (Market Catalyst Agent / Career Research)
+
+---
+
+## UPDATE — MORNING SCAN 2026-05-02
+
+### Active Memory Plugin: Two-Step Install Required (Fleet-Wide Correction)
+
+Previous documentation across all findings files described installing `memory-lancedb` as a single step. The Active Memory system actually requires **two separate components**:
+
+1. **Storage layer:** `@openclaw/plugin-memory-lancedb` — vector database for storing memories on disk
+2. **Recall agent:** The `active-memory` plugin entry in `openclaw.json` — a dedicated sub-agent that queries memory before each reply turn
+
+Without step 2, memory is stored but never automatically surfaced. The `active-memory` recall agent is what makes memory "intelligent" — running a dedicated query on every reply to pull relevant context. This is confirmed stable in OpenClaw 2026.4.10+.
+
+**Config divergence by use case (both customers need divergent `active-memory` config):**
+
+| Setting | Josh (Heather) | Noah (Claw) | Reason |
+|---------|---------------|------------|--------|
+| `queryMode` | `"recent"` | `"full"` | Conversation vs. full historical research |
+| `maxSummaryChars` | `220` | `400` | Richer company context needed |
+| `timeoutMs` | `15000` | `20000` | Complex multi-entity research queries |
+| `modelFallback` | `"google/gemini-3-flash"` | `"anthropic/claude-haiku-4-5-20251001"` | Must match customer's auth profile |
+
+---
+
+### Noah-Specific: memoryFlush Writing to Ephemeral Storage
+
+Noah's `openclaw.json` has `compaction.memoryFlush.enabled: true` with `softThresholdTokens: 4000`. Without `memory-lancedb` installed, this flush writes to `/tmp` on Docker/Railway — wiped on every container restart.
+
+Josh has no compaction settings, so he is not affected by this specific issue. For Noah, this is an additional urgency argument for the memory-lancedb install: the agent is actively flushing context it believes is being saved, but the data is ephemeral. Installing `memory-lancedb` with an explicit `storagePath` resolves this automatically.
+
+---
+
+### Josh-Specific: No Exec Security Settings — Risk at Update Time
+
+Josh's `openclaw.json` has no `tools.exec` block. Noah has `tools.exec.security: "full"` explicitly configured. When Josh updates to OpenClaw 2026.4.1+ (required to reach 2026.4.29), the stricter exec defaults may cause silent exec failures.
+
+**Fleet exec security posture (Morning 2026-05-02):**
+
+| Customer | `tools.exec.security` | `exec-approvals.json` | Risk at Update |
+|----------|----------------------|-----------------------|----------------|
+| Josh (Heather) | Not set | Unknown | **Medium — add `security: "full"` before updating** |
+| Noah (Claw) | `"full"` (explicit) | Needs verification (E20) | Low |
+
+**Fix for Josh — add to `openclaw.json` before running `alphaclawctl update`:**
+```json
+"tools": {
+  "profile": "full",
+  "exec": {
+    "security": "full"
+  }
+}
+```
+
+---
+
+### memory-lancedb-pro: Available for Both Customers (Future Evaluation)
+
+`memory-lancedb-pro` (CortexReach/memory-lancedb-pro) provides enhanced retrieval over standard `memory-lancedb`. Requires OpenClaw 2026.3.22+ (both customers qualify).
+
+| Benefit | Josh Value | Noah Value |
+|---------|-----------|------------|
+| Hybrid Retrieval (Vector + BM25) | High — contact name keyword hits | High — company name keyword hits |
+| Cross-Encoder Rerank | Medium — grows with contact count | High — 10+ companies × multiple sessions |
+| Multi-Scope Isolation | Medium — work/personal separation | **High** — companies/contacts/job-search state as separate scopes |
+| Management CLI | Low | Medium — pre-report memory audit |
+
+**Recommendation:** Both customers should establish standard `memory-lancedb` first. Noah is the stronger candidate for eventual `memory-lancedb-pro` upgrade due to multi-scope isolation. Don't pre-optimize.
+
+---
+
+### Version Status (Morning 2026-05-02)
+
+| Customer | Version | Latest Stable | Days Stale | Scan Days |
+|----------|---------|--------------|-----------|----------|
+| Josh (Heather) | 2026.3.22 | 2026.4.29 | **42 days** | Day 12 |
+| Noah (Claw) | 2026.4.15 | 2026.4.29 | 17 days | Day 12 |
+
+No implementations across either customer in 12 days of daily scanning.
+
+---
+
+### Updated Fleet-Wide Action Checklist (Morning 2026-05-02)
+
+**Urgent (do first):**
+- [ ] Noah: Trigger AE target companies report — 4 days overdue
+- [ ] Josh: Add `tools.exec.security: "full"` before updating
+- [ ] Both: Update to OpenClaw 2026.4.29 via `alphaclawctl update`
+- [ ] Both: Install `memory-lancedb` + enable `active-memory` plugin (two-step, use divergent configs above)
+- [ ] Noah: Verify `exec-approvals.json` defaults after update
+
+**High priority:**
+- [ ] Josh: Fix emoji contradiction in SOUL.md (E2)
+- [ ] Josh: Create MEMORY.md + fix duplicate key in inbox-state.json
+- [ ] Josh: Populate HEARTBEAT.md + add cron.json morning briefing
+- [ ] Josh: Investigate iMessage monitoring pause (E10)
+- [ ] Noah: Fill USER.md + IDENTITY.md + create MEMORY.md
+- [ ] Noah: Add cron.json for weekly report with follow-up commitments enabled
+- [ ] Noah: Replace misformatted HEARTBEAT.md
+- [ ] Noah: Increase contextPruning TTL from 5m to 15m (E7)
+
+**Future:**
+- [ ] Both: Evaluate memory-lancedb-pro after 2–3 weeks of standard memory-lancedb operation
+- [ ] Josh: Consider installing gog-cli (audited clean by Noah's install — see cross-analysis below)
 
 ---
 
@@ -15,7 +119,6 @@ Latest stable OpenClaw is now `2026.4.29` (released April 30, 2026). Previous la
 |----------|----------|-----------------|--------------|----------|
 | Josh | Heather Schwartz | 2026.3.22 | 2026.4.29 | **38 days, 37+ patch versions — longest gap on fleet** |
 | Noah | Market Catalyst Agent | 2026.4.15 | 2026.4.29 | 16 patch versions |
-| Ricky | Pedro | Not scanned this cycle | 2026.4.29 | Unknown |
 
 ---
 
@@ -26,9 +129,8 @@ OpenClaw 2026.4.29 ships a major memory architecture upgrade relevant to every i
 **Impact by use case:**
 - **Josh (personal assistant):** Highest fleet impact. Heather would build a contact wiki for every person Josh interacts with via iMessage, email, and calendar. Provenance tracking means context like "Josh mentioned the Oben HiFi board meeting last Tuesday" persists and is retrievable.
 - **Noah (career research):** Critical. The agent tracks companies, founders, investors, and hiring managers across research sessions. The people-aware wiki makes every AE target company a persistent, structured record that accumulates context across sessions — directly addresses the finding that the agent resets all research context on every restart.
-- **Ricky (brand ops):** High impact. Pedro would retain structured knowledge about team members, suppliers, platform contacts, and recurring partners.
 
-**Install sequence (same for all):** `memory-lancedb` plugin → update to OpenClaw 2026.4.29 → configure Active Memory filters per session type.
+**Install sequence (same for all):** `memory-lancedb` plugin → update to OpenClaw 2026.4.29 → enable `active-memory` plugin with use-case-appropriate config.
 
 ---
 
@@ -59,11 +161,10 @@ OpenClaw 2026.4.29 ships opt-in follow-up commitments for heartbeat-delivered re
 
 - **Josh:** Directly addresses E9/E14 — Heather is running proactive checks without any documented commitment tracking. This feature formalizes her behavior.
 - **Noah:** Directly addresses E3 — the agent set a self-deadline of April 29 for a weekly report that was missed. With persistent commitments, this would have fired a heartbeat reminder.
-- **Ricky:** Low hanging fruit — Pedro's Shopify cron jobs could register explicit follow-through commitments for monthly report deadlines.
 
 ---
 
-### Updated Fleet-Wide Action Checklist
+### Updated Fleet-Wide Action Checklist (Morning 2026-05-01)
 
 - [ ] Update all instances to OpenClaw 2026.4.29
 - [ ] Install `memory-lancedb` on all instances (people-aware wiki unlocked in 2026.4.29)
@@ -78,7 +179,6 @@ OpenClaw 2026.4.29 ships opt-in follow-up commitments for heartbeat-delivered re
 - [ ] Noah: Add cron.json for weekly career research report delivery
 - [ ] Noah: Configure HEARTBEAT.md with follow-up commitments (E11)
 - [ ] Noah: Increase contextPruning TTL from 5m to 15m (E7)
-- [ ] Ricky: Audit + update (not scanned this cycle)
 
 ---
 
@@ -91,26 +191,25 @@ OpenClaw 2026.4.29 ships opt-in follow-up commitments for heartbeat-delivered re
 | Customer | Bot Name | OpenClaw Version | Latest Stable | Behind By |
 |----------|----------|-----------------|--------------|----------|
 | Josh | Heather Schwartz | 2026.3.22 | 2026.4.14 | ~3 weeks |
-| Ricky | Pedro | **2026.3.13** | 2026.4.14 | **~5 weeks (most outdated)** |
 | Noah | Market Catalyst Agent | 2026.4.9 | 2026.4.14 | ~2 weeks |
 
-**Fleet action:** All 3 instances need an update. Ricky is priority #1. The jump from 2026.3.x to 2026.4.x is the most impactful — it includes cron reliability fixes and the Model Auth Status card.
+**Fleet action:** Both instances need an update. The jump from 2026.3.x to 2026.4.x is the most impactful — it includes cron reliability fixes and the Model Auth Status card.
 
 ---
 
 ## Workspace File Inventory
 
-| File | Josh | Ricky | Noah | Notes |
-|------|------|-------|------|-------|
-| SOUL.md | ✓ Generic default | ✓ Custom (Pedro persona) | ✓ Generic default | Ricky has the best custom SOUL |
-| IDENTITY.md | ✓ Filled in | ✓ Via SOUL.md | **✗ BLANK TEMPLATE** | Noah's bot has no identity |
-| USER.md | ✓ Filled in (Josh's profile) | ⚠️ Sparse (name/tz only) | **✗ BLANK TEMPLATE** | Noah has zero user context |
-| TOOLS.md | ⚠️ Generic template | ⚠️ Generic template | ⚠️ Generic template | All 3 are unfilled boilerplate |
-| AGENTS.md | ✓ Present | ✓ Present | ✓ Present | Same SHA across all — fleet-shared |
-| MEMORY.md | ✗ Missing | ✗ Missing | ✗ Missing | None of the 3 have a MEMORY.md |
-| cron.json | **✗ Missing** | ✓ Present (3 jobs) | **✗ Missing** | Josh and Noah have no automation |
-| BOOTSTRAP.md | ✓ Present | ✗ Missing | ✓ Present | Ricky missing bootstrap context |
-| MIKUNA_BRAND.md | ✗ N/A | ✓ Present | ✗ N/A | Ricky's unique brand context file |
+| File | Josh | Noah | Notes |
+|------|------|------|-------|
+| SOUL.md | ✓ Generic default | ✓ Generic default | Same SHA — fleet-shared template |
+| IDENTITY.md | ✓ Filled in (Heather) | **✗ BLANK TEMPLATE** | Noah's bot has no identity |
+| USER.md | ✓ Filled in (Josh's profile) | **✗ BLANK TEMPLATE** | Noah has zero persistent user context |
+| TOOLS.md | ⚠️ Generic template | ⚠️ Generic template | Both unfilled boilerplate |
+| AGENTS.md | ✓ Present | ✓ Present | Same SHA — fleet-shared |
+| MEMORY.md | ✗ Missing | ✗ Missing | Neither has a MEMORY.md |
+| cron.json | **✗ Missing** | **✗ Missing** | Neither has scheduled automation |
+| BOOTSTRAP.md | ✓ Present | ✓ Present | Both present |
+| hooks/ | ✓ Present | ✓ Present | Both have hook directories |
 
 ---
 
@@ -119,29 +218,26 @@ OpenClaw 2026.4.29 ships opt-in follow-up commitments for heartbeat-delivered re
 | Customer | Primary Model | Fallbacks | Provider |
 |----------|-------------|-----------|----------|
 | Josh | gemini-3-flash-preview | openrouter/gemini-2.5-flash, openrouter/claude-3.5-haiku | Google + OpenRouter |
-| Ricky | gemini-3.1-pro-preview (main agent) | **NONE** | Google only — **single point of failure** |
 | Noah | claude-sonnet-4-6 | claude-opus-4-6 (in models, not fallbacks) | Anthropic only |
 
 **Key risks:**
-- **Ricky** has no fallbacks — any Google API issue silences Pedro entirely during business operations
-- **Josh's** claude-3.5-haiku fallback is retired — should upgrade to claude-haiku-4-5
-- **Noah** has claude-opus-4-6 in the models catalog but it's not wired as a fallback in the model config
+- **Josh's** claude-3.5-haiku fallback is retired — should upgrade to claude-haiku-4-5-20251001
+- **Noah** has claude-opus-4-6 in the models catalog but it's not wired as a fallback in the model config. Upgrade both to 4.7 variants.
 
 ---
 
 ## Memory Plugin Status
 
-**All 3 customers: No memory plugin configured.**
+**Both customers: No memory plugin configured.**
 
-This is the single biggest capability gap across the entire fleet. Every instance wakes up with no persistent memory. Relevant context from past sessions (user preferences, ongoing projects, learned behaviors, business knowledge) is lost on every restart.
+This is the single biggest capability gap across the fleet. Every instance wakes up with no persistent memory. Relevant context from past sessions (user preferences, ongoing projects, learned behaviors, business knowledge) is lost on every restart.
 
 Memory impact by use case:
 - **Josh (personal assistant):** High impact — should remember contacts, preferences, ongoing projects, communication style
-- **Ricky (brand ops):** High impact — should remember Mikuna brand context, Shopify nuances, team member names, recurring tasks
-- **Noah (trading bot):** Critical impact — should remember active watchlist, catalyst thesis threads, past trade accuracy, Noah's risk rules
+- **Noah (career research):** Critical impact — should remember AE target companies, research assessments, Noah's job search criteria, contact list
 
-**Recommended plugin:** `@openclaw/plugin-memory-lancedb`  
-Install + enable on all 3 instances. As of OpenClaw 2026.4.15 beta, LanceDB memory now supports cloud/remote object storage — highly relevant for cloud-hosted instances where local disk isn't persistent.
+**Recommended plugin:** `@openclaw/plugin-memory-lancedb`
+Install + enable on all instances. See morning scan 2026-05-02 for the corrected two-step install (storage layer + `active-memory` recall agent).
 
 ---
 
@@ -150,28 +246,23 @@ Install + enable on all 3 instances. As of OpenClaw 2026.4.15 beta, LanceDB memo
 | Customer | Has cron.json | # Jobs | Assessment |
 |----------|--------------|--------|------------|
 | Josh | No | 0 | **Gap** — personal assistant with no proactive actions |
-| Ricky | Yes | 3 | Good foundation. Can expand to Amazon + daily ops |
-| Noah | No | 0 | **Critical gap** — trading bot should never be reactive-only |
+| Noah | No | 0 | **Critical gap** — research bot with no scheduled reports |
 
-Ricky's cron.json is the only one on the fleet. It covers Shopify weekly and monthly report delivery. No Amazon monitoring jobs, no daily ops check.
+Neither customer has cron automation configured. Both lose significant value by being reactive-only.
 
 ---
 
 ## Workspace File Gaps: Detailed
 
-### MEMORY.md — Missing Across All 3
-None of the bots have a `workspace/MEMORY.md` file. This is a lightweight but valuable companion to the memory plugin — a human-readable scratch pad for the most important persistent facts (user preferences, key context, ongoing work). Even without the memory plugin installed, a manually maintained MEMORY.md acts as session continuity.
+### MEMORY.md — Missing Across Both
+Neither instance has a `workspace/MEMORY.md` file. Even without the memory plugin installed, a manually maintained MEMORY.md acts as session continuity — a human-readable scratch pad for the most important persistent facts.
 
-**Recommended:** Add a `workspace/MEMORY.md` to all 3 repos, pre-seeded with known context, and have each bot maintain it.
+**Recommended:** Add a `workspace/MEMORY.md` to both repos, pre-seeded with known context, and have each bot maintain it.
 
-### TOOLS.md — Unfilled Boilerplate Across All 3
-All 3 TOOLS.md files contain only the default example content. This file is injected at bootstrap and wastes context window with generic non-information. Each bot should populate it with their actual setup:
+### TOOLS.md — Unfilled Boilerplate Across Both
+Both TOOLS.md files contain only the default example content. This file is injected at bootstrap and wastes context window with generic non-information.
 - **Josh:** iMessage contacts, email accounts, calendar IDs, home automation endpoints
-- **Ricky:** Shopify store details, Amazon seller account, Slack channel IDs, brand asset locations
-- **Noah:** Alpaca account alias, SEC EDGAR watchlist tickers, preferred data sources, Discord channel routing
-
-### BOOTSTRAP.md — Ricky Missing
-Josh and Noah have BOOTSTRAP.md; Ricky does not. This file gives the agent startup instructions. Worth checking if Ricky's alphaclaw hooks include equivalent bootstrap behavior.
+- **Noah:** gog-cli account details, OAuth review date, Drive folder IDs, research cadence notes
 
 ---
 
@@ -180,22 +271,22 @@ Josh and Noah have BOOTSTRAP.md; Ricky does not. This file gives the agent start
 | Customer | Channel | Streaming | Group Policy | DM Policy |
 |----------|---------|-----------|-------------|----------|
 | Josh | Discord | **off** | open | open |
-| Ricky | Slack | partial (nativeStreaming) | open | open |
 | Noah | Discord | not set (off) | **allowlist** | pairing |
 
 - Josh's Discord streaming being `off` is the most impactful quick fix — set to `partial`
-- Noah's security posture (allowlist + pairing) is appropriate for a trading bot
-- Ricky has the best streaming config on the fleet
+- Noah's security posture (allowlist + pairing) is appropriate for a research/trading bot
 
 ---
 
 ## Security Notes
 
-1. **Noah's exec security** is set to `"full"` with `strictInlineEval: false` — the `false` on strictInlineEval is worth auditing. It allows inline JS eval in tools, which could be a vector if a malicious skill is installed.
+1. **Noah's exec security** is set to `"full"` with `strictInlineEval: false` — the `false` on strictInlineEval allows inline JS eval in tools. Worth noting when auditing future skill installs.
 
-2. **ClawHub malware warning (2026 Q1):** 2,419 suspicious skills purged; 1,184 distributed wallet/credential-stealing malware. Noah has a `skills/` directory that needs auditing. Josh and Ricky have no custom skills directories.
+2. **Josh has no exec settings at all** — post-2026.4.1 stricter defaults create a risk at update time. Fix documented in morning scan 2026-05-02.
 
-3. **Exposed instances:** ~21,639 OpenClaw instances remain publicly accessible on the internet as of March 2026. All 3 fleet instances use `gateway.bind: loopback` + `trustedProxies: ["127.0.0.1"]` — this is good practice. Confirm the `allowedOrigins` in `controlUi` are still accurate.
+3. **ClawHub malware warning (2026 Q1):** 2,419 suspicious skills purged; 1,184 distributed wallet/credential-stealing malware. Noah has a `skills/` directory — gog-cli has been audited clean. Josh has no custom skills directory.
+
+4. **Exposed instances:** ~21,639 OpenClaw instances remain publicly accessible on the internet as of March 2026. Both instances use `gateway.bind: loopback` + `trustedProxies: ["127.0.0.1"]` — good practice.
 
 ---
 
@@ -203,49 +294,37 @@ Josh and Noah have BOOTSTRAP.md; Ricky does not. This file gives the agent start
 
 ### Josh (Heather Schwartz) — Personal Assistant
 **Top priorities:**
-1. Memory plugin — critical for a personal assistant that handles email/calendar/contacts
-2. Cron automation — add morning briefing and Friday wrap
-3. Discord streaming on
-4. Update OpenClaw
-5. Fill in TOOLS.md with Josh's actual setup
+1. Add `tools.exec.security: "full"` before updating
+2. Update OpenClaw to 2026.4.29
+3. Install memory-lancedb + active-memory (two-step)
+4. Create MEMORY.md + fix SOUL.md emoji bug
+5. Add cron.json morning briefing + populate HEARTBEAT.md
 
-**Unique gap:** No proactive automation at all. Heather is fully reactive.
+**Unique gap:** 42 days stale — longest update gap on the fleet.
 
 ---
 
-### Ricky (Pedro) — Mikuna Foods Brand Ops
+### Noah (Market Catalyst Agent / Career Research) — Job Search Intelligence
 **Top priorities:**
-1. Add fallback models — critical reliability gap
-2. Update OpenClaw (most outdated on fleet)
-3. Memory plugin — for brand/team knowledge retention
-4. Expand cron.json — add Amazon monitoring + daily ops check
-5. Fill in USER.md and TOOLS.md
+1. Trigger overdue AE target companies report immediately
+2. Fill USER.md + IDENTITY.md + create MEMORY.md — most fundamental gap
+3. Install memory-lancedb + active-memory (two-step, research-optimized config)
+4. Update OpenClaw to 2026.4.29
+5. Add cron.json for weekly report with follow-up commitments
 
-**Unique asset:** MIKUNA_BRAND.md is excellent context grounding. This is a model for the other fleet members — Noah should consider a similar MARKET_CONTEXT.md with trading strategy and universe.
+**Unique asset:** `skills/gog-cli` — audited clean, provides full Google Workspace automation. Consider cross-fleet deployment to Josh.
 
----
-
-### Noah (Market Catalyst Agent) — Stock Catalyst Hunter
-**Top priorities:**
-1. Add cron.json with market schedule — critical for a trading bot
-2. Fill in USER.md and IDENTITY.md — most fundamental gap on the fleet
-3. Memory plugin — for persistent watchlist and thesis tracking
-4. Update OpenClaw (includes security fix for exec.security setups)
-5. Upgrade to Claude Opus 4.7 for deep SEC/filing analysis tasks
-6. Audit `skills/` directory for security
-
-**Unique asset:** `gogcli/` and `skills/` directories suggest a more built-out technical setup. Highest potential ceiling of the 3 bots once gaps are closed.
+**Unique risk:** memoryFlush active but writing to ephemeral storage without backing store.
 
 ---
 
-## Fleet-Wide Action Checklist
+## Fleet-Wide Action Checklist (Original — 2026-04-21)
 
-- [ ] Update all 3 instances to OpenClaw 2026.4.14
-- [ ] Install `memory-lancedb` on all 3 instances
-- [ ] Create `workspace/MEMORY.md` on all 3 repos (pre-seeded)
-- [ ] Fill in `workspace/TOOLS.md` on all 3 (environment-specific notes)
+- [ ] Update all instances to OpenClaw 2026.4.14
+- [ ] Install `memory-lancedb` on all instances
+- [ ] Create `workspace/MEMORY.md` on all repos (pre-seeded)
+- [ ] Fill in `workspace/TOOLS.md` on all repos (environment-specific notes)
 - [ ] Josh: Enable Discord streaming + add cron.json
-- [ ] Ricky: Add fallback models + expand cron.json
-- [ ] Noah: Add cron.json (market schedule) + fill in USER.md + IDENTITY.md
+- [ ] Noah: Add cron.json (research schedule) + fill in USER.md + IDENTITY.md
 - [ ] Noah: Audit skills/ directory for malicious packages
 - [ ] Noah: Review strictInlineEval: false in exec security config
