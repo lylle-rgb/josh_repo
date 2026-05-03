@@ -1,6 +1,90 @@
 # Fleet Research Findings — Josh / Heather Schwartz
 
-> Morning scans: 2026-04-21, 2026-05-01, 2026-05-02 | Evening scans: 2026-04-22, 2026-04-23, 2026-05-01, 2026-05-02 | Agent: AlphaClaw Fleet Research
+> Morning scans: 2026-04-21, 2026-05-01, 2026-05-02, 2026-05-03 | Evening scans: 2026-04-22, 2026-04-23, 2026-05-01, 2026-05-02 | Agent: AlphaClaw Fleet Research
+
+---
+
+## MORNING SCAN — 2026-05-03
+
+### Implementation Status — Day 13, 43 Days Stale
+
+`openclaw.json` `meta.lastTouchedVersion` remains `2026.3.22`. Morning check — no changes since yesterday's scans. Josh's instance is now **43 days behind** current stable (2026.4.29). This is the 13th consecutive daily scan with zero implementation across all findings.
+
+**Pattern note:** 13 days, 15+ findings, 0 changes applied. The bottleneck is not awareness — it's execution. The implementation steps are documented, specific, and low-risk. Highest-leverage unblock: one session with Heather, run `alphaclawctl update` first, then work the list.
+
+---
+
+### E21: Task Brain — cron.json Morning Briefing Risk Downgraded
+
+**Finding:** OpenClaw's Task Brain control panel (introduced in 2026.3.31 beta, confirmed stable in current production builds) unifies cron jobs, subagents, ACP, and background CLI processes onto a SQLite-backed ledger. A key behavioral improvement: isolated cron runs now **automatically clean up orphaned browser tabs and processes** when the run completes — whether it succeeds or fails.
+
+**Why this matters for M4:** The pending cron.json morning briefing (M4, first raised April 21) was rated **Medium risk** due to concern that email or calendar automation mid-cron could leave orphaned browser processes. Task Brain's cleanup resolves that concern.
+
+**M4 risk downgrade:** Medium → **Low**. The recommended `workspace/cron.json` from M4 (morning briefing at 8am PST weekdays + Friday week-wrap at 4pm) can be added without additional caution. Risk is now equivalent to enabling Discord streaming (M3 — Very Low).
+
+**Action:** No new config needed. When implementing M4, proceed without the prior hesitation. Draft `cron.json` is in the April 21 morning scan section below.
+
+**Risk:** None.
+
+---
+
+### E22: Voice Overhaul (2026.4.25) — Per-Agent Voice Persona Unlocks Post-Update
+
+**Finding:** OpenClaw 2026.4.25 shipped a full TTS overhaul: per-agent and per-account voice personas, chat-scoped auto-TTS controls, and new provider support including **ElevenLabs v3**, Azure Speech, Inworld, and others. AGENTS.md already instructs Heather to use `sag` (ElevenLabs TTS) for voice storytelling and "storytime" moments when available.
+
+**What this unlocks post-update:** After updating to 2026.4.29 (M1/E8/E12/E15), Heather can have a configured voice persona — a specific ElevenLabs v3 voice consistent across all voice outputs. This requires no new skill installation if ElevenLabs is already connected via `sag`. The `sag` skill would continue working as before; the persona config adds identity consistency.
+
+**Practical value for Josh:** Morning briefings read aloud in a consistent voice, calendar summaries delivered as audio, "storytime" moments Heather already knows to do — all now stylistically consistent rather than defaulting to whatever TTS voice is available that session.
+
+**Action:** After updating OpenClaw, check 2026.4.25 docs for the voice persona config key (expected: `agents.defaults.voice.persona` or similar). No action before the update.
+
+**Risk:** None today. Purely additive capability that unlocks post-update.
+
+---
+
+### E23: gemini-3-flash GA Path Confirmed — E7 Watch Updated
+
+**Finding:** Confirmed from research: `google/gemini-3-flash` (GA) provides a 1M token context window, 66K output tokens, built-in web search, and URL context support — matching or exceeding `gemini-3-flash-preview`'s current capabilities. No EOL has been announced for the preview model as of today.
+
+**Update to E7 watch:** The GA fallback path is now clearly identified. When the preview model is retired, the config change is a one-line update:
+```json
+"agents": {
+  "defaults": {
+    "model": {
+      "primary": "google/gemini-3-flash"
+    }
+  }
+}
+```
+This is a drop-in replacement — no other config changes needed.
+
+**E7 status:** Active watch, no action today. GA fallback path now documented so the transition is a 5-minute change when needed.
+
+**Risk:** Low. Preview model still active.
+
+---
+
+### Updated Priority Table (Morning 2026-05-03)
+
+| ID | Item | Impact | Risk | Effort | Status |
+|----|------|--------|------|--------|--------|
+| M2/E4/E13/E18 | Install memory-lancedb + active-memory (two-step, corrected config) | **Critical** | Low | 15 min | ⏳ Pending (Day 13) |
+| M1/E8/E12/E15 | Update OpenClaw to 2026.4.29 stable | **Critical** — 43 days stale | Low | 10 min | ⏳ Pending (Day 13) |
+| E20 | Add `tools.exec.security: "full"` before update | **High** — prevents silent exec failures at update time | None | 5 min | ⏳ Pending |
+| E2 | Fix emoji contradiction in SOUL.md | **High** — active behavioral bug | None | 5 min | ⏳ Pending (Day 13) |
+| E1 | Create MEMORY.md with seed data | **High** — broken session continuity | None | 15 min | ⏳ Pending (Day 13) |
+| M4/E21 | Add cron.json morning briefing **(risk now Low)** | **High** — reactive → proactive | **Low** ↓ | 30 min | ⏳ Pending (Day 13) |
+| E6/E9/E14 | Populate HEARTBEAT.md + follow-up commitments | **High** | None | 10 min | ⏳ Pending (Day 13) |
+| E17 | Activate post-session skill distillation loop | **High** — prevents accumulated knowledge loss | None | 5 min | ⏳ Pending |
+| E10 | Investigate + document iMessage pause | Medium | None | 10 min | ⏳ Pending |
+| M3 | Enable Discord streaming | Medium — UX quality | Very Low | 5 min | ⏳ Pending (Day 13) |
+| E22 | Configure voice persona post-update (ElevenLabs v3) | Low — additive capability | None | 15 min | ⬜ Post-update |
+| E11 | Fix duplicate key in inbox-state.json | Low | None | 2 min | ⏳ Pending |
+| M5 | Upgrade fallback model (claude-3.5-haiku → claude-haiku-4-5) | Low | Low | 5 min | ⏳ Pending (Day 13) |
+| E7/E23 | Monitor gemini-3-flash-preview deprecation (GA path now documented) | Low | None | 0 | ⬜ Watch |
+| M6 | Fill in TOOLS.md | Low → Medium over time | None | Ongoing | ⏳ Pending (Day 13) |
+| E16 | API key rotation cadence + diagnostics hygiene | Low today | None | 30 min | ⬜ Upcoming |
+| E19 | Evaluate memory-lancedb-pro after baseline | Low — future upgrade | None | 0 | ⬜ Future |
 
 ---
 
@@ -127,7 +211,7 @@ bash setup-memory.sh
 | E2 | Fix emoji contradiction in SOUL.md | **High** — active behavioral bug | None | 5 min | ⏳ Pending (Day 12) |
 | E1 | Create MEMORY.md with seed data | **High** — broken session continuity | None | 15 min | ⏳ Pending (Day 12) |
 | M4 | Add cron.json morning briefing | **High** — reactive → proactive | Medium | 30 min | ⏳ Pending (Day 12) |
-| E6/E9/E14 | Populate HEARTBEAT.md + follow-up commitments | **High** — unconfigured proactive behavior | None | 10 min | ⏳ Pending (Day 12) |
+| E6/E9/E14 | Populate HEARTBEAT.md + follow-up commitments | **High** — guardrails on active unconfigured behavior | None | 10 min | ⏳ Pending (Day 12) |
 | E17 | Activate post-session skill distillation loop | **High** — prevents loss of 12 days accumulated knowledge | None | 5 min | ⏳ Pending |
 | E10 | Investigate + document iMessage pause | Medium | None | 10 min | ⏳ Pending |
 | M3 | Enable Discord streaming | Medium — UX quality | Very Low | 5 min | ⏳ Pending (Day 12) |
