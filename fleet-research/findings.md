@@ -1,6 +1,96 @@
 # Fleet Research Findings — Josh / Heather Schwartz
 
-> Morning scans: 2026-04-21, 2026-05-01, 2026-05-02, 2026-05-03 | Evening scans: 2026-04-22, 2026-04-23, 2026-05-01, 2026-05-02 | Agent: AlphaClaw Fleet Research
+> Morning scans: 2026-04-21, 2026-05-01, 2026-05-02, 2026-05-03, 2026-05-04 | Evening scans: 2026-04-22, 2026-04-23, 2026-05-01, 2026-05-02 | Agent: AlphaClaw Fleet Research
+
+---
+
+## MORNING SCAN — 2026-05-04
+
+### Implementation Status — Day 14, 44 Days Stale
+
+`openclaw.json` `meta.lastTouchedVersion` remains `2026.3.22`. No changes since April 21. Josh's instance is now **44 days behind** current stable (2026.5.2). This is the 14th consecutive daily scan with zero implementation.
+
+**Execution note:** Two-step path to meaningful change: (1) add `tools.exec.security: "full"` to openclaw.json — 2 minutes; (2) run `alphaclawctl update` to 2026.5.2 — 10 minutes. Everything else in this list becomes easier after those two steps.
+
+---
+
+### E24: Update Target Advances to 2026.5.2 — New Current Stable
+
+**Finding:** OpenClaw `v2026.5.2` is now the current stable release, advancing beyond the `2026.4.29` target cited since the May 1 morning scan. Josh's instance at `2026.3.22` is now 44 days stale against the latest stable.
+
+**New in 2026.5.x relevant to Heather:**
+- **Gateway and agent hot path improvements:** Startup, session listing, task maintenance, prompt prep, and plugin loading are all leaner. Session initialization will be noticeably faster post-update.
+- **Plugin management reliability:** External plugin install, update, doctor repair, and dependency reporting are more robust — directly improves stability of the pending `memory-lancedb` install (M2/E18).
+- **Gateway now fails-closed on invalid config:** Gateway startup no longer auto-restores invalid config; `openclaw doctor --fix` is the repair path. Post-update, run `openclaw doctor` before starting Heather to verify config validity.
+- **Cron store permission hardening:** Cron store and run-log directories hardened to 0700; files to 0600 — applies to pending `workspace/cron.json` (M4).
+- **ClawHub 429 annotation:** ClawHub now annotates rate-limit errors with reset windows, reducing confusion if plugin installs hit rate limits.
+
+**Update command (unchanged):**
+```bash
+alphaclawctl update
+```
+
+**Action:** Update target changes from `2026.4.29` → `2026.5.2`. Add `tools.exec.security: "full"` (E20) first, then run `alphaclawctl update`, then run `openclaw doctor`.
+
+**Risk:** Low. No breaking changes confirmed for Discord+Google setups in 2026.5.x.
+
+---
+
+### E25: Active Memory timeoutMs Cold-Start Behavior Changed in 2026.5.2
+
+**Finding:** OpenClaw `v2026.5.2` removes an implicit 30,000ms cold-start grace period for the Active Memory plugin. Before this fix, the configured `timeoutMs` was silently extended by 30s during the first session after gateway start. The pending E18 config specifies `timeoutMs: 15000` — this previously ran as a ~45s cold-start budget without any signal to the user.
+
+**What changes after upgrading:**
+- Configured `timeoutMs` is now the hard budget on cold-start by default (no implicit grace).
+- New optional `setupGraceTimeoutMs` key explicitly configures cold-start grace when needed.
+
+**Updated E18 active-memory config — add `setupGraceTimeoutMs`:**
+```json
+"active-memory": {
+  "enabled": true,
+  "config": {
+    "enabled": true,
+    "agents": ["main"],
+    "allowedChatTypes": ["direct"],
+    "modelFallback": "google/gemini-3-flash",
+    "queryMode": "recent",
+    "promptStyle": "balanced",
+    "timeoutMs": 15000,
+    "setupGraceTimeoutMs": 30000,
+    "maxSummaryChars": 220,
+    "persistTranscripts": false,
+    "logging": true
+  }
+}
+```
+
+Adding `setupGraceTimeoutMs: 30000` restores the prior cold-start behavior explicitly. After 2–3 weeks of stable memory operation, it can be removed to use the tighter 15s budget.
+
+**Risk:** None today — Heather isn't using Active Memory yet. Apply this config when implementing M2/E18 post-upgrade.
+
+---
+
+### Updated Priority Table (Morning 2026-05-04)
+
+| ID | Item | Impact | Risk | Effort | Status |
+|----|------|--------|------|--------|--------|
+| M2/E4/E13/E18/E25 | Install memory-lancedb + active-memory (use E25 updated config with setupGraceTimeoutMs) | **Critical** | Low | 15 min | ⏳ Pending (Day 14) |
+| M1/E8/E12/E15/E24 | Update OpenClaw to **2026.5.2** stable | **Critical** — 44 days stale | Low | 10 min | ⏳ Pending (Day 14) |
+| E20 | Add `tools.exec.security: "full"` before update | **High** — prevents silent exec failures at update time | None | 5 min | ⏳ Pending |
+| E2 | Fix emoji contradiction in SOUL.md | **High** — active behavioral bug | None | 5 min | ⏳ Pending (Day 14) |
+| E1 | Create MEMORY.md with seed data | **High** — broken session continuity | None | 15 min | ⏳ Pending (Day 14) |
+| M4/E21 | Add cron.json morning briefing **(risk now Low)** | **High** — reactive → proactive | Low | 30 min | ⏳ Pending (Day 14) |
+| E6/E9/E14 | Populate HEARTBEAT.md + follow-up commitments | **High** | None | 10 min | ⏳ Pending (Day 14) |
+| E17 | Activate post-session skill distillation loop | **High** — prevents accumulated knowledge loss | None | 5 min | ⏳ Pending |
+| E10 | Investigate + document iMessage pause | Medium | None | 10 min | ⏳ Pending |
+| M3 | Enable Discord streaming | Medium — UX quality | Very Low | 5 min | ⏳ Pending (Day 14) |
+| E22 | Configure voice persona post-update (ElevenLabs v3) | Low — additive capability | None | 15 min | ⬜ Post-update |
+| E11 | Fix duplicate key in inbox-state.json | Low | None | 2 min | ⏳ Pending |
+| M5 | Upgrade fallback model (claude-3.5-haiku → claude-haiku-4-5) | Low | Low | 5 min | ⏳ Pending (Day 14) |
+| E7/E23 | Monitor gemini-3-flash-preview deprecation (GA path documented) | Low | None | 0 | ⬜ Watch |
+| M6 | Fill in TOOLS.md | Low → Medium over time | None | Ongoing | ⏳ Pending (Day 14) |
+| E16 | API key rotation cadence + diagnostics hygiene | Low today | None | 30 min | ⬜ Upcoming |
+| E19 | Evaluate memory-lancedb-pro after baseline | Low — future upgrade | None | 0 | ⬜ Future |
 
 ---
 
@@ -32,7 +122,7 @@
 
 **Finding:** OpenClaw 2026.4.25 shipped a full TTS overhaul: per-agent and per-account voice personas, chat-scoped auto-TTS controls, and new provider support including **ElevenLabs v3**, Azure Speech, Inworld, and others. AGENTS.md already instructs Heather to use `sag` (ElevenLabs TTS) for voice storytelling and "storytime" moments when available.
 
-**What this unlocks post-update:** After updating to 2026.4.29 (M1/E8/E12/E15), Heather can have a configured voice persona — a specific ElevenLabs v3 voice consistent across all voice outputs. This requires no new skill installation if ElevenLabs is already connected via `sag`. The `sag` skill would continue working as before; the persona config adds identity consistency.
+**What this unlocks post-update:** After updating to 2026.5.2 (E24), Heather can have a configured voice persona — a specific ElevenLabs v3 voice consistent across all voice outputs. This requires no new skill installation if ElevenLabs is already connected via `sag`. The `sag` skill would continue working as before; the persona config adds identity consistency.
 
 **Practical value for Josh:** Morning briefings read aloud in a consistent voice, calendar summaries delivered as audio, "storytime" moments Heather already knows to do — all now stylistically consistent rather than defaulting to whatever TTS voice is available that session.
 
@@ -137,6 +227,8 @@ The prior E4/M2 documentation only covered step 1. Step 2 is required to get the
 }
 ```
 
+**Note (updated by E25):** After upgrading to 2026.5.2, add `"setupGraceTimeoutMs": 30000` to the active-memory config block to preserve the cold-start grace period that was previously implicit.
+
 **Deprecation note:** Before 2026.4.10, lowercase `memory.md` was treated as a secondary fallback. This behavior is deprecated post-2026.4.10. When creating MEMORY.md (E1), the standard uppercase filename is already correct — no change needed.
 
 **Runtime rule:** Plugin enabled + agent targeted (`"main"`) + `allowedChatTypes` matches session type + eligible persistent session = active memory runs on every reply turn.
@@ -172,7 +264,7 @@ bash setup-memory.sh
 
 **Finding:** Josh's `openclaw.json` has no `tools.exec` configuration block at all. OpenClaw 2026.4.1 changed exec security defaults to strict allowlist mode. AlphaClaw's #49 fix seeds permissive defaults on boot — but only for instances that ran AlphaClaw after that fix was merged. Since Josh's instance is at 2026.3.22 (pre-dating 2026.4.1 by weeks), the exec seeding behavior may not have run in its current form.
 
-**Risk at update time:** When Josh updates to 2026.4.29, exec commands could silently fail with "allowlist miss" errors if:
+**Risk at update time:** When Josh updates to 2026.5.2, exec commands could silently fail with "allowlist miss" errors if:
 1. The AlphaClaw boot seeding (#49) did not run with the correct exec model
 2. `exec-approvals.json` doesn't exist or has mismatched defaults
 
