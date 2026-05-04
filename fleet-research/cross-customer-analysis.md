@@ -1,7 +1,103 @@
 # Cross-Customer Fleet Analysis
 
-> Original scan: 2026-04-21 | Updated: 2026-05-03 (morning) | Agent: AlphaClaw Fleet Research
+> Original scan: 2026-04-21 | Updated: 2026-05-04 (morning) | Agent: AlphaClaw Fleet Research
 > Fleet: Josh (Heather Schwartz) • Noah (Market Catalyst Agent / Career Research)
+
+---
+
+## UPDATE — MORNING SCAN 2026-05-04
+
+### Fleet Status — Day 14, Zero Implementation Across Both Instances
+
+| Customer | Version | Latest Stable | Days Stale | Scan Days | Findings | Implemented |
+|----------|---------|--------------|-----------|----------|---------|-------------|
+| Josh (Heather) | 2026.3.22 | **2026.5.2** | **44 days** | Day 14 | 25 | 0 |
+| Noah (Claw) | 2026.4.15 | **2026.5.2** | ~19 days | Day 14 | 27 | 0 |
+
+**New stable release:** OpenClaw `v2026.5.2` is now the current stable, advancing beyond `2026.4.29`. Update targets for both customers are revised upward. The update command is unchanged: `alphaclawctl update`.
+
+---
+
+### New Fleet-Wide: Active Memory timeoutMs Cold-Start Fix (2026.5.2)
+
+OpenClaw `v2026.5.2` removes the implicit 30,000ms cold-start grace period for the Active Memory plugin. Both customers' pending `active-memory` configs require a one-line addition before deploying post-upgrade:
+
+```json
+"setupGraceTimeoutMs": 30000
+```
+
+This explicitly opts into the cold-start grace that was previously implicit. Without it, cold-start memory queries run against the configured `timeoutMs` budget rather than the previous silent extended budget.
+
+**Impact per customer:**
+
+| Customer | `timeoutMs` config | Cold-start budget before 2026.5.2 | After 2026.5.2 without fix | After fix |
+|----------|-------------------|----------------------------------|---------------------------|----------|
+| Josh (Heather) | 15,000ms | ~45,000ms (implicit) | 15,000ms | 45,000ms (explicit) |
+| Noah (Claw) | 20,000ms | ~50,000ms (implicit) | 20,000ms | 50,000ms (explicit) |
+
+Noah's `queryMode: "full"` means cold-start memory scans are more expensive than Josh's `"recent"` mode — the `setupGraceTimeoutMs` is especially important for Claw's config.
+
+Both pending configs have been updated:
+- Josh: E18/E25 (josh_repo findings.md)
+- Noah: E17/E27 (noah--repo findings.md)
+
+---
+
+### New Fleet-Wide: Gateway Fails-Closed on Invalid Config (2026.5.2)
+
+In prior OpenClaw versions, gateway startup would attempt to auto-restore invalid config. In 2026.5.2, invalid config fails closed — gateway won't start until config is valid. `openclaw doctor --fix` is the repair path.
+
+**Pre-update checklist for both customers:**
+1. Stage any pending config changes (Josh: add `tools.exec.security: "full"` — E20)
+2. Run `openclaw config validate` before triggering update
+3. After update, run `openclaw doctor` before starting the gateway
+
+Josh carries more risk here because his config hasn't been touched since 2026.3.22 and lacks the exec security block. Noah's config was last touched at 2026.4.15 and has explicit security settings.
+
+---
+
+### Noah Escalation: Weekly Report Now 6 Days Overdue
+
+The April 29 AE target companies report is **6 days overdue** (was 5 on May 3). Intelligence gap is now 12 days. Zero config changes needed — just a Discord prompt to Claw:
+
+> *"Run an updated AE target companies report. Use the April 22 report as the baseline. Update each company's status, check for new AE openings, flag funding or personnel changes since April 22."*
+
+---
+
+### Fleet-Wide Action Checklist (Morning 2026-05-04)
+
+**Immediate — no config needed:**
+- [ ] Noah: Prompt Claw for updated AE target companies report (6 days overdue)
+
+**Critical pre-update config:**
+- [ ] Josh: Add `tools.exec.security: "full"` to `openclaw.json` (E20)
+- [ ] Josh: Run `openclaw config validate` before updating
+
+**Update both instances to 2026.5.2:**
+- [ ] Both: `alphaclawctl update`
+- [ ] Both: `openclaw doctor` after update
+
+**Memory install — use 2026.5.2-updated configs with `setupGraceTimeoutMs: 30000`:**
+- [ ] Josh: Install `memory-lancedb` + enable `active-memory` (E18/E25 config)
+- [ ] Noah: Install `memory-lancedb` + enable `active-memory` (E17/E27 config)
+
+**High priority per customer:**
+- [ ] Josh: Fix SOUL.md emoji contradiction (E2) — 5 min
+- [ ] Josh: Create MEMORY.md with seed data — 15 min
+- [ ] Josh: Populate HEARTBEAT.md + add cron.json morning briefing — 30 min
+- [ ] Josh: Investigate iMessage monitoring pause (E10) — 10 min
+- [ ] Noah: Fill USER.md (Noah Katz, PermitFlow AE, job search criteria) — 15 min
+- [ ] Noah: Fill IDENTITY.md (anchor "CLAW" persona) — 10 min
+- [ ] Noah: Create MEMORY.md from April 22 report context — 15 min
+- [ ] Noah: Add cron.json for weekly report + follow-up commitments — 30 min
+- [ ] Noah: Replace misformatted HEARTBEAT.md — 10 min
+- [ ] Noah: Increase contextPruning TTL from 5m to 15m (E7) — 5 min
+
+**Upcoming:**
+- [ ] Both: Enable Discord streaming (`"streaming": "partial"`) — 5 min each
+- [ ] Both: Evaluate memory-lancedb-pro after 2–3 weeks of standard memory
+- [ ] Josh: Configure voice persona post-update (ElevenLabs v3, E22)
+- [ ] Noah: Verify exec-approvals.json defaults (E20)
 
 ---
 
@@ -38,7 +134,7 @@ Both customers can add `workspace/cron.json` with higher confidence than previou
 
 ### Josh Escalation: Voice Capability Unlocks Post-Update
 
-OpenClaw 2026.4.25 shipped a full TTS overhaul including per-agent voice personas and ElevenLabs v3 bundled natively. Josh's AGENTS.md already instructs Heather to use `sag` (ElevenLabs TTS) for voice storytelling — this capability is already wired in Heather's workspace instructions. Post-update to 2026.4.29, Heather gains:
+OpenClaw 2026.4.25 shipped a full TTS overhaul including per-agent voice personas and ElevenLabs v3 bundled natively. Josh's AGENTS.md already instructs Heather to use `sag` (ElevenLabs TTS) for voice storytelling — this capability is already wired in Heather's workspace instructions. Post-update to 2026.5.2, Heather gains:
 
 - A configured, consistent voice persona across all TTS output
 - ElevenLabs v3 quality improvements without additional skill installation
@@ -52,11 +148,11 @@ Noah's use case (research/career assistance) is less voice-oriented — this is 
 
 ### Noah Escalation: Report 5 Days Overdue + memoryFlush Losing Data Daily
 
-Two time-sensitive findings on Noah's instance have escalated since yesterday:
+Two time-sensitive findings on Noah's instance escalated since the May 2 scan:
 
-1. **Weekly AE report (E21):** Now **5 days overdue**. Zero config changes needed — just a Discord prompt to Claw. Prompt: *"Run an updated AE target companies report. Use the April 22 report as baseline. Update each company's status, check for new AE openings, flag funding or personnel changes since April 22."* Every day of delay widens the intelligence gap on a fast-moving job search.
+1. **Weekly AE report (E21):** Was 5 days overdue on May 3 (now 6 days on May 4). Zero config changes needed — just a Discord prompt to Claw.
 
-2. **memoryFlush silent data loss (E19/E24):** The `compaction.memoryFlush` has been active for 13+ days, flushing context to ephemeral `/tmp` on every long research session. Every container restart discards the flushed data. Claw believes it's persisting context; it isn't. Installing `memory-lancedb` (N3/E10/E17) resolves this automatically — same install that's been pending since Day 1.
+2. **memoryFlush silent data loss (E19/E24):** The `compaction.memoryFlush` has been active for 13+ days, flushing context to ephemeral `/tmp` on every long research session. Every container restart discards the flushed data. Installing `memory-lancedb` (N3/E10/E17) resolves this automatically.
 
 Josh does not have memoryFlush configured, so this is Noah-specific.
 
@@ -65,7 +161,7 @@ Josh does not have memoryFlush configured, so this is Noah-specific.
 ### Noah Use Case Note: Parallel Research Now Near-Term
 
 With Task Brain stable and subagent routing metadata confirmed in 2026.4.29+, the parallel company research architecture (E15/E22) moves from "future prototype" to "near-term after basics." The prerequisites are both already pending:
-1. Update OpenClaw to 2026.4.29 (N4)
+1. Update OpenClaw to 2026.5.2 (N4/E25)
 2. Install memory-lancedb (N3)
 
 Once those are done, prototyping parallel 5-company research is the natural next phase — not a speculative future goal.
@@ -126,6 +222,7 @@ Without step 2, memory is stored but never automatically surfaced. The `active-m
 | `maxSummaryChars` | `220` | `400` | Richer company context needed |
 | `timeoutMs` | `15000` | `20000` | Complex multi-entity research queries |
 | `modelFallback` | `"google/gemini-3-flash"` | `"anthropic/claude-haiku-4-5-20251001"` | Must match customer's auth profile |
+| `setupGraceTimeoutMs` | `30000` | `30000` | Required after 2026.5.2 upgrade (new) |
 
 ---
 
@@ -139,7 +236,7 @@ Josh has no compaction settings, so he is not affected by this specific issue. F
 
 ### Josh-Specific: No Exec Security Settings — Risk at Update Time
 
-Josh's `openclaw.json` has no `tools.exec` block. Noah has `tools.exec.security: "full"` explicitly configured. When Josh updates to OpenClaw 2026.4.1+ (required to reach 2026.4.29), the stricter exec defaults may cause silent exec failures.
+Josh's `openclaw.json` has no `tools.exec` block. Noah has `tools.exec.security: "full"` explicitly configured. When Josh updates to OpenClaw 2026.4.1+ (required to reach 2026.5.2), the stricter exec defaults may cause silent exec failures.
 
 **Fleet exec security posture (Morning 2026-05-02):**
 
@@ -232,7 +329,7 @@ OpenClaw 2026.4.29 ships a major memory architecture upgrade relevant to every i
 - **Josh (personal assistant):** Highest fleet impact. Heather would build a contact wiki for every person Josh interacts with via iMessage, email, and calendar. Provenance tracking means context like "Josh mentioned the Oben HiFi board meeting last Tuesday" persists and is retrievable.
 - **Noah (career research):** Critical. The agent tracks companies, founders, investors, and hiring managers across research sessions. The people-aware wiki makes every AE target company a persistent, structured record that accumulates context across sessions — directly addresses the finding that the agent resets all research context on every restart.
 
-**Install sequence (same for all):** `memory-lancedb` plugin → update to OpenClaw 2026.4.29 → enable `active-memory` plugin with use-case-appropriate config.
+**Install sequence (same for all):** `memory-lancedb` plugin → update to OpenClaw 2026.5.2 → enable `active-memory` plugin with use-case-appropriate config (including `setupGraceTimeoutMs: 30000` for 2026.5.2).
 
 ---
 
@@ -339,7 +436,7 @@ Memory impact by use case:
 - **Noah (career research):** Critical impact — should remember AE target companies, research assessments, Noah's job search criteria, contact list
 
 **Recommended plugin:** `@openclaw/plugin-memory-lancedb`
-Install + enable on all instances. See morning scan 2026-05-02 for the corrected two-step install (storage layer + `active-memory` recall agent).
+Install + enable on all instances. See morning scan 2026-05-02 for the corrected two-step install (storage layer + `active-memory` recall agent). See morning scan 2026-05-04 for the 2026.5.2 `setupGraceTimeoutMs` addition.
 
 ---
 
@@ -384,7 +481,7 @@ Both TOOLS.md files contain only the default example content. This file is injec
 
 1. **Noah's exec security** is set to `"full"` with `strictInlineEval: false` — the `false` on strictInlineEval allows inline JS eval in tools. Worth noting when auditing future skill installs.
 
-2. **Josh has no exec settings at all** — post-2026.4.1 stricter defaults create a risk at update time. Fix documented in morning scan 2026-05-02 and 2026-05-03.
+2. **Josh has no exec settings at all** — post-2026.4.1 stricter defaults create a risk at update time. Fix documented in morning scans 2026-05-02 and 2026-05-03.
 
 3. **ClawHub malware warning (2026 Q1):** 2,419 suspicious skills purged; 1,184 distributed wallet/credential-stealing malware. Noah has a `skills/` directory — gog-cli has been audited clean. Josh has no custom skills directory.
 
@@ -397,27 +494,27 @@ Both TOOLS.md files contain only the default example content. This file is injec
 ### Josh (Heather Schwartz) — Personal Assistant
 **Top priorities:**
 1. Add `tools.exec.security: "full"` before updating
-2. Update OpenClaw to 2026.4.29
-3. Install memory-lancedb + active-memory (two-step, `queryMode: "recent"`)
+2. Update OpenClaw to 2026.5.2
+3. Install memory-lancedb + active-memory (two-step, `queryMode: "recent"`, add `setupGraceTimeoutMs: 30000`)
 4. Create MEMORY.md + fix SOUL.md emoji bug
 5. Add cron.json morning briefing (now Low risk) + populate HEARTBEAT.md
 6. Post-update: configure ElevenLabs v3 voice persona (E22)
 
-**Unique gap:** 43 days stale — longest update gap on the fleet.
+**Unique gap:** 44 days stale — longest update gap on the fleet.
 
 ---
 
 ### Noah (Market Catalyst Agent / Career Research) — Job Search Intelligence
 **Top priorities:**
-1. Trigger overdue AE target companies report immediately (5 days overdue, no config needed)
+1. Trigger overdue AE target companies report immediately (6 days overdue, no config needed)
 2. Fill USER.md + IDENTITY.md + create MEMORY.md — most fundamental gap, drift risk rising
-3. Install memory-lancedb + active-memory (two-step, `queryMode: "full"`)
-4. Update OpenClaw to 2026.4.29
+3. Install memory-lancedb + active-memory (two-step, `queryMode: "full"`, add `setupGraceTimeoutMs: 30000`)
+4. Update OpenClaw to 2026.5.2
 5. Add cron.json for weekly report with follow-up commitments
 
 **Unique asset:** `skills/gog-cli` — audited clean, full Google Workspace automation. Consider cross-fleet deployment to Josh.
 
-**Unique risk:** memoryFlush active but writing to ephemeral storage — data being lost silently for 13+ days.
+**Unique risk:** memoryFlush active but writing to ephemeral storage — data being lost silently for 14+ days.
 
 **Near-term architecture:** Parallel subagent research (E22/E15) — viable once update + memory-lancedb are in place.
 
