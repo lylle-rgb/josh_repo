@@ -57,7 +57,7 @@ These are specific, ready-to-apply changes to workspace files. Each recommendati
 **Impact:** Medium. Shapes Heather’s behavior in edge cases and during heartbeats.  
 **Risk of change:** Low — additive only.
 
-**Append to end of `workspace/SOUL.md` (before the final italics line):**
+**Append before the final italics line in `workspace/SOUL.md`:**
 
 ```markdown
 ## When Things Break
@@ -88,7 +88,7 @@ When in doubt: stay quiet and log it. Josh can always ask “what’s new?”
 
 ---
 
-## 3. MEMORY.md — Create Initial Long-Term Memory
+## 3. MEMORY.md — Create Initial Long-Term Memory File
 
 **Current state:** File does not exist. Heather starts every main session cold.  
 **Impact:** High. Without MEMORY.md, Josh has to re-explain context that Heather should already know.  
@@ -116,137 +116,97 @@ _Last updated: 2026-05-05_
 ## Known Preferences
 
 - **STRICT:** Do NOT send emoji reactions to messages. Ever.
-- Prefers concise responses — gets to the point
-- Timezone: LA (PST/PDT) — morning is ~8 AM, late night is ~11 PM
+- Prefers concise, direct responses
+- Timezone: LA (PST/PDT) — morning ~8 AM, late night ~11 PM
 
 ## Integrations Set Up
 
 - **Google Workspace:** Onboarded 2026-03-21. Gmail, Calendar, Drive, Sheets, Docs, Tasks, Contacts enabled.
   - Auth callback: `https://5.78.142.81.sslip.io/auth/google/callback`
-  - Key onboarding lesson: Tell user to use the Google Cloud search bar for everything; the “Create” button on the OAuth consent screen is often missed.
-- **Discord:** Connected to guild 1484448262290276464. Bot name: Heather. No mention required in the server.
-- **iMessage:** Configured but monitoring is currently PAUSED (as of last check). Needs investigation.
+  - Key lesson: Use Google Cloud search bar for everything; OAuth consent “Create” button is often missed.
+- **Discord:** Guild 1484448262290276464. No mention required in the server.
+- **iMessage:** Configured but monitoring is currently PAUSED. Needs investigation.
 
 ## Things to Remember
 
-- Josh provided feedback on Google onboarding flow (search bar first, OAuth consent Create button) on 2026-03-21 — this is documented in memory/onboarding-google.md
-- Josh’s Bliss brand is a luxury lifestyle brand; ObenHiFi is an audio/hi-fi partnership
+- Josh provided feedback on Google onboarding flow on 2026-03-21 — documented in memory/onboarding-google.md
+- Bliss = luxury lifestyle brand. ObenHiFi = audio/hi-fi partnership.
 
 ## Open Questions
-- Why is iMessage monitoring paused? Was it intentional or a crash?
-- Has Josh’s Google Workspace connection been verified as live in the AlphaClaw UI recently?
+
+- Why is iMessage monitoring paused? Intentional or crash?
+- Is the Google Workspace connection verified live in AlphaClaw UI?
 
 ---
 
-_Update this file whenever something significant happens or Josh shares new context. Daily logs go in memory/YYYY-MM-DD.md; this is the distilled version._
+_Daily logs in memory/YYYY-MM-DD.md. This file is distilled wisdom only._
 ```
 
 ---
 
-## 4. AGENTS.md — Add Error Recovery Protocol
+## 4. AGENTS.md — Add Integration Failure Protocol
 
-**Current state:** AGENTS.md covers memory, heartbeats, and external vs internal actions well, but has no protocol for when tools or integrations fail mid-task.  
-**Impact:** Medium. Helps Heather behave consistently when Gmail is down, iMessage fails, or calendar returns errors.  
+**Current state:** Covers memory and heartbeats well, but no protocol for when tools fail mid-task.  
+**Impact:** Medium. Gives Heather consistent, professional failure behavior.  
 **Risk of change:** Low — additive.
 
-**Append to `workspace/AGENTS.md` after the “Red Lines” section:**
+**Append after the “Red Lines” section in `workspace/AGENTS.md`:**
 
 ```markdown
 ## When Integrations Fail
 
-**Step 1: Try once, then move on.** Don’t retry the same failing tool 3+ times in a row.
-
-**Step 2: Give Josh a specific error.** Tell him what failed and what it probably means:
-- 401/403 → credentials need refreshing (point to AlphaClaw UI)
-- Timeout → service may be down, try later
-- Not found → the resource doesn’t exist, double-check
-
-**Step 3: Log the failure.** Add a note to `memory/YYYY-MM-DD.md`:
-```
-[HH:MM] Gmail API returned 401 — may need token refresh. Skipped email check.
-```
-
-**Step 4: Fall back gracefully.** If email is down, try calendar. If both are down, do what you can and tell Josh what you couldn’t check.
-
-Don’t apologize excessively. State the problem, state what you did instead, move on.
+1. **Try once, then move on.** No spiral of retries.
+2. **Tell Josh what specifically failed** (401 = token issue, timeout = service down, 404 = not found).
+3. **Log it:** Add a note to `memory/YYYY-MM-DD.md` like: `[HH:MM] Gmail 401 — token may need refresh. Skipped email check.`
+4. **Fall back gracefully.** Email down? Try calendar. Both down? Do what you can and say so.
+5. **Don’t apologize excessively.** State the problem, state what you did instead, move on.
 ```
 
 ---
 
-## 5. USER.md — Add Missing Context Fields
+## 5. openclaw.json — Platform Configuration Changes
 
-**Current state:** USER.md has good basic info but is missing pronouns, phone context, and platform preferences beyond the no-emoji rule.  
-**Impact:** Low-Medium. Helps Heather personalize responses more accurately.  
-**Risk of change:** Very low.
+*Operator-level changes; require gateway restart. Apply after updating OpenClaw to 2026.5.3.*
 
-**Update `workspace/USER.md` — replace the Notes field entry with expanded version:**
-
-```markdown
-- **Notes:** 
-  - Named me Heather 🧡
-  - **STRICT: DO NOT SEND EMOJI REACTIONS TO MESSAGES.** (Josh explicitly asked for this)
-  - Provided feedback on Google onboarding UX — logged in memory/onboarding-google.md
-  - Just joined the Discord server when we first met
-  - Communication style: direct, prefers brevity
-  - Business context: Luxury lifestyle (Bliss) + Audio/hi-fi (ObenHiFi)
+### Enable Discord Streaming
+```json
+// channels.discord.streaming
+"streaming": "on"  // was "off"
 ```
 
----
-
-## 6. openclaw.json — Platform Configuration Changes
-
-These are operator-level changes (require gateway restart). Low risk, high value.
-
-### 6a. Enable Discord Streaming
+### Add Compaction Config
 ```json
-// In channels.discord:
-"streaming": "on"  // was: "off"
-```
-*Why: Provides typing indicator and progressive response — more natural conversational feel.*
-
-### 6b. Add Compaction Config
-```json
-// In agents.defaults:
+// agents.defaults
 "compaction": {
   "reserveTokensFloor": 20000,
-  "memoryFlush": {
-    "enabled": true,
-    "softThresholdTokens": 3000
-  }
+  "memoryFlush": { "enabled": true, "softThresholdTokens": 3000 }
 }
 ```
-*Why: Prevents abrupt context cutoffs in long personal assistant sessions (email triage, scheduling, research).*
 
-### 6c. Add Active Memory Plugin (post-update to 2026.4.12+)
+### Enable Active Memory Plugin
 ```json
-// In plugins.allow: add "memory-core"
-// In plugins.entries: add:
-"memory-core": {
-  "enabled": true
-}
+// plugins.allow: add "memory-core"
+// plugins.entries: add
+"memory-core": { "enabled": true }
 ```
-*Why: Dedicated memory agent runs before each session, proactively maintaining Heather’s memory state.*
 
-### 6d. Fix contextPruning (add to agents.defaults)
+### Add Context Pruning TTL
 ```json
-"contextPruning": {
-  "mode": "cache-ttl",
-  "ttl": "15m"
-}
+// agents.defaults
+"contextPruning": { "mode": "cache-ttl", "ttl": "15m" }
 ```
-*Why: Prevents mid-session context loss during longer email triage or research tasks.*
 
 ---
 
 ## Priority Order
 
-1. **Fix iMessage monitoring pause** (investigate root cause first)
-2. **Create MEMORY.md** (immediate session quality improvement)
-3. **Populate HEARTBEAT.md** (enables proactive behavior)
-4. **Update OpenClaw** (unlock new features)
-5. **Enable streaming** (UX improvement)
-6. **Add compaction + memory-core** (after update)
-7. **Append to SOUL.md and AGENTS.md** (behavioral improvements)
+1. Investigate and fix iMessage monitoring pause
+2. Create `workspace/MEMORY.md` (immediate quality improvement)
+3. Populate `workspace/HEARTBEAT.md` (enables proactive behavior)
+4. Update OpenClaw to 2026.5.3
+5. Enable streaming in openclaw.json
+6. Add compaction + memory-core (after update)
+7. Append SOUL.md and AGENTS.md additions
 
 ---
 *Generated by AlphaClaw Apex Fleet Research Agent — Evening Scan — 2026-05-05*
