@@ -1,7 +1,133 @@
 # Cross-Customer Fleet Analysis
 
-> Original scan: 2026-04-21 | Updated: 2026-05-04 (morning) | Agent: AlphaClaw Fleet Research
+> Original scan: 2026-04-21 | Updated: 2026-05-05 (morning) | Agent: AlphaClaw Fleet Research
 > Fleet: Josh (Heather Schwartz) • Noah (Market Catalyst Agent / Career Research)
+
+---
+
+## UPDATE — MORNING SCAN 2026-05-05
+
+### Fleet Status — Day 15, Zero Implementation Across Both Instances
+
+| Customer | Version | Latest Stable | Days Stale | Scan Days | Implemented |
+|----------|---------|--------------|-----------|----------|-------------|
+| Josh (Heather) | 2026.3.22 | **2026.5.3** | **44 days** | Day 15 | 0 |
+| Noah (Claw) | 2026.4.15 | **2026.5.3** | **20 days** | Day 15 | 0 |
+
+**New stable release:** OpenClaw `v2026.5.3` released today (2026-05-05). Both update targets revised upward from the 2026-05-04 reference of 2026.5.2.
+
+---
+
+### Security Escalation: Updating Is Now a Security Requirement
+
+138+ OpenClaw CVEs disclosed in 2026. Key facts from this morning's research:
+
+- **CVE-2026-32922** (CVSS 9.9, auth bypass race condition): Fixed in 2026.3.11. Both customers are past this specific CVE (Josh: 2026.3.22, Noah: 2026.4.15).
+- **CVE-2026-25253** (Remote Code Execution, CVSS 8.8): Patched in 2026.4.x builds. Josh on 2026.3.22 is potentially exposed.
+- **April 2026 patch batch**: 13 CVEs patched, 2 at Critical severity. Both customers may be missing some of these.
+- **Gateway posture**: Both instances use `bind: loopback` + `trustedProxies: ["127.0.0.1"]` — not internet-exposed. Significant risk mitigation.
+- **Fleet threshold shift**: Previous urgency was features. New urgency is security.
+
+**Fleet security exposure comparison:**
+
+| Customer | Version | RCE CVE-25253 | April Batch CVEs | Loopback Bind |
+|----------|---------|--------------|-----------------|---------------|
+| Josh | 2026.3.22 | Potentially exposed | Missing | ✓ Protected |
+| Noah | 2026.4.15 | Likely patched | Possibly missing | ✓ Protected |
+
+---
+
+### New in 2026.5.3 — Fleet-Wide Impact
+
+**1. Bundled File-Transfer Plugin**
+- Tools: `file_fetch`, `dir_list`, `dir_fetch`, `file_write` for binary file ops on paired nodes.
+- Config: `plugins.entries.file-transfer.config.nodes` — per-node path policy, operator approval required, symlink traversal off by default, 16 MB ceiling per round-trip.
+- **Josh relevance:** Medium — personal assistant could access files on Josh's machine for email attachments, documents.
+- **Noah relevance:** Low — gog-cli handles Google Drive. Not a priority.
+
+**2. Cron Persistence Fix**
+- `jobs-state.json` correctly persists repaired startup state on gateway restart.
+- Both customers are blocked on cron.json, but once added, this fix prevents phantom health-check loops after restarts.
+
+**3. New `/side` Command**
+- Quiet aside to agent mid-conversation without breaking the thread.
+- Useful for both customers for in-context background instructions.
+
+**4. Plugin Install/Update Hardening**
+- Externalized plugins now behave like first-class package installs.
+- **Noah direct impact**: memory-core half-configured issue may be auto-detectable and auto-repairable post-update.
+
+**5. Reset Interrupt Fix**
+- `/new` and `/reset` treated as interrupt runs — steer/followup modes can't block fresh sessions.
+- Relevant for Noah: long research tasks will no longer block a fresh session reset.
+
+---
+
+### threadBindings.spawnSessions — Config Migration Required Post-Update
+
+OpenClaw 2026.5.2 replaced split subagent/ACP thread-spawn toggles with unified `channels.discord.threadBindings.spawnSessions` (default: `true`).
+
+**Post-update action for both customers:** `openclaw doctor --fix` — auto-migrates legacy keys.
+
+**Fleet impact:**
+
+| Customer | threadBindings Relevance | Notes |
+|----------|------------------------|-------|
+| Josh | Low-Medium | Future multi-agent use cases; no immediate change needed |
+| Noah | **High** | Prerequisite for parallel 5-company research architecture (E22/E15) — each company gets its own Discord thread + sub-agent |
+
+---
+
+### Gemini 3 Flash — Josh Model Validated
+
+Community benchmarks confirm Gemini 3 Flash Preview (Josh's primary) scores **78% SWE-bench Verified** — above Gemini 3 Pro (76.2%). 1M context window, 66K output limit. Josh's model choice is sound; no change recommended.
+
+**New option:** Gemini 3.1 Flash Lite on OpenRouter — faster, lower cost. Could be added to Josh's fallback chain for budget heartbeat sub-tasks. Not a replacement; a supplement.
+
+Noah's Anthropic Claude Sonnet 4.6 is not affected. Note: `claude-opus-4-6` listed in Noah's models catalog is eligible for upgrade to `claude-opus-4-7`.
+
+---
+
+### Updated Pre-Update Checklist (2026-05-05 Morning)
+
+Before running `alphaclawctl update` on either instance:
+
+1. **Josh (critical):** Add `tools.exec.security: "full"` to `openclaw.json` — not yet configured, creates risk at update time
+2. **Both:** Run `openclaw config validate` — gateway fails-closed on invalid config since 2026.5.2
+3. **Both:** After update, run `openclaw doctor --fix` to migrate threadBindings legacy config
+
+Active Memory config: no changes from 2026-05-04 morning scan. `setupGraceTimeoutMs: 30000` still required post-upgrade.
+
+---
+
+### Fleet-Wide Action Checklist (Morning 2026-05-05)
+
+**Security first:**
+- [ ] Josh: Add `tools.exec.security: "full"` to `openclaw.json`
+- [ ] Both: `openclaw config validate`
+- [ ] Both: `alphaclawctl update` → 2026.5.3
+- [ ] Both: `openclaw doctor --fix` (threadBindings migration)
+
+**Immediate — zero config needed:**
+- [ ] Noah: Prompt Claw for updated AE target companies report (13 days overdue)
+
+**Memory (use configs from 2026-05-04, with `setupGraceTimeoutMs: 30000`):**
+- [ ] Both: Install `memory-lancedb` + enable `active-memory` plugin (two-step)
+
+**High priority per customer:**
+- [ ] Josh: Create MEMORY.md + populate HEARTBEAT.md + enable Discord streaming
+- [ ] Josh: Investigate iMessage monitoring pause
+- [ ] Noah: Fill USER.md + IDENTITY.md + create MEMORY.md
+- [ ] Noah: Fix memory-core plugin entry (add to `plugins.entries`)
+- [ ] Noah: Increase contextPruning TTL 5m → 30m
+- [ ] Noah: Enable Gmail Watch (`gog gmail watch --enable --account Ngkatz.ai@gmail.com`)
+
+**Upcoming:**
+- [ ] Josh: Add Gemini 3.1 Flash Lite to fallback chain (budget heartbeat tasks)
+- [ ] Josh: Configure voice persona post-update (ElevenLabs v3)
+- [ ] Noah: threadBindings.spawnSessions → parallel 5-company research threads (post-update)
+- [ ] Noah: Google Meet earnings call attendance (meet:write perms already granted)
+- [ ] Noah: Upgrade `claude-opus-4-6` → `claude-opus-4-7` in models catalog
 
 ---
 
@@ -494,7 +620,7 @@ Both TOOLS.md files contain only the default example content. This file is injec
 ### Josh (Heather Schwartz) — Personal Assistant
 **Top priorities:**
 1. Add `tools.exec.security: "full"` before updating
-2. Update OpenClaw to 2026.5.2
+2. Update OpenClaw to 2026.5.3
 3. Install memory-lancedb + active-memory (two-step, `queryMode: "recent"`, add `setupGraceTimeoutMs: 30000`)
 4. Create MEMORY.md + fix SOUL.md emoji bug
 5. Add cron.json morning briefing (now Low risk) + populate HEARTBEAT.md
@@ -506,17 +632,17 @@ Both TOOLS.md files contain only the default example content. This file is injec
 
 ### Noah (Market Catalyst Agent / Career Research) — Job Search Intelligence
 **Top priorities:**
-1. Trigger overdue AE target companies report immediately (6 days overdue, no config needed)
+1. Trigger overdue AE target companies report immediately (13 days overdue, no config needed)
 2. Fill USER.md + IDENTITY.md + create MEMORY.md — most fundamental gap, drift risk rising
 3. Install memory-lancedb + active-memory (two-step, `queryMode: "full"`, add `setupGraceTimeoutMs: 30000`)
-4. Update OpenClaw to 2026.5.2
+4. Update OpenClaw to 2026.5.3
 5. Add cron.json for weekly report with follow-up commitments
 
 **Unique asset:** `skills/gog-cli` — audited clean, full Google Workspace automation. Consider cross-fleet deployment to Josh.
 
 **Unique risk:** memoryFlush active but writing to ephemeral storage — data being lost silently for 14+ days.
 
-**Near-term architecture:** Parallel subagent research (E22/E15) — viable once update + memory-lancedb are in place.
+**Near-term architecture:** Parallel subagent research (E22/E15) — viable once update + memory-lancedb are in place. threadBindings.spawnSessions (2026.5.2+) is the config prerequisite.
 
 ---
 
