@@ -1,7 +1,128 @@
 # Cross-Customer Fleet Analysis
 
-> Original scan: 2026-04-21 | Updated: 2026-05-07 (morning) | Agent: AlphaClaw Fleet Research
+> Original scan: 2026-04-21 | Updated: 2026-05-08 (morning) | Agent: AlphaClaw Fleet Research
 > Fleet: Josh (Heather Schwartz) • Noah (Market Catalyst Agent / Career Research)
+
+---
+
+## UPDATE — MORNING SCAN 2026-05-08
+
+### Fleet Status — Day 20, Zero Implementation Across Both Instances
+
+| Customer | Version | Latest Stable | Days Stale | Scan Days | Implemented |
+|----------|---------|--------------|-----------|----------|-----------|
+| Josh (Heather) | 2026.3.22 | **2026.5.7** | **47 days** | Day 20 | 0 |
+| Noah (Claw) | 2026.4.15 | **2026.5.7** | **23 days** | Day 20 | 0 |
+
+**Latest stable:** OpenClaw `2026.5.7` (released May 8 per Day 19 Evening Scans). No new release confirmed this morning. Both update targets remain at `2026.5.7`.
+
+---
+
+### Active Memory Admin Scope — New Fleet-Wide Prerequisite (2026.5.7)
+
+OpenClaw 2026.5.7 requires admin scope for Active Memory global memory toggles. Both customers have pending memory-core work. The standing `memory-core` entry must now include `"config": { "scope": "admin" }` or the plugin installs but silently fails on all global memory operations.
+
+**Updated memory-core entry for both customers (after update + `openclaw doctor --fix`):**
+```json
+"memory-core": {
+  "enabled": true,
+  "config": {
+    "scope": "admin"
+  }
+}
+```
+
+Preferred approach: run `openclaw doctor --fix` after updating to 2026.5.7 first — the doctor may auto-wire admin scope. Only manually edit openclaw.json if doctor doesn't resolve it. Combined 2026.5.5 + 2026.5.6 + 2026.5.7 plugin improvements give this doctor run its highest-ever coverage.
+
+---
+
+### New Fleet-Wide: Gemini 3.1 Series on OpenRouter (Josh-Relevant)
+
+Gemini 3.1 Flash Preview and 3.1 Pro Preview are now available on OpenRouter. Primary impact is on Josh's instance:
+
+| Model | ID | Josh Relevance | Notes |
+|-------|-----|---------------|-------|
+| Gemini 3.1 Flash Preview | `google/gemini-3.1-flash-preview` | **HIGH** — direct successor to current primary | Better agentic reliability, tool orchestration |
+| Gemini 3.1 Flash Lite Preview | `google/gemini-3.1-flash-lite-preview` | **MEDIUM** — budget heartbeat tier | Outperforms Gemini 2.5 Flash Lite |
+| Gemini 3.1 Pro Preview | `google/gemini-3.1-pro-preview` | LOW | Higher cost, limited personal assistant gain |
+
+Noah uses Anthropic Claude and is not directly affected by the Gemini 3.1 series.
+
+**Josh action:** After updating to 2026.5.7, upgrade primary model to `google/gemini-3.1-flash-preview` with prior primary (`google/gemini-3-flash-preview`) as fallback. Also fix the retired `openrouter/anthropic/claude-3.5-haiku` fallback — replace with `openrouter/anthropic/claude-haiku-4-5-20251001`.
+
+---
+
+### New Finding: Alpaca MCP Server v2 (Noah-Only)
+
+Alpaca released MCP Server v2 with significant new capabilities confirmed this morning and **not previously documented** in Noah's findings:
+
+- **Order replacements, options chain exploration, market screening tools, account activity logs**
+- Simplified credential onboarding
+- API usage grew ~4x in Q1 2026 driven by AI agent integrations
+
+For Noah's catalyst agent: MCP v2 options chain access unlocks paper-trading options plays on binary-outcome catalysts (FDA, earnings, M&A). Market screening as a native tool call reduces Brave search dependency in research sessions. Full detail in Noah's findings.md Day 20 Morning Scan.
+
+No impact on Josh (does not use Alpaca).
+
+**Noah action:** Verify whether instance is on Alpaca MCP v1 or v2. If v1, point at `https://mcp.alpaca.markets` with existing API credentials — no complex config per Alpaca's v2 simplified onboarding.
+
+---
+
+### Fleet-Wide: OpenTelemetry Observability Now Available Post-Update
+
+OTel coverage now spans model calls, token usage, tool loops, harness runs, and memory pressure across the 2026.5.x series.
+
+| Customer | OTel Value | Specific Use |
+|----------|-----------|-------------|
+| Josh | Medium | Monitor heartbeat API call latency once HEARTBEAT.md active |
+| Noah | **High** | Validate whether 5m contextPruning TTL causes actual mid-session cache loss in 30-min research runs |
+
+No config change needed to access OTel data. Available post-update.
+
+---
+
+### Day 20 Fleet Summary: Pattern of Non-Implementation Continues
+
+20 consecutive scan days. Zero config changes on either instance. The entire pending backlog requires approximately 2–3 hours of implementation work. Five highest-impact items require zero config changes or under 5 minutes each:
+
+| Action | Customer | Time | Impact |
+|--------|----------|------|--------|
+| Send catalyst report Discord message | Noah | 1 min | Closes 16-day intelligence gap |
+| Fix `inbox-state.json` duplicate key | Josh | 2 min | Data integrity |
+| `alphaclawctl update` → 2026.5.7 | Both | 5 min each | Security + 9–13 feature releases |
+| Send IDENTITY.md onboarding Discord message | Noah | 10 min | Closes CRITICAL identity gap |
+| Populate HEARTBEAT.md | Both | 15 min each | Activates proactive monitoring |
+
+---
+
+### Day 20 Fleet-Wide Action Checklist
+
+**Zero-config, immediate:**
+- [ ] Noah: Send catalyst report Discord message (16-day intelligence gap, closes with 1 message)
+- [ ] Noah: Send IDENTITY.md onboarding Discord message (CRITICAL, Day 20)
+
+**Security + stability:**
+- [ ] Josh: Fix `inbox-state.json` duplicate key (2 min)
+- [ ] Both: `alphaclawctl update` → `2026.5.7`
+- [ ] Both: `openclaw doctor --fix` → verify memory-core + admin scope auto-repaired
+- [ ] Josh: `openclaw models auth list` (verify Google auth, new in 2026.5.4)
+- [ ] Josh: Reconnect Google Workspace → regenerate 50-day-stale bootstrap TOOLS.md
+
+**Per-customer memory + identity:**
+- [ ] Josh: Create MEMORY.md + populate HEARTBEAT.md + fix SOUL.md no-emoji contradiction
+- [ ] Josh: Investigate iMessage pause (20 days paused, core personal assistant function)
+- [ ] Noah: Create `workspace/memory/` with MEMORY.md + today's session log
+- [ ] Noah: Populate HEARTBEAT.md with pre-market scan + SEC filing + EOD check schedule
+- [ ] Noah: Replace SOUL.md with trading-agent content (see soul-improvements.md)
+- [ ] Noah: Fix contextPruning TTL (5m → 30m) + enable gmailWatch
+
+**Model / catalog updates:**
+- [ ] Josh: Upgrade primary to `google/gemini-3.1-flash-preview` (after validation in test session)
+- [ ] Josh: Replace retired `claude-3.5-haiku` fallback with `claude-haiku-4-5-20251001`
+- [ ] Noah: Update model catalog from `claude-opus-4-6` to `claude-opus-4-7`
+
+**New integration (Noah only):**
+- [ ] Noah: Verify/connect Alpaca MCP Server v2 — options chain + market screening unlock
 
 ---
 
@@ -699,29 +820,30 @@ Both TOOLS.md files contain only the default example content. This file is injec
 ### Josh (Heather Schwartz) — Personal Assistant
 **Top priorities:**
 1. Add `tools.exec.security: "full"` before updating
-2. Update OpenClaw to 2026.5.6
+2. Update OpenClaw to 2026.5.7
 3. Install memory-lancedb + active-memory (two-step, `queryMode: "recent"`, add `setupGraceTimeoutMs: 30000`)
 4. Create MEMORY.md + fix SOUL.md emoji bug
 5. Add cron.json morning briefing (now Low risk) + populate HEARTBEAT.md
 6. Post-update: configure ElevenLabs v3 voice persona (E22)
+7. Post-update: upgrade primary model to `google/gemini-3.1-flash-preview`
 
-**Unique gap:** 45 days stale — longest update gap on the fleet.
+**Unique gap:** 47 days stale — longest update gap on the fleet. Bootstrap TOOLS.md 50 days stale with false Google account info.
 
 ---
 
-### Noah (Market Catalyst Agent / Career Research) — Job Search Intelligence
+### Noah (Market Catalyst Agent / Career Research) — Trading + Job Search Intelligence
 **Top priorities:**
-1. Trigger overdue catalyst/research report immediately (15 days overdue, no config needed)
-2. Fill USER.md + IDENTITY.md + create MEMORY.md — most fundamental gap, drift risk rising
+1. Trigger catalyst/research report immediately (16 days overdue, no config needed)
+2. Fill USER.md + IDENTITY.md + create MEMORY.md — most fundamental gap, drift risk critical
 3. Install memory-lancedb + active-memory (two-step, `queryMode: "full"`, add `setupGraceTimeoutMs: 30000`)
-4. Update OpenClaw to 2026.5.6
-5. Add cron.json for weekly report with follow-up commitments
+4. Update OpenClaw to 2026.5.7
+5. Verify/connect Alpaca MCP Server v2 endpoint (new this morning)
 
 **Unique asset:** `skills/gog-cli` — audited clean, full Google Workspace automation. Consider cross-fleet deployment to Josh.
 
 **Unique risk:** memoryFlush active but writing to ephemeral storage — data being lost silently for 14+ days.
 
-**Near-term architecture:** Parallel subagent research (E22/E15) — viable once update + memory-lancedb are in place. threadBindings.spawnSessions (2026.5.2+) is the config prerequisite.
+**New opportunity:** Alpaca MCP v2 options chain access + market screening — significantly higher educational value for paper trading.
 
 ---
 
