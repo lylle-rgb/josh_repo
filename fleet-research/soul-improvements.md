@@ -53,7 +53,7 @@ These are specific, ready-to-apply changes to workspace files. Each recommendati
 
 ## 2. SOUL.md — Add Proactive Behavior and Error Recovery Sections
 
-**Current state:** SOUL.md is well-written but missing two behavioral pillars: what to do when things fail, and how to be proactive without being annoying.  
+**Current state:** SOUL.md is well-written but missing two behavioral pillars: error recovery and proactive cadence.  
 **Impact:** Medium. Shapes Heather's behavior in edge cases and during heartbeats.  
 **Risk of change:** Low — additive only.
 
@@ -101,7 +101,7 @@ When in doubt: stay quiet and log it. Josh can always ask "what's new?"
 
 _Load this in main sessions only (direct chats with Josh). Do NOT load in group chats or shared channels._
 
-_Last updated: 2026-05-05_
+_Last updated: 2026-05-09_
 
 ---
 
@@ -115,7 +115,7 @@ _Last updated: 2026-05-05_
 
 ## Known Preferences
 
-- **STRICT:** Do NOT send emoji reactions to messages. Ever.
+- **STRICT:** Do NOT send emoji reactions to messages. Ever. This overrides AGENTS.md's "React Like a Human" section.
 - Prefers concise, direct responses
 - Timezone: LA (PST/PDT) — morning ~8 AM, late night ~11 PM
 
@@ -123,18 +123,17 @@ _Last updated: 2026-05-05_
 
 - **Google Workspace:** Onboarded 2026-03-21. Gmail, Calendar, Drive, Sheets, Docs, Tasks, Contacts enabled.
   - Auth callback: `https://5.78.142.81.sslip.io/auth/google/callback`
-  - Key lesson: Use Google Cloud search bar for everything; OAuth consent "Create" button is often missed.
+  - Note: bootstrap TOOLS.md says "No Google accounts configured" — this is a stale file. Google IS set up. Verify via AlphaClaw UI.
 - **Discord:** Guild 1484448262290276464. No mention required in the server.
-- **iMessage:** Configured but monitoring is currently PAUSED. Needs investigation.
-
-## Things to Remember
-
-- Josh provided feedback on Google onboarding flow on 2026-03-21 — documented in memory/onboarding-google.md
-- Bliss = luxury lifestyle brand. ObenHiFi = audio/hi-fi partnership.
+- **iMessage:** Configured but monitoring is currently PAUSED (since ~April 26, 2026).
+  - `imessage_monitoring_paused: true` in inbox-state.json
+  - Thread `19db60d96d2118c8` had a draft reply in progress when monitoring was paused — check this before resuming
+  - Email polling also lapsed (~April 29, 2026)
 
 ## Open Questions
 
-- Why is iMessage monitoring paused? Intentional or crash?
+- iMessage thread `19db60d96d2118c8` — was there a pending draft reply? Investigate before resuming monitoring.
+- Why was iMessage monitoring paused ~April 26? Intentional or error?
 - Is the Google Workspace connection verified live in AlphaClaw UI?
 
 ---
@@ -145,10 +144,6 @@ _Daily logs in memory/YYYY-MM-DD.md. This file is distilled wisdom only._
 ---
 
 ## 4. AGENTS.md — Add Integration Failure Protocol
-
-**Current state:** Covers memory and heartbeats well, but no protocol for when tools fail mid-task.  
-**Impact:** Medium. Gives Heather consistent, professional failure behavior.  
-**Risk of change:** Low — additive.
 
 **Append after the "Red Lines" section in `workspace/AGENTS.md`:**
 
@@ -166,27 +161,23 @@ _Daily logs in memory/YYYY-MM-DD.md. This file is distilled wisdom only._
 
 ## 5. openclaw.json — Platform Configuration Changes
 
-*Operator-level changes; require gateway restart. Apply after updating OpenClaw to 2026.5.7.*
+*Apply after updating to 2026.5.7 and running `openclaw doctor --fix`.*
 
 ### Enable Discord Streaming
 ```json
-// channels.discord.streaming
-"streaming": "on"  // was "off"
+"streaming": "on"
 ```
 
 ### Add Compaction Config
 ```json
-// agents.defaults
 "compaction": {
   "reserveTokensFloor": 20000,
   "memoryFlush": { "enabled": true, "softThresholdTokens": 3000 }
 }
 ```
 
-### Enable Active Memory Plugin (Updated for 2026.5.7 — admin scope required)
+### Enable Active Memory Plugin (2026.5.7 — admin scope required)
 ```json
-// plugins.allow: add "memory-core"
-// plugins.entries: add
 "memory-core": {
   "enabled": true,
   "config": {
@@ -197,7 +188,6 @@ _Daily logs in memory/YYYY-MM-DD.md. This file is distilled wisdom only._
 
 ### Add Context Pruning TTL
 ```json
-// agents.defaults
 "contextPruning": { "mode": "cache-ttl", "ttl": "15m" }
 ```
 
@@ -206,8 +196,8 @@ _Daily logs in memory/YYYY-MM-DD.md. This file is distilled wisdom only._
 ## Priority Order
 
 1. Investigate and fix iMessage monitoring pause
-2. Create `workspace/MEMORY.md` (immediate quality improvement)
-3. Populate `workspace/HEARTBEAT.md` (enables proactive behavior)
+2. Create `workspace/MEMORY.md`
+3. Populate `workspace/HEARTBEAT.md`
 4. Update OpenClaw to 2026.5.7
 5. Enable streaming in openclaw.json
 6. Add compaction + memory-core with admin scope (after update)
@@ -222,17 +212,13 @@ _Daily logs in memory/YYYY-MM-DD.md. This file is distilled wisdom only._
 
 **Scan Date:** 2026-05-06 (Evening)  
 **Instance:** Josh — Heather Schwartz (personal assistant)  
-**New since yesterday:** SOUL.md staleness identified, no-emoji rule contradiction, no daily memory files written, Hermes learning loop pattern.
+**New since yesterday:** SOUL.md staleness identified, no-emoji rule contradiction, no daily memory files written.
 
 ---
 
 ## 6. SOUL.md — Embed No-Emoji Rule as Hard Override
 
-**Current state:** No-emoji rule is in USER.md notes only. AGENTS.md actively encourages emoji reactions with its own dedicated section. Direct contradiction.
-**Impact:** Medium-High. If violated, directly damages trust with Josh.
-**Risk of change:** None — pure additive protection.
-
-**Add this section to `workspace/SOUL.md` under "Boundaries":**
+**Add under "Boundaries" in `workspace/SOUL.md`:**
 
 ```markdown
 ### Platform-Specific Overrides
@@ -245,10 +231,6 @@ _Daily logs in memory/YYYY-MM-DD.md. This file is distilled wisdom only._
 ---
 
 ## 7. SOUL.md — Add Heather-Specific Identity Section
-
-**Current state:** SOUL.md is a generic stock template, SHA-identical to Noah's trading bot soul after 45+ days of operation. No Heather-specific content exists anywhere in the soul file.
-**Impact:** Medium. Personalised soul improves consistency and personality anchoring across sessions.
-**Risk of change:** None — additive.
 
 **Add before the final italics line in `workspace/SOUL.md`:**
 
@@ -266,11 +248,7 @@ I was named by Josh on Day 1. That means something.
 
 ---
 
-## 8. AGENTS.md — Add Daily Session Log Protocol (Explicit Enforcement)
-
-**Current state:** AGENTS.md instructs daily memory file writing but Heather has not written a single session log in 45+ days.
-**Impact:** High. No session logs means every session starts cold, no conversational continuity, no accumulation of context.
-**Risk of change:** None — reinforces existing (unenforced) rule.
+## 8. AGENTS.md — Add Daily Session Log Protocol
 
 **Add under the Memory section in `workspace/AGENTS.md`:**
 
@@ -296,10 +274,6 @@ If you skip this, future-you starts cold. The files in memory/ are how you exist
 
 ## 9. SOUL.md — Add Hermes-Inspired Learning Loop
 
-**Source:** Hermes Agent (Nous Research, 2026) — after completing tasks, distills successful procedures into reusable skill documents (procedural memory rather than one-off chat logs).
-**Impact:** Low-Medium. Encourages Heather to document *how* she does things well, not just *what* happened.
-**Risk of change:** None — additive.
-
 **Append after the "When Things Break" section in `workspace/SOUL.md`:**
 
 ```markdown
@@ -313,20 +287,6 @@ These go in AGENTS.md (if they're behavioral rules) or `memory/YYYY-MM-DD.md` (i
 ```
 
 ---
-
-## Updated Priority Order (as of 2026-05-06)
-
-1. **Fix no-emoji contradiction** — add SOUL.md override (5 min, immediate risk reduction)
-2. **Investigate and fix iMessage monitoring pause** — core feature is dark
-3. **Create `workspace/MEMORY.md`** — immediate session quality improvement
-4. **Add Heather identity section to SOUL.md** — soul evolution, long overdue
-5. **Populate `workspace/HEARTBEAT.md`** — enables proactive behavior
-6. **Enforce daily session log writing** — add AGENTS.md protocol
-7. **Update OpenClaw to 2026.5.5** — security + features
-8. **Enable streaming, compaction, memory-core** — after update
-9. **Add learning loop section to SOUL.md** — longer term quality
-
----
 *Generated by AlphaClaw Apex Fleet Research Agent — Evening Scan — 2026-05-06*
 
 ---
@@ -335,73 +295,39 @@ These go in AGENTS.md (if they're behavioral rules) or `memory/YYYY-MM-DD.md` (i
 
 **Scan Date:** 2026-05-07 (Evening)  
 **Instance:** Josh — Heather Schwartz (personal assistant)  
-**New since yesterday:** 2026.5.5 Discord heartbeat fix introduces implementation sequencing constraint; bootstrap TOOLS.md contradiction confirmed at file level (47 days stale); no prior soul improvements have been applied.
-
----
-
-## Status Review — Day 17
-
-All 9 soul improvement recommendations from prior scans remain unimplemented. The most critical gap remains the no-emoji rule contradiction (SOUL.md encourages reactions; USER.md strictly forbids them) and the absence of MEMORY.md. No new soul file recommendations today — the Day 15–16 backlog is comprehensive and sufficient.
-
-This entry adds one new operational finding and updates the priority order with a sequencing constraint.
+**New since yesterday:** Bootstrap TOOLS.md contradiction confirmed at file level (47 days stale); 2026.5.5 heartbeat disconnect fix introduces sequencing constraint.
 
 ---
 
 ## 10. Bootstrap TOOLS.md — Trigger Regeneration via AlphaClaw UI
 
-**Current state:** `workspace/hooks/bootstrap/TOOLS.md` states "No Google accounts are currently configured." Confirmed at file level today — unmodified since deployment, 47 days after Google Workspace onboarding. Injected into every session context at startup.
-**Impact:** High for daily function — Heather may decline Google tool use or tell Josh incorrectly that Gmail/Calendar aren't available.
-**Risk of change:** None — this triggers a UI action, not a file edit. AlphaClaw owns this file.
-
 **Action:**
 1. Open `https://5.78.142.81.sslip.io#general`
 2. Locate the Google Workspace section
-3. If the account shows as connected: disconnect, then reconnect to force bootstrap regeneration
-4. If shown as disconnected: reconnect with existing OAuth credentials
-5. Verify the fix via Browse tab (`https://5.78.142.81.sslip.io#browse`) — confirm `workspace/hooks/bootstrap/TOOLS.md` now lists Josh's Google account
+3. If connected: disconnect, then reconnect to force bootstrap regeneration
+4. If disconnected: reconnect with existing OAuth credentials
+5. Verify via Browse tab — confirm `workspace/hooks/bootstrap/TOOLS.md` now lists Josh's Google account
 
-This is the **highest-value 5-minute fix available** — it immediately restores Heather's ability to use all Google integrations confidently.
+This is the **highest-value 5-minute fix available** — immediately restores Heather's ability to use Google integrations confidently.
 
 ---
 
 ## Updated Priority Order (2026-05-07)
 
-**Key sequencing constraint:** The Discord heartbeat disconnect bug fixed in 2026.5.5 means heartbeats must be activated AFTER updating. Do not populate HEARTBEAT.md on a pre-2026.5.5 instance.
+**Key sequencing constraint:** Activate HEARTBEAT.md AFTER updating to 2026.5.5+ (Discord heartbeat disconnect bug).
 
-1. **Fix no-emoji contradiction in SOUL.md** — no sequencing dependency, do now
-   - Exact content: Recommendation 6 above
-   - Time: 5 min. Risk: none.
-
-2. **Investigate and fix iMessage monitoring pause** — core feature dark for 17 days
-
-3. **Create `workspace/MEMORY.md`** — no sequencing dependency, do now
-   - Exact content: Recommendation 3 above
-   - Time: 15 min. Risk: none.
-
-4. **Update OpenClaw to 2026.5.5** — must happen BEFORE heartbeats
-   - New target: 2026.5.5 (was 2026.5.4 in yesterday's list)
-
-5. **Run `openclaw doctor --fix`** — auto-migrate legacy config post-update
-
-6. **Run `openclaw models auth list`** — verify Google auth profile state
-
-7. **Reconnect Google Workspace in AlphaClaw UI** — regenerates stale bootstrap TOOLS.md
-   - Exact action: Recommendation 10 above
-
-8. **Populate `workspace/HEARTBEAT.md`** — NOW safe, heartbeat disconnect bug fixed in 2026.5.5
-   - Exact content: Recommendation 1 above
-
-9. **Add Heather identity section to SOUL.md**
-   - Exact content: Recommendation 7 above
-
-10. **Add daily session log protocol to AGENTS.md**
-    - Exact content: Recommendation 8 above
-
-11. **Add learning loop section to SOUL.md**
-    - Exact content: Recommendation 9 above
-
-12. **Enable streaming + add compaction + memory-core** (openclaw.json, after update)
-    - Exact content: Recommendation 5 above
+1. Fix no-emoji contradiction in SOUL.md (Rec 6) — no sequencing dependency
+2. Investigate iMessage monitoring pause
+3. Create `workspace/MEMORY.md` (Rec 3) — no sequencing dependency
+4. Update OpenClaw to 2026.5.7
+5. Run `openclaw doctor --fix`
+6. Run `openclaw models auth list`
+7. Reconnect Google Workspace in AlphaClaw UI (Rec 10)
+8. Populate `workspace/HEARTBEAT.md` (Rec 1) — safe post-update
+9. Add Heather identity section to SOUL.md (Rec 7)
+10. Add daily session log protocol to AGENTS.md (Rec 8)
+11. Add learning loop to SOUL.md (Rec 9)
+12. Enable streaming + compaction + memory-core with admin scope in openclaw.json (Rec 5)
 
 ---
 *Generated by AlphaClaw Apex Fleet Research Agent — Evening Scan — 2026-05-07*
@@ -412,23 +338,13 @@ This is the **highest-value 5-minute fix available** — it immediately restores
 
 **Scan Date:** 2026-05-08 (Evening)  
 **Instance:** Josh — Heather Schwartz (personal assistant)  
-**New since yesterday:** OpenClaw 2026.5.7 introduces Active Memory admin scope requirement for memory-core; Gemini 3 thought-signature replay fix; all prior 10 soul improvement recommendations remain unimplemented after 19 days.
-
----
-
-## Status Review — Day 19
-
-No net-new soul file recommendations. One implementation update is required due to 2026.5.7, and the priority order is refreshed with the new update target.
+**New since yesterday:** 2026.5.7 Active Memory admin scope requirement.
 
 ---
 
 ## 11. memory-core Plugin Config — Add Admin Scope (New 2026.5.7 Requirement)
 
-**Update to Recommendation 5 (openclaw.json platform changes):**
-
-OpenClaw 2026.5.7 requires admin scope for Active Memory global memory toggles. The previously recommended memory-core entry must now include scope:
-
-**Updated entry (replaces the memory-core block in Recommendation 5):**
+**Updated entry (replaces memory-core block in Recommendation 5):**
 ```json
 "memory-core": {
   "enabled": true,
@@ -438,28 +354,55 @@ OpenClaw 2026.5.7 requires admin scope for Active Memory global memory toggles. 
 }
 ```
 
-**Revised approach:** Update to 2026.5.7 → run `openclaw doctor --fix` → verify doctor auto-wired admin scope → only manually edit if not auto-resolved. The combined 2026.5.5 + 2026.5.6 + 2026.5.7 plugin improvements give doctor the highest coverage yet — auto-repair is the preferred path.
-
----
-
-## Updated Priority Order (2026-05-08)
-
-Same sequence as Day 17, with two updates:
-- Update target is now **2026.5.7** (was 2026.5.5)
-- memory-core entry now requires `"config": { "scope": "admin" }` per 2026.5.7 (Rec 11)
-
-1. **Fix no-emoji contradiction in SOUL.md** — Rec 6, no sequencing dependency, do now
-2. **Investigate and fix iMessage monitoring pause** — core feature dark for 19 days
-3. **Create `workspace/MEMORY.md`** — Rec 3, no sequencing dependency, do now
-4. **Update OpenClaw to 2026.5.7** — new target; must happen BEFORE heartbeats
-5. **Run `openclaw doctor --fix`** — auto-migrate legacy config + may auto-resolve memory-core scope
-6. **Run `openclaw models auth list`** — verify Google auth profile state
-7. **Reconnect Google Workspace in AlphaClaw UI** — regenerates stale bootstrap TOOLS.md (49 days stale)
-8. **Populate `workspace/HEARTBEAT.md`** — Rec 1, safe after 2026.5.5+ update
-9. **Add Heather identity section to SOUL.md** — Rec 7
-10. **Add daily session log protocol to AGENTS.md** — Rec 8
-11. **Add learning loop section to SOUL.md** — Rec 9
-12. **Enable streaming + compaction + memory-core with admin scope** — Rec 5 (updated)
+Revised approach: Update to 2026.5.7 → run `openclaw doctor --fix` → verify admin scope auto-wired → only manually edit if not auto-resolved.
 
 ---
 *Generated by AlphaClaw Apex Fleet Research Agent — Evening Scan — 2026-05-08*
+
+---
+
+# Soul Improvements — Josh / Heather Schwartz — Evening Scan
+
+**Scan Date:** 2026-05-09 (Evening)  
+**Instance:** Josh — Heather Schwartz (personal assistant)  
+**New since yesterday:** Inbox-state timestamp analysis reveals iMessage dark since ~April 26 with a pending draft reply; email lapsed since ~April 29; no new OpenClaw release; all prior recommendations remain unimplemented after 21 days.
+
+---
+
+## Status Review — Day 21
+
+All 11 prior soul improvement recommendations remain unimplemented. No net-new soul file recommendations today.
+
+**One new operational detail from timestamp analysis:**
+
+`already_drafted_thread_ids: ["19db60d96d2118c8"]` in inbox-state.json indicates Heather had an in-progress draft reply to a specific iMessage thread when monitoring was paused. That thread may be awaiting a reply that Josh doesn't know is outstanding.
+
+**Update to MEMORY.md template (Recommendation 3) — Open Questions section:**
+```markdown
+- iMessage thread `19db60d96d2118c8` may have a pending draft reply — investigate before resuming iMessage monitoring
+- iMessage paused ~April 26; email polling lapsed ~April 29; both now 10–13 days stale
+```
+(This is already included in the updated MEMORY.md template in Recommendation 3 above.)
+
+---
+
+## Updated Priority Order (2026-05-09)
+
+No change to sequence. Update target remains **2026.5.7**.
+
+1. **Fix no-emoji contradiction in SOUL.md** (Rec 6) — no sequencing dependency, do now
+2. **Investigate iMessage thread `19db60d96d2118c8`** — before resuming monitoring
+3. **Create `workspace/MEMORY.md`** (Rec 3) — includes thread note + iMessage/email timeline
+4. **Update OpenClaw to 2026.5.7** — must happen BEFORE heartbeats
+5. **Run `openclaw doctor --fix`**
+6. **Run `openclaw models auth list`** — verify Google auth state
+7. **Reconnect Google Workspace in AlphaClaw UI** (Rec 10) — regenerates 51-day-stale bootstrap TOOLS.md
+8. **Populate `workspace/HEARTBEAT.md`** (Rec 1) — safe post-2026.5.5 update
+9. **Add Heather identity section to SOUL.md** (Rec 7)
+10. **Add daily session log protocol to AGENTS.md** (Rec 8)
+11. **Add learning loop to SOUL.md** (Rec 9)
+12. **Enable streaming + compaction + memory-core with admin scope** (Rec 5/11)
+13. **(Optional) Upgrade primary model to Gemini 3.1 Flash + fix retired fallback**
+
+---
+*Generated by AlphaClaw Apex Fleet Research Agent — Evening Scan — 2026-05-09*
