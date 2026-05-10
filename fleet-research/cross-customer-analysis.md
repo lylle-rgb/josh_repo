@@ -1,7 +1,103 @@
 # Cross-Customer Fleet Analysis
 
-> Original scan: 2026-04-21 | Updated: 2026-05-08 (morning) | Agent: AlphaClaw Fleet Research
+> Original scan: 2026-04-21 | Updated: 2026-05-10 (morning) | Agent: AlphaClaw Fleet Research
 > Fleet: Josh (Heather Schwartz) • Noah (Market Catalyst Agent / Career Research)
+
+---
+
+## UPDATE — MORNING SCAN 2026-05-10
+
+### Fleet Status — Day 23, Zero Implementation Across Both Instances
+
+| Customer | Version | Latest Stable | Days Stale | Scan Days | Implemented |
+|----------|---------|--------------|-----------|----------|-----------|
+| Josh (Heather) | 2026.3.22 | **2026.5.7** | **79 days** | Day 23 | 0 |
+| Noah (Claw) | 2026.4.15 | **2026.5.7** | **25 days** | Day 23 | 0 |
+
+No new OpenClaw release overnight. 2026.5.7 confirmed current stable. **23 consecutive scan days. Zero implementations across both instances.**
+
+---
+
+### New Fleet-Wide: Cron Schedule Types and Best Practices Confirmed
+
+Three cron schedule types confirmed in OpenClaw documentation, applicable to both customers' pending HEARTBEAT.md work:
+
+| Type | Syntax Example | Best Use |
+|------|---------------|----------|
+| `at` | `"at": "2026-05-15T09:00:00"` | One-shot future runs, PDUFA date alerts |
+| `every` | `"every": "1h"` | Interval-based checks |
+| `cron` | `"expression": "0 8 * * 1-5"` | Calendar-based schedules (market hours, daily briefings) |
+
+**Community timing-variance tip**: For external API calls (Gmail, Calendar, EDGAR, Alpaca), add 2–5 minute random offsets to cron prompts to reduce rate-limit exposure and API fingerprinting. Build variance into the prompt text rather than the cron expression itself.
+
+**Gateway daemon requirement**: AlphaClaw manages 24/7 Gateway uptime on both VPSes automatically — cron jobs will fire reliably on both instances once HEARTBEAT.md is populated and the pending updates are applied. No additional daemon configuration needed.
+
+Per-customer recommended cron schedules:
+- **Josh**: `"0 8 * * *"` daily 8 AM morning briefing (calendar summary, urgent emails, iMessage digest)
+- **Noah**: `"0 8 * * 1-5"` pre-market + `"0 16 * * 1-5"` EOD + `"every": "7d"` weekly digest — full deploy-ready JSON template in Day 23 Noah findings.md
+
+---
+
+### New Fleet-Wide: Brave Search Benchmark Confirmed
+
+Brave Search confirmed #1 OpenClaw search provider (AIMultiple Agent Score **14.89**, Feb 2026). 700,000+ OpenClaw users. $5/month free credits per plan (free tier removed early 2026).
+
+**Usage tip for both customers**: When time-sensitive searches return stale results, prefix with `/skill bx-search` to explicitly force Brave Search over the fallback web scraper.
+
+| Customer | Brave Search Key Use Case | Why It Matters |
+|----------|--------------------------|----------------|
+| Josh (Heather) | Email/calendar context, current news | Freshness for time-sensitive personal assistant queries |
+| Noah (Market Catalyst) | SEC EDGAR filing searches | Recency-critical for catalyst identification |
+
+No config change needed — already the default search path on both instances.
+
+---
+
+### Fleet Context: Sunday, May 10 — Ideal Day for Zero-Config Actions
+
+Today is Sunday. Markets are closed. Both customers have high-value zero-config actions available right now:
+
+| Action | Customer | Why Today | Time |
+|--------|----------|-----------|------|
+| Send EDGAR weekend catalyst scan Discord message | Noah | EDGAR live 24/7; 18-day gap; no market noise; weekend filings may have posted | 1 min |
+| Onboard IDENTITY.md via Discord | Noah | No dependencies; been CRITICAL for 23 days | 10 min |
+| Enable gmailWatch | Noah | Google auth ✅ confirmed healthy; token already generated | 2 min |
+| Investigate iMessage connection type in AlphaClaw UI | Josh | Root cause of 15-day comms blackout; takes 5 min | 5 min |
+| Check iMessage thread `19db60d96d2118c8` | Josh | Pending draft reply; must resolve before resuming monitoring | 5 min |
+
+---
+
+### Day 23 Fleet-Wide Action Checklist
+
+**Zero-config, do right now (Sunday — no blockers):**
+- [ ] Noah: Send Sunday EDGAR weekend catalyst scan Discord message (18-day gap, EDGAR live)
+- [ ] Noah: Onboard IDENTITY.md + USER.md via Discord conversation (CRITICAL, Day 23)
+- [ ] Noah: Run `gog gmail watch --enable --client personal --account Ngkatz.ai@gmail.com` (Google auth ✅)
+- [ ] Josh: Check AlphaClaw UI → iMessage section → identify connection type (cloud proxy vs local bridge)
+- [ ] Josh: Check iMessage thread `19db60d96d2118c8` (pending draft before resuming monitoring)
+
+**Security + stability (today or first weekday):**
+- [ ] Josh: Fix `inbox-state.json` duplicate key (2 min)
+- [ ] Both: `alphaclawctl update` → `2026.5.7` via AlphaClaw UI
+- [ ] Both: `openclaw doctor --fix` → verify memory-core with admin scope auto-repaired
+- [ ] Josh: `openclaw models auth list` (verify Google auth state)
+- [ ] Josh: Reconnect Google Workspace in AlphaClaw UI → regenerate 52-day-stale bootstrap TOOLS.md
+
+**Per-customer memory + identity:**
+- [ ] Josh: Create MEMORY.md + populate HEARTBEAT.md + fix SOUL.md no-emoji contradiction
+- [ ] Josh: Resume iMessage monitoring (after connection type identified + thread `19db60d96d2118c8` investigated)
+- [ ] Noah: Create `workspace/memory/` with MEMORY.md + today's session log
+- [ ] Noah: Populate HEARTBEAT.md with cron template from Day 23 Morning findings
+- [ ] Noah: Replace SOUL.md with trading-agent content (soul-improvements.md)
+- [ ] Noah: Fix contextPruning TTL (5m → 30m)
+
+**Model / catalog updates:**
+- [ ] Josh: Upgrade primary to `google/gemini-3.1-flash-preview` + fix retired `claude-3.5-haiku` fallback (post-update)
+- [ ] Noah: Update model catalog `claude-opus-4-6` → `claude-opus-4-7`
+
+**Integrations:**
+- [ ] Noah: Verify Alpaca MCP Server v2 endpoint (`mcp.alpaca.markets`)
+- [ ] Noah: Deploy pre-market + EOD cron schedule (full template in Day 23 Noah findings.md)
 
 ---
 
@@ -41,7 +137,7 @@ Preferred approach: run `openclaw doctor --fix` after updating to 2026.5.7 first
 Gemini 3.1 Flash Preview and 3.1 Pro Preview are now available on OpenRouter. Primary impact is on Josh's instance:
 
 | Model | ID | Josh Relevance | Notes |
-|-------|-----|---------------|-------|
+|-------|-----|---------------|---------|
 | Gemini 3.1 Flash Preview | `google/gemini-3.1-flash-preview` | **HIGH** — direct successor to current primary | Better agentic reliability, tool orchestration |
 | Gemini 3.1 Flash Lite Preview | `google/gemini-3.1-flash-lite-preview` | **MEDIUM** — budget heartbeat tier | Outperforms Gemini 2.5 Flash Lite |
 | Gemini 3.1 Pro Preview | `google/gemini-3.1-pro-preview` | LOW | Higher cost, limited personal assistant gain |
@@ -60,7 +156,7 @@ Alpaca released MCP Server v2 with significant new capabilities confirmed this m
 - Simplified credential onboarding
 - API usage grew ~4x in Q1 2026 driven by AI agent integrations
 
-For Noah's catalyst agent: MCP v2 options chain access unlocks paper-trading options plays on binary-outcome catalysts (FDA, earnings, M&A). Market screening as a native tool call reduces Brave search dependency in research sessions. Full detail in Noah's findings.md Day 20 Morning Scan.
+For Noah's catalyst agent: MCP v2 options chain access unlocks paper-trading options plays on binary-outcome catalysts (FDA, earnings, M&A). Market screening as a native tool call reduces Brave search dependency in research sessions.
 
 No impact on Josh (does not use Alpaca).
 
@@ -241,7 +337,6 @@ This is a focused patch with no new features. Impact by customer:
 
 **1. Bundled File-Transfer Plugin**
 - Tools: `file_fetch`, `dir_list`, `dir_fetch`, `file_write` for binary file ops on paired nodes.
-- Config: `plugins.entries.file-transfer.config.nodes` — per-node path policy, operator approval required, symlink traversal off by default, 16 MB ceiling per round-trip.
 - **Josh relevance:** Medium — personal assistant could access files on Josh's machine for email attachments, documents.
 - **Noah relevance:** Low — gog-cli handles Google Drive. Not a priority.
 
@@ -363,10 +458,6 @@ This explicitly opts into the cold-start grace that was previously implicit. Wit
 
 Noah's `queryMode: "full"` means cold-start memory scans are more expensive than Josh's `"recent"` mode — the `setupGraceTimeoutMs` is especially important for Claw's config.
 
-Both pending configs have been updated:
-- Josh: E18/E25 (josh_repo findings.md)
-- Noah: E17/E27 (noah--repo findings.md)
-
 ---
 
 ### New Fleet-Wide: Gateway Fails-Closed on Invalid Config (2026.5.2)
@@ -466,8 +557,6 @@ OpenClaw 2026.4.25 shipped a full TTS overhaul including per-agent voice persona
 - ElevenLabs v3 quality improvements without additional skill installation
 - Chat-scoped auto-TTS controls (voice briefings can be on/off per conversation)
 
-This is a meaningful capability unlock that activates on update with no additional installation. No action before the update; once updated, check 2026.4.25 docs for the `agents.defaults.voice.persona` config.
-
 Noah's use case (research/career assistance) is less voice-oriented — this is primarily a Josh/Heather capability.
 
 ---
@@ -543,7 +632,7 @@ Without step 2, memory is stored but never automatically surfaced. The `active-m
 **Config divergence by use case (both customers need divergent `active-memory` config):**
 
 | Setting | Josh (Heather) | Noah (Claw) | Reason |
-|---------|---------------|------------|--------|
+|---------|---------------|------------|---------|
 | `queryMode` | `"recent"` | `"full"` | Conversation vs. full historical research |
 | `maxSummaryChars` | `220` | `400` | Richer company context needed |
 | `timeoutMs` | `15000` | `20000` | Complex multi-entity research queries |
@@ -827,13 +916,13 @@ Both TOOLS.md files contain only the default example content. This file is injec
 6. Post-update: configure ElevenLabs v3 voice persona (E22)
 7. Post-update: upgrade primary model to `google/gemini-3.1-flash-preview`
 
-**Unique gap:** 47 days stale — longest update gap on the fleet. Bootstrap TOOLS.md 50 days stale with false Google account info.
+**Unique gap:** 79 days stale — longest update gap on the fleet. Bootstrap TOOLS.md 52 days stale with false Google account info.
 
 ---
 
 ### Noah (Market Catalyst Agent / Career Research) — Trading + Job Search Intelligence
 **Top priorities:**
-1. Trigger catalyst/research report immediately (16 days overdue, no config needed)
+1. Trigger catalyst/research report immediately (18 days overdue, no config needed — Sunday is ideal)
 2. Fill USER.md + IDENTITY.md + create MEMORY.md — most fundamental gap, drift risk critical
 3. Install memory-lancedb + active-memory (two-step, `queryMode: "full"`, add `setupGraceTimeoutMs: 30000`)
 4. Update OpenClaw to 2026.5.7
@@ -841,9 +930,9 @@ Both TOOLS.md files contain only the default example content. This file is injec
 
 **Unique asset:** `skills/gog-cli` — audited clean, full Google Workspace automation. Consider cross-fleet deployment to Josh.
 
-**Unique risk:** memoryFlush active but writing to ephemeral storage — data being lost silently for 14+ days.
+**Unique risk:** memoryFlush active but writing to ephemeral storage — data being lost silently.
 
-**New opportunity:** Alpaca MCP v2 options chain access + market screening — significantly higher educational value for paper trading.
+**New opportunity:** Alpaca MCP v2 options chain access + market screening + deploy-ready pre-market cron template (Day 23 Morning).
 
 ---
 
