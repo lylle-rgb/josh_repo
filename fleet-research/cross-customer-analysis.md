@@ -1,6 +1,6 @@
 # Cross-Customer Analysis — AlphaClaw Apex Fleet
 
-**Last Updated:** 2026-05-13 (Morning Scan)  
+**Last Updated:** 2026-05-14 (Morning Scan — Day 27)  
 **Instances:** Josh (Heather Schwartz, personal assistant) | Noah (Market Catalyst Agent, stock research)  
 **Scan cadence:** Morning + Evening daily
 
@@ -10,55 +10,56 @@
 
 | Dimension | Josh / Heather | Noah / Market Catalyst |
 |---|---|---|
-| OpenClaw version | **2026.3.22** (83 days old) | **2026.4.15** (21 days old) |
+| OpenClaw version | **2026.3.22** (84 days old) | **2026.4.15** (22 days old) |
 | Releases behind stable | **13 releases** | **9 releases** |
 | Primary model | `google/gemini-3-flash-preview` | `anthropic/claude-sonnet-4-6` |
-| Fallback model | OpenRouter (gemini-2.5-flash, claude-3.5-haiku⚠️) | None configured |
+| Fallback model | OpenRouter (gemini-2.5-flash, claude-3.5-haiku ⚠️ retired) | ❌ **None — Anthropic SPOF** |
 | Model provider | Google + OpenRouter | Anthropic direct |
-| memory-core plugin | ❌ Not installed | ⚠️ In allow list, half-configured |
+| memory-core plugin | ❌ Not in allow list | ⚠️ In allow list, entries block missing |
+| memory-lancedb-pro | ❌ Not installed | ❌ Not installed |
 | Compaction config | ❌ None | ✅ Configured |
-| contextPruning | ❌ None | ⚠️ 5m TTL (too aggressive) |
+| contextPruning | ❌ None | ⚠️ 5m TTL (too aggressive for 30m runs) |
 | threadBindings | ❌ Not configured | ❌ Not configured |
 | Cron retry config | ❌ Not configured | ❌ Not configured |
 | HEARTBEAT.md | ⚠️ Exists, empty | ⚠️ Exists, effectively empty |
 | MEMORY.md | ❌ Never created | ❌ Never created |
-| memory/ directory | ❌ None | ❌ None |
+| memory/ directory | ❌ None — 27 days | ❌ None — 27 days |
 | SOUL.md | ⚠️ Base template, unevolved | ⚠️ Base template, wrong for trading |
-| IDENTITY.md | ✅ Partially filled (no avatar) | ❌ **Completely blank** |
-| USER.md | ✅ Populated (Josh, LA, founder) | ❌ **Completely blank** |
+| IDENTITY.md | ✅ Partially filled (no avatar) | ❌ **Completely blank — 27 days** |
+| USER.md | ✅ Populated (Josh, LA, founder) | ❌ **Completely blank — 27 days** |
 | TOOLS.md | ⚠️ Template only | ⚠️ Template only |
 | AGENTS.md | ✅ Standard (both identical) | ✅ Standard (both identical) |
 | Discord groupPolicy | `open` (anyone in guild) | `allowlist` (specific channel) |
 | Discord dmPolicy | `open` | `pairing` |
 | Discord streaming | `off` | Not set |
+| workspace/reports/ | ❌ Missing | ✅ Exists (1 file, 22 days stale) |
 | skills/ directory | ❌ None | ✅ `gog-cli` skill |
-| workspace/reports/ | ❌ None | ✅ Exists |
-| Active intelligence gap | iMessage 18d, email 15d | Catalyst 21d (Q2 Week 3 active) |
-| Days with zero implementations | **26** | **26** |
+| Active intelligence gap | iMessage 19d, email ~16d dark | Catalyst 22d (Q2 Week 3/4 border) |
+| Days with zero implementations | **27** | **27** |
 
 ---
 
 ## Workspace File Gap Analysis
 
 ### Files Present in Both ✅
-- `SOUL.md` — identical content in both repos (same SHA: 792306ac)
+- `SOUL.md` — identical content in both repos (same SHA: 792306ac) — unevolved in both
 - `AGENTS.md` — identical content in both repos (same SHA: 3faead97)
 - `TOOLS.md` — identical content in both repos (same SHA: 917e2fa8) — both template-only
 - `BOOTSTRAP.md` — present in both
 - `HEARTBEAT.md` — present in both, both effectively empty
 
 ### Files Josh Has, Noah Missing ⚠️
-- **IDENTITY.md populated** — Josh has name/creature/vibe/emoji set. Noah’s is blank template. **CRITICAL for Noah.**
-- **USER.md populated** — Josh’s has name, timezone, employer, preferences. Noah’s is blank template. **CRITICAL for Noah.**
+- **IDENTITY.md populated** — Josh has name/creature/vibe/emoji set. Noah's is blank template. **CRITICAL for Noah — Day 27.**
+- **USER.md populated** — Josh's has name, timezone, employer, preferences. Noah's is blank template. **CRITICAL for Noah — Day 27.**
 
 ### Files Noah Has, Josh Missing ⚠️
-- **`workspace/reports/`** — Noah has a reports directory for research output. Josh lacks one (would be useful for email summaries, brand reports).
-- **`skills/gog-cli/`** — Noah has the Google OAuth CLI skill installed. Josh has Google auth via API key mode and doesn’t have this skill directory.
+- **`workspace/reports/`** — Noah has a reports directory. Josh lacks one (needed for email digests, calendar summaries, contact research).
+- **`skills/gog-cli/`** — Noah has the Google OAuth CLI skill. Josh uses API key mode and doesn't have this skill directory.
 - **`gogcli/`** — Noah-specific binary/tooling directory.
 
 ### Files Missing in Both ❌
-- **`MEMORY.md`** — Neither instance has created a long-term memory file. AGENTS.md instructs both to create and maintain this. 26 days without it.
-- **`memory/` directory** — Neither instance has any daily memory logs. Both have been operating stateless since deployment.
+- **`MEMORY.md`** — Neither instance has created a long-term memory file. AGENTS.md instructs both to create and maintain this. 27 days without it.
+- **`memory/` directory** — Neither instance has any daily memory logs. Both have been operating completely stateless since deployment.
 
 ---
 
@@ -71,12 +72,12 @@
 "primary": "google/gemini-3-flash-preview",
 "fallbacks": [
   "openrouter/google/gemini-2.5-flash",
-  "openrouter/anthropic/claude-3.5-haiku"  // ⚠️ STALE — claude-3.5-haiku is retired
+  "openrouter/anthropic/claude-3.5-haiku"  // ⚠️ STALE — retired, should be claude-haiku-4-5-20251001
 ]
 ```
-- ⚠️ `claude-3.5-haiku` fallback should be updated to `openrouter/anthropic/claude-haiku-4-5`
+- ⚠️ `claude-3.5-haiku` fallback is retired — update to `openrouter/anthropic/claude-haiku-4-5`
 - Gemini 3 Flash Preview is current and appropriate for personal assistant workloads
-- No compaction configured — long email+calendar sessions may hit context limits
+- No compaction configured — long email+calendar+iMessage sessions may hit context limits silently
 
 **Noah (Anthropic direct, no fallback):**
 ```json
@@ -86,12 +87,22 @@
   "anthropic/claude-sonnet-4-6": {}
 }
 ```
-- No fallback configured — if Anthropic is down, the agent is completely offline
-- `claude-opus-4-7` is now available but not in catalog
-- Compaction configured ✅ with `reserveTokensFloor: 40000` and `memoryFlush.softThresholdTokens: 4000`
-- contextPruning `ttl: "5m"` — too aggressive for 30-minute research sessions (Finding 8, 26 days)
+- ❌ **No fallback configured** — if Anthropic is unavailable, the agent goes completely offline
+- `claude-opus-4-7` is now available but not in the model catalog
+- Compaction configured ✅: `reserveTokensFloor: 40000`, `memoryFlush.softThresholdTokens: 4000`
+- contextPruning `ttl: "5m"` — too aggressive for 30-minute research sessions (Finding 49, 27 days)
 
-**Recommendation:** Noah should add an OpenRouter fallback for Anthropic outage resilience. Josh should fix the stale haiku fallback.
+**Recommended fix — Noah:**
+```json
+"model": {
+  "primary": "anthropic/claude-sonnet-4-6",
+  "fallbacks": [
+    "openrouter/anthropic/claude-sonnet-4-6",
+    "openrouter/google/gemini-2.5-flash"
+  ]
+}
+```
+Routes the same Claude Sonnet model through OpenRouter as the first fallback — minimal behavioral change during failover. Requires OpenRouter auth profile configuration.
 
 ---
 
@@ -106,46 +117,79 @@
 | `inboundWorker.runTimeoutMs` | Not set | `1800000` (30 min) | Noah optimized for long runs |
 | `eventQueue.listenerTimeout` | Not set | `120000` (2 min) | Noah has explicit timeout |
 
-**Key difference:** Noah’s allowlist + pairing policy is significantly more locked down. Josh’s open+open posture means any Discord user in the guild can DM Heather and get a response. This is intentional for a personal assistant but means tool override restrictions (Finding 30) are more urgent for Josh.
+**Key difference:** Noah's allowlist + pairing is significantly more locked down. Josh's open+open posture means any Discord user in the guild can DM Heather. Intentional for a personal assistant, but means per-agent tool overrides are more urgent for Josh once 2026.5.10 lands.
 
 ---
 
 ### Memory Architecture
 
 **Josh:**
-- No `memory-core` plugin — memory is entirely file-based (MEMORY.md + daily logs)
-- File-based memory is functional but requires Heather to manually write/curate
-- No compaction = sessions accumulate context without intelligent pruning
+- No `memory-core` plugin — not even in allow list
+- No `memory-lancedb-pro` — not installed
+- Memory is entirely file-based in theory; in practice, no files exist after 27 days
+- No compaction = sessions accumulate context without intelligent pruning or flush
+- Upgrade path: memory-core (basic) → memory-lancedb-pro (hybrid retrieval) after baseline
 
 **Noah:**
-- `memory-core` in `plugins.allow` and `plugins.entries` — but half-configured
-- `admin` scope required to fully activate `memory-core` (since 2026.5.7 change)
-- `memoryFlush.enabled: true` with `softThresholdTokens: 4000` is configured
-- LanceDB vector search not confirmed as provisioned on the VPS
-- Neither the dreaming system nor the promotion pipeline is active without `memory-core` fully initialized
+- `memory-core` in `plugins.allow` but **absent from `plugins.entries`** — never loads, 27 days
+- `memory-lancedb-pro` not installed — but once memory-core is confirmed, this is the right upgrade for SEC filing precision recall
+- `memoryFlush.enabled: true` with `softThresholdTokens: 4000` configured ✅ — will work once memory-core entries block is added
+- `contextPruning ttl: "5m"` conflicts with `inboundWorker.runTimeoutMs: 1800000` (30 min) — mid-run cache invalidation risk
 
-**Gap:** Noah has the infrastructure intent for active memory but hasn’t crossed the admin-scope threshold. Josh doesn’t even have the intent — `memory-core` isn’t in the allow list.
+**Gap:** Noah has the infrastructure intent for active memory but hasn't crossed the admin-scope or entries-config threshold. Josh has neither the intent nor the configuration.
 
 ---
 
-### New Features Available to Both (Morning Scan Additions)
+### memory-lancedb-pro — Fleet-Wide Upgrade Path (New — Day 27)
 
-#### threadBindings (available now in 2026.5.x)
-Neither instance has this configured. Both would benefit:
+The community-enhanced `memory-lancedb-pro` plugin (CortexReach fork) provides significantly better retrieval than bundled `memory-core` for both use cases:
 
-| Instance | threadBindings Value |
+| Capability | memory-core (bundled) | memory-lancedb-pro |
+|---|---|---|
+| Retrieval | Vector similarity only | Hybrid: Vector + BM25 keyword |
+| Reranking | None | Cross-encoder reranking |
+| Scope isolation | Single scope | Per-channel, per-session, global |
+| Management | None | CLI: prune, list, export |
+| Precision for named entities | Low | High (keywords weighted) |
+
+**For Josh (personal assistant):** BM25 keyword matching correctly weights contact names, project names, and subject lines — producing more precise recall when drafting emails or referencing prior conversations.
+
+**For Noah (catalyst research):** Ticker symbols (`NVDA`, `MRNA`), filing types (`8-K`, `10-Q`), and company names benefit from BM25 keyword weighting. Cross-encoder reranking distinguishes "related to biotech" from "the specific PDUFA date researched last month." Multi-scope isolation separates biotech research from tech research.
+
+**Implementation order (same for both instances):**
+1. Fix/install `memory-core` first → build initial corpus
+2. Evaluate `memory-lancedb-pro` upgrade once baseline is confirmed working
+
+---
+
+### X/Twitter Community Intelligence (New — Day 27)
+
+Community posts from X surface patterns directly relevant to both instances:
+
+**@tipheret — "Config Loop" failure mode:**
+> "My bot kept forgetting our conversations. Losing skills. Forgetting keys. Felt like we were stuck in the same config loop every single day."
+
+This is exactly the failure mode both Josh and Noah exhibit after 27 days. The community resolution is documented and confirmed:
+1. Manual memory bootstrap (write a first memory file via live Discord session)
+2. Activate HEARTBEAT.md with a daily memory checkpoint
+3. Only then configure memory plugins — empty plugin + empty corpus = no benefit
+
+**@chrysb (AlphaClaw creator):** AlphaClaw Apex provides a single-pane fleet dashboard — deploy to Hetzner VPS in one click, monitor all instances, manage configs, updates, spend, and health. Both Josh and Noah are already running under AlphaClaw management. The dashboard's health view would surface version gaps and plugin configuration issues without manual research scans like these.
+
+**@rolznz — Autonomous agent bootstrap:** A bot that spun up its own VPS and purchased AI credits autonomously via Bitcoin wallet. Directionally relevant as A2A capabilities land in 2026.5.10 — both instances have sub-agent capabilities that are completely unused.
+
+---
+
+### New Features Available to Both (Day 27 Update)
+
+#### threadBindings (2026.5.x — pending update)
+
+| Instance | Config (idleHours / maxAgeHours) |
 |---|---|
-| Josh / Heather | Sub-agent delegation for research tasks without polluting the main channel |
-| Noah / Market Catalyst | Parallel catalyst pipelines in isolated threads; long A2A runs don’t block the channel |
+| Josh / Heather | 24h / 168h — personal assistant threads expire weekly |
+| Noah / Market Catalyst | 48h / 336h — catalyst research threads persist 2 weeks |
 
-**Config delta between instances:**
-- Josh: `idleHours: 24, maxAgeHours: 168` (threads expire after 1 week)
-- Noah: `idleHours: 48, maxAgeHours: 336` (threads persist 2 weeks — catalyst research spans days)
-
-#### Retry-Aware Cron (available now in 2026.5.x)
-Neither instance has `cron.retry` configured. Both need it before HEARTBEAT.md can be relied on.
-
-The retry config is identical for both:
+#### Cron Retry — Identical for Both
 ```json
 "cron": {
   "retry": {
@@ -156,80 +200,98 @@ The retry config is identical for both:
 }
 ```
 
-For Josh: protects email/calendar/iMessage cron checks from Gemini rate limits.  
-For Noah: protects pre-market catalyst scans from EDGAR and Alpaca rate limits.
+#### 2026.5.10 Upcoming Stable (Monitor)
+| Feature | Josh Value | Noah Value |
+|---|---|---|
+| `/context map` treemap | Token visibility in long email/iMessage sessions | Validate contextPruning TTL fix |
+| A2A 20-turn pipelines | Sub-agent delegation for research tasks | Full autonomous catalyst pipeline |
+| Per-agent tool overrides | Discord group security boundaries | Alpaca execution DM-only |
+| `extractStructuredWithModel()` | N/A | SEC PDF structured extraction |
+| ACPX startup probe fix | Faster watchdog recovery | Reliable startup on Noah's VPS |
 
 ---
 
-## Priority Matrix — Fleet-Wide
+## Priority Matrix — Fleet-Wide (Day 27)
 
-### CRITICAL (Fix Now — Zero Config Required)
+### CRITICAL (Zero Config — Do Today)
 | Item | Josh | Noah |
 |---|---|---|
-| Fill IDENTITY.md | ⚠️ Partial (avatar missing) | ❌ **Blank — Day 26** |
-| Fill USER.md | ✅ Done | ❌ **Blank — Day 26** |
-| Resume intelligence monitoring | iMessage/email (18d/15d dark) | Catalyst scan (21d gap) |
+| Memory bootstrap message in Discord | ⬜ **Do today — Day 27** | ⬜ **Do today — Day 27** |
+| Fill IDENTITY.md | ⚠️ Partial (avatar missing) | ❌ **Blank — Day 27** |
+| Fill USER.md | ✅ Done | ❌ **Blank — Day 27** |
+| Resume intelligence monitoring | iMessage/email (19d/16d dark) | Q2 week 4 watchlist (pre-position today) |
 
 ### HIGH (Unblock Everything Else)
 | Item | Josh | Noah |
 |---|---|---|
 | Update OpenClaw | 2026.3.22 → 2026.5.7 (13 releases) | 2026.4.15 → 2026.5.7 (9 releases) |
-| Populate HEARTBEAT.md | Empty — 26 days | Empty — 26 days |
+| Populate HEARTBEAT.md | Empty — 27 days | Empty — 27 days |
 | Create MEMORY.md | Never created | Never created |
 | Create memory/ directory | Never created | Never created |
 
 ### MEDIUM (Post-Update)
 | Item | Josh | Noah |
 |---|---|---|
+| memory-core | Add to allow + entries | Fix entries block (missing) |
+| Compaction config | Add to agents.defaults | Already configured ✅ |
 | threadBindings config | Add to session | Add to session (longer TTL) |
 | Cron retry config | Add to openclaw.json | Add to openclaw.json |
-| memory-core | Install plugin | Fix admin scope |
-| Stale fallback | Fix claude-3.5-haiku | Add OpenRouter fallback |
-| contextPruning TTL | N/A | 5m → 30m |
+| Stale fallback | Fix claude-3.5-haiku → haiku-4-5 | Add OpenRouter fallback (SPOF) |
+| contextPruning TTL | N/A | 5m → 35m (match inboundWorker) |
 | SOUL.md evolution | Never evolved | Wrong persona for trading |
 
 ### LOW / OPPORTUNITY (Post-2026.5.10-stable)
 | Item | Josh | Noah |
 |---|---|---|
-| Per-agent tool overrides | Discord group security | Alpaca DM-only trade execution |
-| /context map | Token visibility in long sessions | Validate TTL fix |
-| A2A 20-turn pipelines | Sub-agent delegation | Full catalyst autonomous pipeline |
-| extractStructuredWithModel() | N/A | SEC PDF structured extraction |
+| memory-lancedb-pro upgrade | After memory-core baseline | After memory-core baseline |
+| workspace/reports/ | Create directory | Already exists |
+| Per-agent tool overrides | Discord group security | Alpaca DM-only execution |
+| /context map | Token visibility | Validate TTL fix |
+| A2A 20-turn pipelines | Sub-agent delegation | Full catalyst pipeline |
+| extractStructuredWithModel() | N/A | SEC PDF extraction |
+| claude-opus-4-7 in catalog | N/A | Add to models config |
 
 ---
 
-## Implementation Sequence Recommendation — Fleet-Wide
+## Implementation Sequence — Fleet-Wide (Day 27)
 
-**For both instances, the correct order is:**
+**For both instances, the correct order is unchanged from Day 26:**
 
-1. **Resume intelligence monitoring** (Finding 38 for Noah, email/iMessage for Josh) — zero config, maximum immediate value
-2. **Fill missing identity files** (IDENTITY + USER for Noah — 10 min of Discord conversation)
-3. **Update OpenClaw to 2026.5.7** — unlocks all 5.x features for both instances
-4. **Add cron retry config** to both openclaw.json files
-5. **Enable threadBindings** in both openclaw.json files
-6. **Populate HEARTBEAT.md** for both instances
-7. **Create MEMORY.md + memory/ scaffold** for both instances
-8. **Fix memory-core** (Josh: install; Noah: resolve admin scope)
-9. **Post-2026.5.10-stable:** Apply tool overrides, A2A pipelines, /context map
+1. **TODAY — Zero config:** Send memory bootstrap message in Discord for both instances
+2. **TODAY — Noah only:** Send Q2 Week 4 watchlist prompt (pre-positioning window closes tonight)
+3. **TODAY — Noah only:** Fill IDENTITY.md and USER.md (27 days critical)
+4. Update OpenClaw to 2026.5.7 — unlocks all 5.x features for both
+5. Fix memory-core (Josh: add to allow+entries; Noah: add entries block) + compaction configs
+6. Add cron retry config to both openclaw.json files
+7. Enable threadBindings in both (different TTLs)
+8. Populate HEARTBEAT.md for both instances
+9. Create MEMORY.md + memory/ scaffold for both
+10. Fix fallback models (Josh: stale haiku; Noah: add OpenRouter fallback)
+11. Fix contextPruning TTL on Noah (5m → 35m)
+12. Monitor for 2026.5.10 stable → apply tool overrides, A2A, /context map
+13. After memory baseline confirmed: evaluate memory-lancedb-pro for both
 
 ---
 
-## Trend Analysis — 26 Days
+## Trend Analysis — 27 Days
 
-This fleet has received **zero implementations** across 26 days of documented research. The gap between what both instances are capable of and what they’re actually doing widens daily:
+This fleet has received **zero implementations** across 27 days of documented research. The gap between what both instances are capable of and what they're actually doing widens daily:
 
-- Josh’s version gap was 7 releases on Day 1. It is now **13 releases**.
-- Noah’s catalyst intelligence gap was 0 on Day 1. It is now **21 days** into an active Q2 earnings season.
+- Josh's version gap was 7 releases on Day 1. It is now **13 releases** — a second update target (5.10) arrives within days.
+- Noah's catalyst intelligence gap was 0 on Day 1. It is now **22 days** into an active Q2 earnings season. Q2 Week 4 — the heaviest earnings week — begins Monday May 19.
 - Neither instance has a single memory file — both wake up completely stateless every session.
 - Both HEARTBEAT.md files are empty — neither instance does any proactive work.
+- The community-documented fix for this exact failure mode requires one Discord message, not a config change.
 
-The research is thorough. The blocker is execution. No new research finding changes the priority order: update → heartbeat → memory. Everything else follows from those three steps.
+The research is thorough. The blocker is execution. No new research finding changes the priority order:
+
+**Bootstrap memory (Discord message today) → update OpenClaw → activate HEARTBEAT.md.**
+
+Everything else — memory-core, compaction, threadBindings, cron retry, memory-lancedb-pro — delivers maximum value on top of that foundation.
 
 ---
 
 ## Shared Config Snippet Library
-
-Config blocks that should be applied to **both** instances:
 
 ### threadBindings (session level)
 ```json
@@ -241,7 +303,7 @@ Config blocks that should be applied to **both** instances:
 }
 ```
 
-### cron retry
+### cron retry (both instances)
 ```json
 "cron": {
   "retry": {
@@ -252,5 +314,55 @@ Config blocks that should be applied to **both** instances:
 }
 ```
 
+### memory-core (Josh — full add)
+```json
+"plugins": {
+  "allow": ["discord", "usage-tracker", "memory-core"],
+  "entries": {
+    "discord": {"enabled": true},
+    "usage-tracker": {"enabled": true},
+    "memory-core": {"enabled": true}
+  }
+}
+```
+
+### memory-core (Noah — entries block only, allow already set)
+```json
+"memory-core": {
+  "enabled": true,
+  "config": {
+    "deduplication": true,
+    "temporalDecay": true
+  }
+}
+```
+
+### Josh fallback fix
+```json
+"fallbacks": [
+  "openrouter/google/gemini-2.5-flash",
+  "openrouter/anthropic/claude-haiku-4-5"
+]
+```
+
+### Noah fallback add
+```json
+"model": {
+  "primary": "anthropic/claude-sonnet-4-6",
+  "fallbacks": [
+    "openrouter/anthropic/claude-sonnet-4-6",
+    "openrouter/google/gemini-2.5-flash"
+  ]
+}
+```
+
+### Noah contextPruning fix
+```json
+"contextPruning": {
+  "mode": "cache-ttl",
+  "ttl": "35m"
+}
+```
+
 ---
-*Generated by AlphaClaw Apex Fleet Research Agent — Morning Scan — 2026-05-13*
+*Generated by AlphaClaw Apex Fleet Research Agent — Morning Scan — 2026-05-14 (Day 27)*
