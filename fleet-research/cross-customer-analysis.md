@@ -1,8 +1,106 @@
 # Cross-Customer Analysis — AlphaClaw Apex Fleet
 
-**Last Updated:** 2026-05-20 (Morning Scan — Day 33)
+**Last Updated:** 2026-05-20 (Morning Scan 2 — Day 33)
 **Instances:** Josh (Heather Schwartz, personal assistant) | Noah (Market Catalyst Agent, stock research)
 **Scan cadence:** Morning + Evening daily
+
+---
+
+## Day 33 Morning-2 — New Research (2026-05-20)
+
+### defineToolPlugin CLI: Both Customers Get Concrete Plugin Build Paths
+
+OpenClaw 2026.5.18 ships a complete plugin development CLI (`openclaw plugins init`, `build`, `validate`) that concretizes previously speculative integration paths for both customers:
+
+| Customer | Plugin Target | Status Before 2026.5.18 | Status After |
+|---|---|---|---|
+| **Josh** | Google Workspace (Gmail, Calendar, Contacts) | Conceptual — boilerplate-heavy, no scaffold tooling | **Actionable** — scaffold + validate workflow documented |
+| **Noah** | Alpaca paper trading (orders, positions, bars) | Conceptual — Finding 85 labeled "medium-term" | **This week** — init/build/validate post-upgrade |
+
+**Shared requirement:** Both customers should run `openclaw plugins validate` before enabling any custom plugin in `plugins.entries`. The 2026.5.18 validator catches tool schema errors that would otherwise silently disable tools at runtime.
+
+**Execution dependency:** Josh's plugin path still requires the Google account to be connected first (Finding 56 — Day 33, unresolved). Noah's Alpaca plugin has no prerequisite beyond the 2026.5.18 upgrade.
+
+---
+
+### Full-Stack OpenTelemetry: Fleet-Wide Session Health Now Observable
+
+2026.5.18 extends OTel coverage to **context assembly** and **memory pressure**, completing full-stack observability for both instances:
+
+| Signal | Josh (Heather) | Noah (Market Catalyst) |
+|---|---|---|
+| Model calls + token usage | ✅ Prior releases | ✅ Prior releases |
+| Tool loops | ✅ Prior releases | ✅ Prior releases |
+| **Context assembly** | ✅ New in 2026.5.x | ✅ New in 2026.5.x |
+| **Memory pressure** | ✅ New in 2026.5.x | ✅ New in 2026.5.x |
+| Exec processes | ✅ Recent | ✅ Recent |
+
+**Josh:** Context assembly timing reveals whether long heartbeat startup times are bootstrap-related or model-latency-related. Memory pressure events alert before compaction fires (compaction currently unconfigured — Finding 80). High value once contextPruning (35m TTL) is active — traces confirm it's working.
+
+**Noah:** Tool loop traces expose EDGAR scan bottlenecks at the individual SEC API call level. Context assembly timing quantifies the cost of the 5m TTL context resets (6 resets × assembly overhead = cumulative session degradation). Post-TTL-fix (35m), traces confirm the improvement quantitatively.
+
+**Shared telemetry setup (post-upgrade — works for both instances):**
+```json
+"telemetry": {
+  "enabled": true,
+  "exporters": [{"type": "prometheus", "port": 9090}]
+}
+```
+Prometheus scrape at `/metrics` → Grafana for both VPS instances. Low ops overhead on Hetzner.
+
+---
+
+### AlphaClaw Chrome DevTools MCP: Different Value Per Customer
+
+AlphaClaw 0.8.0 (confirmed from [@chrysb on X](https://x.com/chrysb/status/2032943853012136120)) adds Chrome DevTools MCP — control Mac via OpenClaw from any VPS using Chrome's DevTools Protocol.
+
+| Customer | Primary Use Case | Value | Priority |
+|---|---|---|---|
+| **Josh** | BlueBubbles iMessage Mac app GUI automation — fallback for iMessage pauses, permission dialogs, macOS system prompts | Enables Heather to interact with Mac desktop apps from Hetzner VPS | MEDIUM — directly relevant to Finding 49/57 (iMessage pause) |
+| **Noah** | Alpaca web dashboard screenshots, manual confirmations, account reset flows | Visual verification layer supplementary to Alpaca REST API plugin | MEDIUM — secondary to Finding 101 (Alpaca plugin) |
+
+**AlphaClaw version note (both customers):** Chrome DevTools MCP is available from AlphaClaw 0.8.0+. Both customers' AlphaClaw versions are unverified (target 0.9.16 per prior findings). Verify version before expecting this feature to be available.
+
+**Security note (Josh):** Chrome DevTools MCP should be scoped to specific URLs and apps to prevent unintended access to other Mac applications that may have sensitive content.
+
+---
+
+### 2026.5.18 Upgrade: Noah Now Gets 4 Session Bug Fixes (Not 3)
+
+Updated count — prior cross-customer analysis entries documented 3 bugs fixed in 2026.5.18 for Noah:
+
+| Bug | Fixed In | Notes |
+|---|---|---|
+| Session corruption bug #75235 | 2026.5.7 | Symptom-level fix |
+| Context pruning split bug | 2026.5.x | 5m TTL behavior corrected |
+| Memory flush bug #19488 | 2026.5.12 | memoryFlush silent skip resolved |
+| **Stale session diagnostics recovery** | **2026.5.18** | **Root-cause fix for session hang pattern** |
+
+The 4th fix (stale session diagnostics recovery) addresses the upstream cause that 2026.5.7 fixed at the symptom level: sessions that failed to clean up properly left stale state that caused subsequent sessions to inherit bad context. This is consistent with the 30-minute EDGAR scan hang pattern.
+
+Single upgrade to 2026.5.18 delivers all four cumulative session reliability fixes. This raises the priority of the upgrade for Wednesday/Thursday/Friday trading sessions this week.
+
+---
+
+### Python Debugging Skill: Fleet-Wide Bundled Capability in 2026.5.18
+
+| Customer | Relevance | When It Matters |
+|---|---|---|
+| **Josh** | Low immediate relevance | If custom Python utility scripts are developed for iMessage processing or personal data management |
+| **Noah** | **Direct relevance** | Once Python EDGAR parsing, catalyst scoring, or Alpaca order logic scripts are in active development |
+
+No installation required post-upgrade. Supports pdb, breakpoint(), post-mortem inspection, debugpy remote attach. The Python debugging skill paired with the Alpaca plugin (Finding 101) enables interactive debugging of trading scripts directly through the agent.
+
+---
+
+### Updated Priority Additions — Day 33 Morning-2
+
+| Action | Josh | Noah | Source Finding |
+|---|---|---|---|
+| `openclaw plugins init/build/validate` | Post-upgrade + Google OAuth (Finding 56) | **Post-upgrade this week** | Finding 87 / 101 |
+| Full-stack OTel telemetry config | Post-upgrade (verifies contextPruning + memory-core) | Post-upgrade (EDGAR tool loop profiling) | Finding 90 / 103 |
+| Chrome DevTools MCP (AlphaClaw 0.8.0+) | Verify AlphaClaw version, enable for BlueBubbles | Verify version, enable for Alpaca web UI | Finding 92 / 104 |
+| Stale session diagnostics (4th bug) | N/A (not in affected version range) | Additive upgrade urgency — 4th session bug fixed in 2026.5.18 | Finding 102 |
 
 ---
 
@@ -123,7 +221,8 @@ Noah uses Anthropic direct — would require a separate embedding model configur
 | Session corruption bug #75235 | ✅ Not affected (pre-2026.4) | 🔴 **CRITICAL — in affected range, unpatched** |
 | Memory flush bug #19488 | ✅ Not affected | 🔴 **HIGH — flush silently skipping** |
 | Context pruning split bug (2026.4.x) | ✅ Not affected | 🔴 **CRITICAL — affected** |
-| Cumulative findings | **86** | **100** |
+| Stale session diagnostics bug | ✅ Not affected | 🔴 **HIGH — partially mitigated, fully fixed in 2026.5.18** |
+| Cumulative findings | **93** | **107** |
 | Resolved findings | **0** | **0** |
 | Days since last implementation | **33** | **33** |
 
@@ -318,6 +417,14 @@ Under `channels.discord`.
 }
 ```
 
+### Telemetry — Both instances (post-upgrade, Prometheus minimal setup)
+```json
+"telemetry": {
+  "enabled": true,
+  "exporters": [{"type": "prometheus", "port": 9090}]
+}
+```
+
 ### Temporal Memory Format — Both instances (when logging begins)
 **Avoid (flat fact):**
 ```
@@ -332,16 +439,19 @@ Under `channels.discord`.
 
 ---
 
-## Platform Risk Summary — Day 33 Morning (Active)
+## Platform Risk Summary — Day 33 (Active)
 
 ### Context Pruning Split Bug — 2026.4.x (Noah Only — CRITICAL)
-Fix: `"ttl": "5m"` → `"ttl": "35m"` in `openclaw.json`. **2 minutes. No restart. Day 6.**
+Fix: `"ttl":"5m"` → `"ttl":"35m"` in `openclaw.json`. **2 minutes. No restart. Day 6.**
 
 ### Session Corruption Bug #75235 (Noah — CRITICAL)
-Fixed in 2026.5.7. Noah must upgrade to 2026.5.18 for the complete fix.
+Fixed in 2026.5.7. Stale session diagnostics root cause fixed in 2026.5.18. Noah must upgrade to 2026.5.18 for the complete fix.
 
 ### Memory Flush Bug #19488 (Noah — HIGH)
 Noah's `memoryFlush.enabled: true` silently skipping. Fixed in 2026.5.12.
+
+### Stale Session Diagnostics (Noah — HIGH)
+Root cause of session hang pattern. Fixed in 2026.5.18. Additive to #75235 fix.
 
 ### Anthropic Auth Disruption Risk (Noah — HIGH)
 `mode: "token"` could be session auth. Verify API key format: `sk-ant-api03-...` = API key (safe). Anything else = session token risk during market hours.
@@ -357,9 +467,9 @@ cp openclaw.json openclaw.json.bak-pre-5.18
 
 ---
 
-## Priority Matrix — Fleet-Wide (Day 33 Morning)
+## Priority Matrix — Fleet-Wide (Day 33 Morning-2)
 
-### CRITICAL — Right Now (Before Wednesday Pre-Market Closes)
+### CRITICAL — Right Now
 | Item | Josh | Noah |
 |---|---|---|
 | Fix contextPruning (Josh: add, Noah: 5m→35m) | ⬜ **Add 35m TTL — 2 min** | 🔴 **5m→35m — Day 6 — 2 min** |
@@ -382,18 +492,22 @@ cp openclaw.json openclaw.json.bak-pre-5.18
 |---|---|---|
 | Verify Node.js ≥ 22.19 | ⬜ `node --version` on VPS | ⬜ Same |
 | Back up openclaw.json | ⬜ Before upgrade | ⬜ **Before any change** |
-| Upgrade OpenClaw to 2026.5.18 | 3.22 → 5.18 | 4.15 → 5.18 (fixes 3 bugs) |
+| Upgrade OpenClaw to 2026.5.18 | 3.22 → 5.18 (21 releases) | 4.15 → 5.18 (fixes 4 bugs) |
 | Verify Anthropic auth mode | N/A | ⬜ Confirm API key format |
 | Apply IDENTITY.md, USER.md, TOOLS.md, SOUL.md | N/A (Josh's are done) | ⬜ **10 min — paste-ready — Day 33** |
 
-### LOW / OPPORTUNITY
+### LOW / OPPORTUNITY — Post-Upgrade
 | Item | Josh | Noah |
 |---|---|---|
 | Gemini-native TTS (no ElevenLabs needed) | ⬜ Post-upgrade | N/A |
-| File transfer plugin (iMessage attachments) | ⬜ Post-upgrade | ⬜ Post-upgrade (EDGAR PDFs) |
+| File transfer plugin (iMessage attachments / EDGAR PDFs) | ⬜ Post-upgrade | ⬜ Post-upgrade |
 | Configure Active Memory + allowedChatIds | ⬜ Post-upgrade | ⬜ Post-upgrade |
+| **Alpaca plugin via defineToolPlugin CLI** | N/A | **⬜ This week post-upgrade — concrete path** |
+| **Google Workspace plugin via defineToolPlugin CLI** | ⬜ Post-upgrade + Google OAuth | N/A |
+| Full-stack OTel telemetry | ⬜ Post-upgrade | ⬜ Post-upgrade (EDGAR profiling) |
+| Chrome DevTools MCP (AlphaClaw 0.8.0+) | ⬜ Verify version, enable for BlueBubbles | ⬜ Verify version, enable for Alpaca web UI |
 | Grok OAuth — X/Twitter catalyst feed | Low priority | **High value** — post-upgrade |
-| defineToolPlugin — Google Workspace tools | Post-upgrade | Post-upgrade (Alpaca plugin) |
+| Python debugging skill | Post-upgrade (bundled) | Post-upgrade (bundled, relevant to Alpaca scripts) |
 | memory-lancedb-pro | After memory-core baseline | After memory-core baseline |
 | Populate HEARTBEAT.md with cron --wait | Post-upgrade | Post-upgrade |
 
@@ -403,13 +517,13 @@ cp openclaw.json openclaw.json.bak-pre-5.18
 
 This fleet has received **zero implementations** across 33 days of documented research.
 
-**Josh:** Version gap is 21 stable releases. Google account has never been connected — zero primary functionality (Gmail, Calendar, Contacts, iMessage) for 33 consecutive days. No memory logs. BOOTSTRAP.md present. The 18-minute implementation queue for the 4 most critical items has been documented for 33 days.
+**Josh:** Version gap is 21 stable releases. Google account has never been connected — zero primary functionality (Gmail, Calendar, Contacts) for 33 consecutive days. No memory logs. BOOTSTRAP.md present. The 18-minute implementation queue for the 4 most critical items has been documented for 33 days. Total findings: 93.
 
-**Noah:** 5 CRITICAL findings. contextPruning TTL fix is 2 minutes and has been paste-ready for 6 days. Week 21 Day 3 opens without a playbook. 100th cumulative finding filed today. Zero resolved. The total implementation time for all Tier 0 and Tier 1 items is approximately 25 minutes.
+**Noah:** 5 CRITICAL findings. contextPruning TTL fix is 2 minutes and has been paste-ready for 6 days. Week 21 Day 3 opens without a confirmed playbook. 107th cumulative finding filed today. Zero resolved. The 2026.5.18 upgrade now delivers 4 session reliability fixes (up from 3 documented previously). Alpaca plugin has a concrete build path via `openclaw plugins init/build/validate` — first time this has been a deliverable rather than a research item.
 
 **Both:** 33 sessions of complete statelessness. SOUL.md, AGENTS.md, and TOOLS.md remain byte-for-byte identical between a personal assistant and a trading agent — confirmed by identical SHA hashes on all three files.
 
-**New Day 33 morning zero-config additions:**
+**Day 33 Morning-2 zero-config backlog (unchanged from Morning-1 — approximately 25 minutes for both instances combined):**
 
 | Action | Target | Effort |
 |---|---|---|
@@ -418,8 +532,6 @@ This fleet has received **zero implementations** across 33 days of documented re
 | Add memory-core entries block | **Noah** | 3 min |
 | Enable Discord streaming | **Both** | 1 min each |
 | Fix retired fallback (claude-3.5-haiku) | **Josh** | 3 min |
-
-**Revised fleet zero-config backlog: approximately 25 minutes across both instances** for the highest-impact items (contextPruning x2, memory-core, fallback fix, streaming, memory-core entries).
 
 ---
 
@@ -430,13 +542,14 @@ This fleet has received **zero implementations** across 33 days of documented re
 ### Active Memory Plugin — Fleet-Wide Gap
 Active Memory plugin (`memory-core`) available since 2026.4.10. Josh not eligible (needs upgrade). Noah eligible now — entries block missing (Finding 97 in Day 33 morning scan above addresses this).
 
-### 2026.5.12 Upgrade: Three Critical Noah Bugs Fixed Simultaneously
+### 2026.5.18 Upgrade: Four Critical Noah Bugs Fixed Simultaneously
 | Bug | Noah Impact | Fixed In |
 |---|---|---|
 | Context pruning split bug | Sessions silently fail mid-prune | 2026.5.x |
 | Session corruption bug #75235 | 30-min sessions at risk of hang | 2026.5.7 |
 | Memory flush bug #19488 | memoryFlush silently skips | 2026.5.x |
-All three fixed in 2026.5.18. One upgrade action. Now targeting 2026.5.18 (not 2026.5.12).
+| **Stale session diagnostics** | **Session hang root cause** | **2026.5.18** |
+All four fixed in 2026.5.18. One upgrade action.
 
 ### Streaming Gap: Josh Has It Off, Noah Not Set
 Both should add `"streaming": "block"` under `channels.discord`. No restart required.
@@ -446,4 +559,4 @@ Noah's Discord: `"listenerTimeout": 120000` (2 min). Fix: `600000` (10 min). App
 
 ---
 
-*Generated by AlphaClaw Apex Fleet Research Agent — Morning Scan — 2026-05-20 (Day 33)*
+*Generated by AlphaClaw Apex Fleet Research Agent — Morning Scan 2 — 2026-05-20 (Day 33)*
