@@ -1,8 +1,128 @@
 # Cross-Customer Analysis — AlphaClaw Apex Fleet
 
-**Last Updated:** 2026-05-21 (Morning Scan — Day 34)
+**Last Updated:** 2026-05-22 (Morning Scan — Day 35)
 **Instances:** Josh (Heather Schwartz, personal assistant) | Noah (Market Catalyst Agent, stock research)
 **Scan cadence:** Morning + Evening daily
+
+---
+
+## Day 35 Morning — New Research (2026-05-22)
+
+### OpenClaw 2026.5.21-alpha.1 Released — Stable Target Unchanged at 2026.5.20
+
+An alpha shipped overnight. Both instances should remain on their upgrade path to **2026.5.20 stable** — do not deploy alpha to either instance.
+
+| Instance | Current | Stable Target | Alpha (do not deploy) | Gap |
+|----------|---------|--------------|----------------------|-----|
+| **Josh** | 2026.3.22 | **2026.5.20** | 2026.5.21-alpha.1 | ~2 months |
+| **Noah** | 2026.4.15 | **2026.5.20** | 2026.5.21-alpha.1 | ~37 days |
+
+**What 2026.5.21-alpha.1 previews (track for next stable wave ~3-7 days):**
+- **Voice-first improvements:** Paced audio streaming, backpressure-aware buffering, barge-in queue clearing — relevant to Heather post-upgrade
+- **Discord voice channel-following confirmed stable in 2026.5.20** (not just alpha) — Heather can follow Josh into voice channels
+- **Bounded partial recall in Active Memory** — sub-agent timeout no longer discards all recovered context; partial summary preserved
+- **cron `--wait`** with timeout + poll-interval controls confirmed working in 2026.5.x train
+
+---
+
+### Active Memory allowedChatIds — Fleet-Wide Privacy Implication
+
+Active Memory's `allowedChatIds`/`deniedChatIds` controls are confirmed stable in 2026.5.x. This is the most important new configuration pattern for both instances because both have open-ish Discord policies that could expose private memories to non-owners.
+
+| Instance | Risk Without allowedChatIds | Recommended Config |
+|----------|---------------------------|-------------------|
+| **Josh** | Open guild (`groupPolicy: open`) — any Discord user could trigger memory recall surfacing MEMORY.md | Restrict to Josh's direct DM channel ID only |
+| **Noah** | Trading channel is allowlisted, but memory-core (once configured) would fire in any session by default | Restrict to channel `1496556746444112173` only |
+
+**Standard pattern (customized per instance):**
+```json
+"active-memory": {
+  "config": {
+    "allowedChatIds": ["<specific-channel-id>"],
+    "chatTypes": ["dm"]
+  }
+}
+```
+This is a post-upgrade addition — but the design decision should be made now so MEMORY.md is built with this scoping in mind.
+
+---
+
+### Gemini 3.1 Flash Lite on OpenRouter — Josh Fallback Fix Available Today
+
+Gemini 3.1 Flash Lite is confirmed available on OpenRouter. Josh's current fallback chain has `openrouter/anthropic/claude-3.5-haiku` — a retired model generating silent errors on every fallback attempt.
+
+**This fix requires no upgrade, no restart:**
+```json
+"fallbacks": [
+  "openrouter/google/gemini-3.1-flash-lite-preview",
+  "openrouter/google/gemini-2.5-flash",
+  "openrouter/anthropic/claude-haiku-4-5"
+]
+```
+
+Gemini 3.5 Flash also released today — higher price tier, not recommended for Heather's heartbeat/assistant workload. 3.1 Flash Lite is the right tier.
+
+---
+
+### cron --wait Confirmed — Pre-Market Pipeline Path Clear for Noah
+
+`openclaw cron run --wait --timeout 30m --poll-interval 10s` is confirmed working in 2026.5.x. This unblocks the pre-market automation pipeline for Noah:
+
+1. **6:00 AM ET cron** fires EDGAR 8-K scan
+2. `--wait` blocks until complete
+3. **9:00 AM ET cron** fires pre-market summary (guaranteed post-scan)
+4. **5:00 PM ET cron** fires Alpaca P&L review
+
+This is the full automated trading-day skeleton. Currently inaccessible to Noah because the bot is un-upgraded, un-onboarded, and heartbeat-empty — but the platform capability exists.
+
+---
+
+### claude-opus-4-7 Confirmed Available — Noah Catalog Add (1 min, no restart)
+
+Previously flagged as "upcoming" in Day 33-34 scans. Now confirmed available on Anthropic direct. Add to Noah's model catalog today:
+```json
+"anthropic/claude-opus-4-7": {}
+```
+Use for: deep M&A catalyst analysis, FDA pathway research, complex multi-factor scenarios. Not as primary — cost/speed tradeoff. Adding to catalog is zero-friction.
+
+---
+
+### Day 35 Fleet State
+
+| Dimension | Josh / Heather | Noah / Market Catalyst |
+|---|---|---|
+| OpenClaw version | **2026.3.22** | **2026.4.15** |
+| Latest stable | **2026.5.20** | **2026.5.20** |
+| Gap (releases) | **~23** | **~16** |
+| contextPruning TTL | ❌ None configured | 🔴 **5m — Day 8 CRITICAL** |
+| memory-core | ❌ Not eligible (needs upgrade) | ⚠️ Allowlisted, **no entries block** |
+| MEMORY.md | ❌ Never created — **Day 35** | ❌ Never created — **Day 35** |
+| HEARTBEAT.md | ⚠️ Empty | ⚠️ Empty |
+| IDENTITY.md | ✅ Heather (partial) | ❌ **Blank template — Day 35** |
+| USER.md | ✅ Josh (populated) | ❌ **Blank template — Day 35** |
+| Google account | 🔴 **Never connected — 35 days** | ✅ Connected |
+| Retired fallback | 🔴 **claude-3.5-haiku (dead) — fix today** | N/A |
+| Discord streaming | ❌ `"off"` | ❌ Not set |
+| skills/gog-cli audit | N/A | ⚠️ **Unaudited in financial env** |
+| Active Memory allowedChatIds | ⚠️ Not configured (post-upgrade) | ⚠️ Not configured (post-upgrade) |
+| Cumulative findings | **~107** | **~122** |
+| Resolved findings | **0** | **0** |
+| Days since last implementation | **35** | **35** |
+
+---
+
+### Day 35 Morning Zero-Config Backlog (unchanged from Day 34, one item actionable today)
+
+| Action | Target | Effort | Days Documented | Actionable Today? |
+|--------|--------|--------|-----------------|------------------|
+| Fix dead claude-3.5-haiku fallback | **Josh** | 3 min | **NEW** | ✅ **Yes — no upgrade needed** |
+| Fix contextPruning 5m → 30m | **Noah** | 2 min | **8 days** | ✅ **Yes — no upgrade needed** |
+| Add memory-core entries block | **Noah** | 3 min | 25+ days | ✅ **Yes — no upgrade needed** |
+| Add opus-4-7 to Noah catalog | **Noah** | 1 min | 2 days | ✅ **Yes — no upgrade needed** |
+| Enable Discord streaming `progress` | **Both** | 1 min each | 8+ days | ✅ Yes (minor, post-upgrade preferred) |
+| Connect Google account | **Josh** | 10 min | 35 days | ✅ Yes |
+
+**Total: ~20 minutes. Zero upgrades required. Zero of this has been done in 35 days.**
 
 ---
 
@@ -47,8 +167,6 @@ Released 2026-05-21. Do not deploy (beta). Key items to track:
 ---
 
 ### Python Debugging Skill: Fleet-Wide (Bundled in 2026.5.19)
-
-The Day 33 Morning-2 analysis noted Python debugging as "bundled in 2026.5.18." Confirmed present in 2026.5.19 stable.
 
 | Instance | When Available | Primary Use |
 |----------|---------------|-------------|
@@ -103,7 +221,7 @@ This also sets up for future Grok integration (xAI device-code OAuth — 2026.5.
 ### Day 34 Morning Zero-Config Backlog (25 min for both instances combined, unchanged)
 
 | Action | Target | Effort | Days Documented |
-|--------|--------|--------|-----------------|
+|--------|--------|--------|------------------|
 | Fix contextPruning 5m → 30m | **Noah** | 2 min | **7 days** |
 | Connect Google account | **Josh** | 10 min | 34 days |
 | Add memory-core entries block | **Noah** | 3 min | 24+ days |
@@ -142,10 +260,6 @@ OpenClaw 2026.5.18 ships a complete plugin development CLI (`openclaw plugins in
 | **Memory pressure** | ✅ New in 2026.5.x | ✅ New in 2026.5.x |
 | Exec processes | ✅ Recent | ✅ Recent |
 
-**Josh:** Context assembly timing reveals whether long heartbeat startup times are bootstrap-related or model-latency-related. Memory pressure events alert before compaction fires (compaction currently unconfigured). High value once contextPruning (35m TTL) is active — traces confirm it's working.
-
-**Noah:** Tool loop traces expose EDGAR scan bottlenecks at the individual SEC API call level. Context assembly timing quantifies the cost of the 5m TTL context resets (6 resets × assembly overhead = cumulative session degradation). Post-TTL-fix (35m), traces confirm the improvement quantitatively.
-
 **Shared telemetry setup (post-upgrade — works for both instances):**
 ```json
 "telemetry": {
@@ -153,7 +267,6 @@ OpenClaw 2026.5.18 ships a complete plugin development CLI (`openclaw plugins in
   "exporters": [{"type": "prometheus", "port": 9090}]
 }
 ```
-Prometheus scrape at `/metrics` → Grafana for both VPS instances. Low ops overhead on Hetzner.
 
 ---
 
@@ -167,8 +280,6 @@ AlphaClaw 0.8.0 adds Chrome DevTools MCP — control Mac via OpenClaw from any V
 | **Noah** | Alpaca web dashboard screenshots, manual confirmations, account reset flows | Visual verification layer supplementary to Alpaca REST API plugin | MEDIUM — secondary to Finding 101 (Alpaca plugin) |
 
 **AlphaClaw version note:** Chrome DevTools MCP requires AlphaClaw 0.8.0+. Both customers' AlphaClaw versions are unverified (target 0.9.16). Verify version before expecting this feature.
-
-**Security note (Josh):** Chrome DevTools MCP should be scoped to specific URLs and apps to prevent access to sensitive Mac applications.
 
 ---
 
@@ -261,10 +372,10 @@ Community research confirms 30-35m is optimal for both agent types. The `keepLas
 | **Gemini-native TTS** | High — Josh has Gemini key; no ElevenLabs needed | Minimal — Anthropic primary | Post-upgrade |
 | **File transfer plugin** | High — iMessage attachments, file forwarding | Medium — SEC PDF pipeline, EDGAR documents | Post-upgrade; 16MB ceiling |
 | **Docker security hardening** | Applies on upgrade | Same | Bundled |
-| **Grok OAuth** (xAI) | Low — brand monitoring | **HIGH — pre-market X/Twitter catalyst signal** | **2026.5.20-beta.1 — track for stable** |
+| **Grok OAuth** (xAI) | Low — brand monitoring | **HIGH — pre-market X/Twitter catalyst signal** | **2026.5.20 stable — confirmed** |
 | **defineToolPlugin** | Medium — Google Workspace plugin | **HIGH — Alpaca paper trading plugin** | Available in 2026.5.18+ |
-| **Cron `--wait` flag** | Medium | **HIGH — scan → conditional alert** | Available in 2026.5.18+ |
-| **Active Memory `allowedChatIds`** | Medium | Medium | Post-upgrade |
+| **Cron `--wait` flag** | Medium | **HIGH — scan → conditional alert** | **Confirmed in 2026.5.x** |
+| **Active Memory `allowedChatIds`** | **HIGH — privacy for open guild** | **HIGH — scope to trading channel** | Post-upgrade |
 
 ---
 
@@ -438,6 +549,7 @@ Noah (Anthropic direct) would need separate embedding model configuration. Josh 
       "config": {
         "agents": ["main"],
         "chatTypes": ["dm"],
+        "allowedChatIds": ["JOSH_DIRECT_DM_CHANNEL_ID"],
         "inheritSessionModel": true,
         "timeout": 12000,
         "setupGraceTimeoutMs": 5000,
@@ -455,6 +567,7 @@ Noah (Anthropic direct) would need separate embedding model configuration. Josh 
   "config": {
     "agents": ["main"],
     "chatTypes": ["dm"],
+    "allowedChatIds": ["1496556746444112173"],
     "inheritSessionModel": true,
     "timeout": 15000,
     "setupGraceTimeoutMs": 5000,
@@ -476,7 +589,6 @@ Add/change under `channels.discord`.
   "listenerTimeout": 600000
 }
 ```
-Under `channels.discord`.
 
 ### Gemini-native TTS — Josh (post-upgrade to 2026.5.18+)
 ```json
@@ -500,9 +612,25 @@ Under `channels.discord`.
 }
 ```
 
-### Cron retry — Both instances
+### Cron configuration — Noah (post-upgrade)
 ```json
 "cron": {
+  "jobs": [
+    {
+      "name": "premarket-catalyst-scan",
+      "schedule": "0 6 * * 1-5",
+      "timezone": "America/New_York",
+      "command": "Run EDGAR 8-K scan for overnight filings. Screen for material events. Deliver summary to trading channel.",
+      "deliverTo": "1496556746444112173"
+    },
+    {
+      "name": "postmarket-pnl",
+      "schedule": "0 17 * * 1-5",
+      "timezone": "America/New_York",
+      "command": "Review today's Alpaca paper positions. Calculate P&L. Note catalyst plays that triggered. Update MEMORY.md.",
+      "deliverTo": "1496556746444112173"
+    }
+  ],
   "retry": {
     "maxAttempts": 3,
     "backoffMs": [30000, 60000, 300000, 900000, 3600000],
@@ -535,7 +663,7 @@ Under `channels.discord`.
 
 ## Platform Risk Summary (Active)
 
-### Context Pruning 5m TTL — Noah — CRITICAL (Day 7)
+### Context Pruning 5m TTL — Noah — CRITICAL (Day 8)
 `"ttl":"5m"` → `"ttl":"30m"`. 2 minutes. No restart.
 
 ### Session Corruption + 3 Related Bugs — Noah — CRITICAL
@@ -547,72 +675,75 @@ Verify API key format: `sk-ant-api03-...` = API key (safe). Session token = risk
 ### Config-Wipe Bug During Updates — Both — HIGH
 GitHub issue #65105: updating through certain version ranges can wipe `channels.discord` block.
 ```bash
-cp openclaw.json openclaw.json.bak-pre-5.19
+cp openclaw.json openclaw.json.bak-pre-5.20
 ```
 
 ### ClawHub Malware — skills/gog-cli — Noah — HIGH
 20% of ClawHub financial integration skills flagged post-Feb 2026 audit. Audit or remove.
 
 ### Google Account Never Connected — Josh — CRITICAL
-Day 34. Gmail, Calendar, Contacts: zero functionality. 10-minute fix.
+Day 35. Gmail, Calendar, Contacts: zero functionality. 10-minute fix.
+
+### Dead Fallback Model — Josh — MEDIUM (actionable today)
+claude-3.5-haiku retired. Silently failing on every fallback. Replace with gemini-3.1-flash-lite-preview. 3-minute fix.
 
 ---
 
-## Priority Matrix — Fleet-Wide (Day 34 Morning)
+## Priority Matrix — Fleet-Wide (Day 35 Morning)
 
-### CRITICAL — Right Now
+### CRITICAL — Right Now (No Upgrade Needed)
 | Item | Josh | Noah |
 |---|---|---|
-| contextPruning TTL | ⬜ **Add 30m TTL — 2 min** | 🔴 **5m→30m — Day 7 — 2 min** |
-| Connect Google account | 🔴 **34 days — 10 min** | N/A |
+| Fix dead fallback model | 🔴 **3 min — TODAY** | N/A |
+| contextPruning TTL | ⬜ **Add 30m — 2 min** | 🔴 **5m→30m — Day 8 — 2 min** |
+| Connect Google account | 🔴 **35 days — 10 min** | N/A |
 | Add memory-core entries block | N/A (needs upgrade) | 🔴 **Paste 3 lines — 3 min** |
+| Add opus-4-7 to catalog | N/A | ⬜ **1 min** |
 
 ### HIGH — Today
 | Item | Josh | Noah |
 |---|---|---|
-| Fix retired fallback (claude-3.5-haiku) | ⬜ 3 min | N/A |
 | Enable Discord streaming `progress` | ⬜ 1 min | ⬜ 1 min |
-| Add claude-opus-4-7 to catalog | N/A | ⬜ 1 min |
-| Audit skills/gog-cli | N/A | ⬜ **10 min — HIGH security** |
 | Back up openclaw.json | ⬜ Before upgrade | ⬜ **Before any change** |
+| Audit skills/gog-cli | N/A | ⬜ **10 min — HIGH security** |
 
 ### MEDIUM — Before End of Week
 | Item | Josh | Noah |
 |---|---|---|
-| Upgrade OpenClaw to 2026.5.19 | 3.22 → 5.19 (~22 releases) | 4.15 → 5.19 (fixes 4 bugs) |
+| Upgrade OpenClaw to 2026.5.20 | 3.22 → 5.20 (~23 releases) | 4.15 → 5.20 (fixes 4 bugs) |
 | Verify Node.js ≥ 22.19 | ⬜ `node --version` | ⬜ Same |
 | Create MEMORY.md | ⬜ 5 min | ⬜ 5 min |
-| Apply IDENTITY.md, USER.md, TOOLS.md, SOUL.md | N/A (done) | ⬜ **10 min — Day 34** |
+| Apply IDENTITY.md, USER.md, TOOLS.md, SOUL.md | N/A (done) | ⬜ **10 min — Day 35** |
 
 ### LOW / OPPORTUNITY — Post-Upgrade
 | Item | Josh | Noah |
 |---|---|---|
 | Gemini-native TTS | ⬜ Post-upgrade | N/A |
 | File transfer plugin | ⬜ Post-upgrade | ⬜ Post-upgrade |
-| Active Memory + allowedChatIds | ⬜ Post-upgrade | ⬜ Post-upgrade |
+| Active Memory + allowedChatIds | ⬜ Post-upgrade (scope to DM only) | ⬜ Post-upgrade (scope to channel 1496556746444112173) |
 | Alpaca plugin via defineToolPlugin CLI | N/A | **⬜ This week post-upgrade** |
 | Google Workspace plugin | ⬜ Post-upgrade + Google OAuth | N/A |
 | OTel telemetry | ⬜ Post-upgrade | ⬜ Post-upgrade |
-| Chrome DevTools MCP | ⬜ Verify version | ⬜ Verify version |
-| **xAI/Grok OAuth** (2026.5.20 stable) | Low | **⬜ HIGH — when stable** |
-| **Policy plugin** (2026.5.20 stable) | Low | ⬜ Before live keys |
+| Chrome DevTools MCP | ⬜ Verify AlphaClaw version | ⬜ Verify AlphaClaw version |
+| **xAI/Grok OAuth** (2026.5.20 stable — confirmed) | Low | **⬜ HIGH — ready to add** |
+| **Policy plugin** (2026.5.20 stable — confirmed) | Low | ⬜ Before live keys |
 | Python debugging skill | Bundled | **Bundled — Alpaca dev** |
-| Configure HEARTBEAT.md cron schedule | Post-upgrade | Post-upgrade |
+| Cron pre/post-market automation | Post-upgrade | **Post-upgrade + onboarding** |
 
 ---
 
-## Trend Analysis — Day 34
+## Trend Analysis — Day 35
 
-**Zero implementations across 34 days of documented research.**
+**Zero implementations across 35 days of documented research.**
 
-**Josh:** Version gap is now ~22 stable releases. Google account has never been connected — zero Gmail/Calendar/Contacts for 34 days. No memory logs. BOOTSTRAP.md still present. contextPruning not configured. ~103 cumulative findings, 0 resolved.
+**Josh:** Version gap now ~23 stable releases. Dead fallback model (claude-3.5-haiku) is a 3-minute fix that has sat for 14+ days. Google account never connected — zero Gmail/Calendar/Contacts for 35 days. No memory. ~107 cumulative findings, 0 resolved.
 
-**Noah:** contextPruning TTL at 5m is Day 7 of a documented critical finding — it is a 2-minute paste and the bot runs catalyst analysis sessions daily. 4 known session bugs await a single upgrade action. IDENTITY.md and USER.md have been blank templates for 34 days. ~117 cumulative findings, 0 resolved.
+**Noah:** contextPruning 5m TTL is now Day 8 critical — the research agent runs catalyst sessions daily against this bug. 4 session bugs await a single upgrade. IDENTITY.md and USER.md blank templates for 35 days. memory-core is allowlisted and unconfigured — a 3-line paste fix for 25 days. ~122 cumulative findings, 0 resolved.
 
-**Both:** 34 sessions of complete statelessness. SOUL.md, AGENTS.md, and TOOLS.md remain byte-for-byte identical (confirmed SHA match) between a personal assistant and a trading agent.
+**Both:** 35 sessions of complete statelessness. SOUL.md, AGENTS.md, and TOOLS.md remain byte-for-byte identical (SHA match) between a personal assistant and a trading agent.
 
-**New this morning:** 2026.5.19 is now the upgrade target (not 2026.5.18). 2026.5.20-beta.1 previews xAI/Grok device-code OAuth — the highest-value near-term capability addition for Noah. Track for stable release in ~7-10 days.
+**New this morning (2026-05-22):** 2026.5.21-alpha.1 previews the next stable wave (voice/audio, bounded recall). Active Memory `allowedChatIds` confirmed stable — critical privacy control for both instances given their Discord policies. cron `--wait` confirmed working — Noah's pre-market automation pipeline is architecturally ready pending upgrade + onboarding.
 
 ---
 
-*Generated by AlphaClaw Apex Fleet Research Agent — Morning Scan — 2026-05-21 (Day 34)*
+*Generated by AlphaClaw Apex Fleet Research Agent — Morning Scan — 2026-05-22 (Day 35)*
