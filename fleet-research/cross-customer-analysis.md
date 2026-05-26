@@ -1,19 +1,166 @@
 # Cross-Customer Analysis — AlphaClaw Apex Fleet
 
-**Last Updated:** 2026-05-25 (Morning Scan — Day 37)
+**Last Updated:** 2026-05-26 (Morning Scan — Day 38)
 **Instances:** Josh (Heather Schwartz, personal assistant) | Noah (Market Catalyst Agent, stock research)
 **Scan cadence:** Morning + Evening daily
 
 ---
 
-## Day 37 Morning — New Research (2026-05-25)
+## Day 38 Morning — New Research (2026-05-26)
 
-### Upgrade Target Correction — 2026.5.22 Is Now Stable (Skip 2026.5.20)
+### Alpaca MCP V2 — 61 Actions Confirmed, New Screening + Option Chain Tools
 
-The evening scan (Day 37 evening) tracked 2026.5.22-beta.1 as in-train. It graduated to **stable on May 24, 2026**. Both instances should target 2026.5.22 directly, not 2026.5.20.
+Alpaca's MCP Server V2 (April 2026) is now fully documented at 61 actions (vs 43 prior). The additions most significant for Noah:
 
-| Instance | Current | **Corrected Stable Target** | Gap |
-|----------|---------|----------------------------|-----|
+| New V2 Action | Catalyst Agent Value |
+|---------------|---------------------|
+| Market screening tools | Built-in screener by volume, price move, sector — replaces manual screener |
+| Option chain exploration | Unusual options activity = leading catalyst signal before price moves |
+| Order replacements | Modify paper positions without cancel + re-enter |
+| Account activity logs | Full audit trail — pairs with memory/daily log |
+
+The screening tools are particularly significant: the Alpaca MCP V2 now handles work that previously required a separate tool or manual query. Noah's post-upgrade install path is now fully validated.
+
+---
+
+### xAI/Grok OAuth Profile Reuse — Pre-Market Signal Pipeline Confirmed for Noah
+
+OpenClaw 2026.5.22 threads active-agent xAI auth profiles through `web_search` automatically. Authenticate once; every Grok web_search call reuses the profile. This makes the pre-market X/Twitter signal pipeline practical:
+
+**X signals arrive 15-45 minutes before EDGAR 8-K filings appear in conventional tools.** Combined with EdgarTools MCP (free), Noah's catalyst pipeline would be:
+- 5:45 AM ET: Grok X scan (breaking catalyst signals on Twitter)
+- 6:00 AM ET: EDGAR overnight 8-K scan (EdgarTools MCP)
+- 6:15 AM ET: Combine → catalyst thesis → Alpaca paper order
+
+Auth config to add post-upgrade: `"xai:default": { "provider": "xai", "mode": "device-code" }`
+
+---
+
+### Memory Architecture Research — Josh Has No Compaction Config
+
+Community research confirms MEMORY.md should stay **under 800 words**, and the pre-compaction memory flush is "the single most impactful configuration change" for memory reliability.
+
+**Critical gap discovered this morning:** Josh has no `compaction` or `contextPruning` config in openclaw.json. Noah has both (but `softThresholdTokens: 4000` is too low for trading sessions — recommend 10000).
+
+| Dimension | Josh | Noah |
+|-----------|------|------|
+| compaction.memoryFlush | ❌ **MISSING** | ✅ Configured |
+| contextPruning.ttl | ❌ **MISSING** | 🔴 **5m — Day 11 bug** |
+| softThresholdTokens | ❌ Missing | ⚠️ 4000 (too low, rec: 10000) |
+
+Without compaction config, even if Josh creates MEMORY.md today (Day 38), information accumulated in longer sessions may be silently lost when context fills.
+
+**Fix for Josh (add to openclaw.json, no restart):**
+```json
+"agents": { "defaults": {
+  "compaction": {
+    "reserveTokensFloor": 30000,
+    "memoryFlush": { "enabled": true, "softThresholdTokens": 6000 }
+  },
+  "contextPruning": { "mode": "cache-ttl", "ttl": "30m" }
+}}
+```
+
+**Fix for Noah (softThresholdTokens only, no restart):**
+```json
+"softThresholdTokens": 10000
+```
+
+---
+
+### Subagents — Parallel Task Opportunity for Both Instances
+
+OpenClaw's subagent system (`maxSpawnDepth: 1` default) enables spawning parallel workers from a main agent. Workers announce results back to the calling channel.
+
+| Instance | Subagent Application | Value |
+|----------|---------------------|-------|
+| **Josh** | Parallel heartbeat: email + calendar + contacts simultaneously | ~3x faster check latency |
+| **Noah** | Parallel sector scans: Tech 8-Ks + Health 8-Ks + Grok X signals | ~3x faster pre-market briefing |
+
+Cheaper model for sub-agents (haiku-level), main agent handles synthesis. Config: `agents.defaults.subagents.model`.
+
+**Blocker for both:** Josh needs HEARTBEAT.md populated first; Noah needs upgrade + cron first.
+
+---
+
+### Node.js 22.19 Minimum — Pre-Upgrade Check for Both VPS Hosts
+
+OpenClaw has raised the minimum Node.js 22 line to **22.19** (Pi packages updated to 0.75.1). Both instances should verify Node version before any upgrade attempt:
+
+```bash
+node --version  # Must be >= v22.19.0
+```
+
+---
+
+### Day 38 Morning Fleet State
+
+| Dimension | Josh / Heather | Noah / Market Catalyst |
+|---|---|---|
+| OpenClaw version | **2026.3.22** | **2026.4.15** |
+| Latest stable | **2026.5.22** | **2026.5.22** |
+| Alpha train | 2026.5.25-alpha.1 (do not deploy) | 2026.5.25-alpha.1 (do not deploy) |
+| Gap (releases) | **~25** | **~18** |
+| Upgrade overdue | **Day 5** | **Day 5** |
+| compaction config | 🔴 **MISSING — Day 38** | ✅ Configured (but see below) |
+| contextPruning TTL | ❌ Not set | 🔴 **5m — Day 11 CRITICAL** |
+| softThresholdTokens | N/A | ⚠️ 4000 (rec: 10000) |
+| memory-core | ❌ Not eligible (needs upgrade) | 🔴 Allowlisted, **no entries block — Day 27** |
+| Active Memory plugin | ❌ Below min version | 🟢 Available now (v2026.4.15 ≥ 2026.4.10) |
+| MEMORY.md | ❌ **Never created — Day 38** | ❌ **Never created — Day 38** |
+| HEARTBEAT.md | ⚠️ Empty | 🔴 **Structurally broken (code-block bug)** |
+| IDENTITY.md | ✅ Heather (populated) | ❌ **Blank template — Day 38** |
+| USER.md | ✅ Josh (populated) | ❌ **Blank template — Day 38** |
+| SOUL.md | ⚠️ Generic template | ⚠️ Generic template |
+| AGENTS.md | ⚠️ Generic (emoji rule contradiction) | ⚠️ Generic (no trading guardrails) |
+| TOOLS.md | ⚠️ Blank template | ⚠️ Blank template |
+| iMessage bridge | 🔴 Paused — blocks 👍👎 reactions | N/A |
+| Dead fallback model | 🔴 **claude-3.5-haiku — Day 18** | N/A |
+| xAI/Grok | N/A | 🟢 Available on upgrade to 2026.5.22 |
+| Alpaca MCP V2 | N/A | 🟢 **61 actions on upgrade** |
+| Discord streaming | ❌ `"off"` | ❌ Not set |
+| Discord buttons/dropdowns | 🟡 Post-upgrade | 🟡 Post-upgrade |
+| Subagents | 🟡 After HEARTBEAT.md + upgrade | 🟡 After cron + upgrade |
+| Cron jobs | ❌ None | ❌ **None — idle during market hours** |
+| skills/gog-cli audit | N/A | ⚠️ **Unaudited — HIGH security in financial env** |
+| iMessage reactions (beta) | 🟡 Coming (2026.5.24 stable ≈June 1-4) | N/A |
+| Node.js 22.19 check | ⚠️ Verify before upgrade | ⚠️ Verify before upgrade |
+| Cumulative findings | **~120** | **~140** |
+| Resolved findings | **0** | **0** |
+| Days since last implementation | **38** | **38** |
+
+---
+
+### Day 38 Zero-Config Backlog
+
+| Action | Target | Effort | Days Documented | Status |
+|--------|--------|--------|-----------------|--------|
+| Fix contextPruning 5m → 30m | **Noah** | 60 sec | **11 days** | 🔴 DO IT NOW |
+| Add memory-core entries block | **Noah** | 3 min | **27 days** | 🔴 DO IT |
+| Increase softThresholdTokens to 10000 | **Noah** | 1 min | NEW | 🟢 DO IT |
+| Add compaction + contextPruning config | **Josh** | 2 min | **NEW** | 🟢 DO IT |
+| Add Active Memory plugin | **Noah** | 3 min | 1 day | 🟢 DO IT |
+| Create MEMORY.md | **Both** | 15 min each | **38 days** | 🔴 DO IT |
+| Fill IDENTITY.md + USER.md | **Noah** | 15 min | **38 days** | 🔴 DO IT |
+| Fix dead claude-3.5-haiku fallback | **Josh** | 1 min | **18 days** | 🔴 DO IT |
+| Replace HEARTBEAT.md (broken structure) | **Noah** | 5 min | **38 days** | 🔴 DO IT |
+| Add HEARTBEAT.md content | **Josh** | 5 min | **38 days** | 🟢 Easy |
+| Populate TOOLS.md | **Both** | 10 min each | **38 days** | ✅ Easy |
+| Add opus-4-7 to Noah catalog | **Noah** | 1 min | 6 days | ✅ Easy |
+| Enable Discord streaming `progress` | **Both** | 1 min each | 11+ days | ✅ Easy |
+
+**Total: ~60 minutes. Zero upgrades required. 0 of this done in 38 days.**
+
+---
+
+## Day 37 Morning — Research Summary (2026-05-25)
+
+### Upgrade Target Correction — 2026.5.22 Is Stable (Skip 2026.5.20)
+
+2026.5.22 graduated to **stable on May 24, 2026**. Both instances should target 2026.5.22 directly, not 2026.5.20.
+
+| Instance | Current | **Stable Target** | Gap |
+|----------|---------|-------------------|-----|
 | **Josh** | 2026.3.22 | **2026.5.22** | ~25 stable releases |
 | **Noah** | 2026.4.15 | **2026.5.22** | ~18 stable releases |
 | **Beta (do not deploy)** | — | 2026.5.24-beta.2 | — |
@@ -33,15 +180,7 @@ The evening scan (Day 37 evening) tracked 2026.5.22-beta.1 as in-train. It gradu
 
 ### 🟢 Active Memory Available for Noah TODAY (No Upgrade)
 
-Version gap analysis this morning confirms: **Active Memory plugin shipped in OpenClaw 2026.4.10. Noah is on 2026.4.15.** This plugin is available to Noah right now.
-
-This is the most significant actionable finding of Day 37 morning:
-- Noah's agent has run 34+ sessions with zero memory
-- Active Memory would begin accumulating trading context immediately
-- It reads from MEMORY.md (which also needs to be created — zero risk, 15 min)
-- No upgrade required. No restart required.
-
-Contrast with Josh: Josh is on 2026.3.22, below the 2026.4.10 minimum. Active Memory is **not available for Josh until he upgrades.**
+Active Memory plugin shipped in OpenClaw 2026.4.10. Noah is on 2026.4.15. **Available now.**
 
 | Instance | Active Memory Available? | Blocker |
 |----------|--------------------------|--------|
@@ -52,106 +191,46 @@ Contrast with Josh: Josh is on 2026.3.22, below the 2026.4.10 minimum. Active Me
 
 ### iMessage Thumb-Approval Reactions — Josh-Specific Beta Feature
 
-2026.5.24-beta.2 introduces 👍/👎 reactions on iMessage for approve/deny of pending agent actions. This is directly relevant to Josh because iMessage is his primary interface with Heather.
+2026.5.24-beta.2 introduces 👍/👎 reactions on iMessage for approve/deny of pending agent actions.
+- **Current:** Josh types approval responses
+- **With reactions:** Josh reacts 👍 to approve, 👎 to deny — no typing required
+- **Pre-requisite:** iMessage bridge must be reconnected (currently `imessage_monitoring_paused: true`)
+- **ETA:** 2026.5.24 stable ≈ June 1-4, 2026. Do NOT deploy beta.
 
-**What changes:**
-- Current: Josh types approval responses in iMessage or Discord
-- With reactions: Josh reacts 👍 to approve, 👎 to deny — no typing required
-- Mobile-native. Zero friction.
-
-**Timeline:** 2026.5.24-beta.2 is in train. Stable ETA ~June 1-4, 2026. Do NOT deploy beta.
-
-**Pre-requisite for Josh:** iMessage bridge must be reconnected (currently `imessage_monitoring_paused: true`). This elevates the priority of resolving the iMessage pause.
-
-Noah: Not applicable (iMessage not in Noah's stack).
-
----
-
-### Day 37 Morning Fleet State
-
-| Dimension | Josh / Heather | Noah / Market Catalyst |
-|---|---|---|
-| OpenClaw version | **2026.3.22** | **2026.4.15** |
-| Latest stable | **2026.5.22** (corrected) | **2026.5.22** (corrected) |
-| Beta train | 2026.5.24-beta.2 | 2026.5.24-beta.2 |
-| Gap (releases) | **~25** | **~18** |
-| contextPruning TTL | ❌ None configured | 🔴 **5m — Day 11 CRITICAL** |
-| memory-core | ❌ Not eligible (needs upgrade) | ⚠️ Allowlisted, **no entries block — Day 26** |
-| Active Memory plugin | ❌ Below min version | 🟢 **AVAILABLE NOW — 2026.4.15 ≥ 2026.4.10** |
-| MEMORY.md | ❌ Never created — **Day 37** | ❌ Never created — **Day 37** |
-| HEARTBEAT.md | ⚠️ Empty | ⚠️ Empty |
-| IDENTITY.md | ✅ Heather (partial) | ❌ **Blank template — Day 37** |
-| USER.md | ✅ Josh (populated) | ❌ **Blank template — Day 37** |
-| iMessage bridge | 🔴 **Paused — blocks 👍👎 reactions** | N/A |
-| Dead fallback model | 🔴 **claude-3.5-haiku — Day 17** | N/A |
-| xAI/Grok | N/A | 🟢 Available on upgrade to 2026.5.22 |
-| Discord streaming | ❌ `"off"` | ❌ Not set |
-| skills/gog-cli audit | N/A | ⚠️ **Unaudited — HIGH security in financial env** |
-| Cron jobs | ❌ None | ❌ **None — idle during market hours** |
-| iMessage reactions (beta) | 🟡 Coming (2026.5.24 stable) | N/A |
-| Cumulative findings | **~113** | **~130** |
-| Resolved findings | **0** | **0** |
-| Days since last implementation | **37** | **37** |
-
----
-
-### Day 37 Zero-Config Backlog
-
-| Action | Target | Effort | Days Documented | Status |
-|--------|--------|--------|-----------------|--------|
-| Fix dead claude-3.5-haiku fallback | **Josh** | 1 min | **17 days** | 🔴 DO IT |
-| Fix contextPruning 5m → 30m | **Noah** | 60 sec | **11 days** | 🔴 DO IT |
-| Add memory-core entries block | **Noah** | 3 min | **26+ days** | 🔴 DO IT |
-| Add active-memory plugin | **Noah** | 3 min | **NEW today** | 🟢 DO IT TODAY |
-| Create MEMORY.md | **Both** | 15 min each | **37 days** | 🔴 DO IT |
-| Fill IDENTITY.md + USER.md | **Noah** | 15 min | **34+ days** | 🔴 DO IT |
-| Add opus-4-7 to Noah catalog | **Noah** | 1 min | 5 days | ✅ Easy |
-| Enable Discord streaming `progress` | **Both** | 1 min each | 10+ days | ✅ Easy |
-| Add HEARTBEAT.md content | **Both** | 5 min each | **37 days** | ✅ Easy |
-
-**Total: ~55 minutes. Zero upgrades required. 0 of this done in 37 days.**
-
----
-
-## Day 36 Morning — Research Summary (2026-05-24)
-
-### OpenClaw 2026.5.22-beta.1 Released (Now Graduated to Stable)
-
-*[Superseded by Day 37 morning: 2026.5.22 is now stable.]*
-
-Key findings from Day 36 morning that remain relevant:
-
-**Meeting Capture Plugin — Josh-Specific:**
-Meeting Notes plugin (Discord voice → transcript → memory) ships in 2026.5.22 stable.
-- Discord voice sessions auto-transcribed
-- Transcripts feed into memory-core automatically
-- Josh's voice calls become searchable by Heather for the first time
-- Pre-requisite: upgrade + memory-core + meeting-notes external npm package
-
-**Cron Reliability Hardening — Noah-Specific:**
-Cron delivery now routed through modern resolver APIs in 2026.5.22. Pre-market pipeline hardening confirmed. Full cron config template (see Shared Config Snippet Library below).
-
-**Policy/Approval Hardening — Noah Critical:**
-Per-channel trading guardrails hardened in 2026.5.22. MUST be configured before Noah ever moves from paper to live trading keys.
+Noah: Not applicable (iMessage not in stack).
 
 ---
 
 ## Workspace File Gap Analysis (Persistent)
 
-### Files Identical in Both (SHA match)
-- `SOUL.md` — SHA 792306ac — generic template in BOTH — a trading agent and a personal assistant using identical soul files is a signal that neither has been personalized
-- `AGENTS.md` — SHA 3faead97 — generic template in both
-- `TOOLS.md` — SHA 917e2fa8 — template only in both
-- `HEARTBEAT.md` — both effectively empty
+### Files Identical in Both Repos (SHA match — zero customization)
+
+| File | SHA | State |
+|------|-----|-------|
+| `SOUL.md` | 792306ac | Generic upstream template in BOTH |
+| `AGENTS.md` | 3faead97 | Generic template in BOTH — no trading rules, no emoji override |
+| `TOOLS.md` | 917e2fa8 | Blank template in BOTH — fake examples only |
+| `HEARTBEAT.md` | (different) | Both effectively non-functional |
+
+A personal assistant and a trading agent sharing identical SOUL.md and AGENTS.md is the clearest signal that neither instance has been personalized. 38 days of operation on identical generic templates.
 
 ### Josh Has, Noah Missing
-- IDENTITY.md (populated with "Heather") | USER.md (populated with Josh's info)
+- `IDENTITY.md` (populated with “Heather”) | `USER.md` (populated with Josh’s info)
 
 ### Noah Has, Josh Missing
 - `workspace/reports/` directory | `skills/gog-cli/` | `gogcli/`
+- Compaction config (but misconfigured) | memory-core in allow list (but not in entries)
 
 ### Missing in Both
-- **MEMORY.md** — Day 37 | **memory/ populated directory** — 37 stateless sessions
+- **MEMORY.md** — Day 38 | **memory/ populated directory** — 38 stateless sessions
+
+### Critical Behavioral Gaps
+
+**Josh — AGENTS.md Emoji Contradiction:**
+USER.md says `STRICT: DO NOT SEND EMOJI REACTIONS`. AGENTS.md “React Like a Human!” section explicitly instructs Heather to use emoji reactions on Discord. These two files directly contradict. This causes behavioral violations in every Discord session.
+
+**Noah — AGENTS.md Missing Trading Guardrails:**
+No rule: “Paper trading only.” No rule: “Always state catalyst thesis before placing any order.” No rule: “Log every trade decision.” A generic assistant AGENTS.md is fine for a personal assistant; for a trading agent with order execution access, the absence of explicit guardrails is a behavioral risk that becomes active the moment Alpaca MCP is installed.
 
 ---
 
@@ -164,6 +243,18 @@ Per-channel trading guardrails hardened in 2026.5.22. MUST be configured before 
   "ttl": "30m",
   "keepLastAssistants": 3
 }
+```
+
+### compaction (Josh — add immediately; Noah — update softThresholdTokens)
+```json
+// Josh: add to agents.defaults
+"compaction": {
+  "reserveTokensFloor": 30000,
+  "memoryFlush": { "enabled": true, "softThresholdTokens": 6000 }
+}
+
+// Noah: update existing softThresholdTokens from 4000 to:
+"softThresholdTokens": 10000
 ```
 
 ### memory-core entries block — Noah (apply now, no upgrade)
@@ -223,7 +314,7 @@ Per-channel trading guardrails hardened in 2026.5.22. MUST be configured before 
 ]
 ```
 
-### Noah model catalog (Day 37 morning target)
+### Noah model catalog (add today — no upgrade needed)
 ```json
 "models": {
   "anthropic/claude-opus-4-7": {},
@@ -275,80 +366,107 @@ Per-channel trading guardrails hardened in 2026.5.22. MUST be configured before 
 cp openclaw.json openclaw.json.bak-pre-5.22
 ```
 
+### Subagents — Both (post setup)
+```json
+// Josh: parallel heartbeat workers
+"subagents": {
+  "runTimeoutSeconds": 60,
+  "model": { "primary": "google/gemini-3-flash-preview" }
+}
+
+// Noah: parallel sector scan workers (cheaper model)
+"subagents": {
+  "runTimeoutSeconds": 120,
+  "model": { "primary": "anthropic/claude-haiku-4-5" }
+}
+```
+
 ---
 
-## Platform Risk Summary (Active — Day 37)
+## Platform Risk Summary (Active — Day 38)
 
 | Risk | Instance | Severity | Day # | Fix |
 |------|----------|----------|-------|-----|
 | contextPruning 5m TTL | Noah | CRITICAL | **11** | 60 sec, no restart |
-| MEMORY.md never created | Both | CRITICAL | **37** | 15 min, zero risk |
-| IDENTITY.md + USER.md blank | Noah | CRITICAL | **34+** | 15 min, zero risk |
-| Dead fallback claude-3.5-haiku | Josh | MEDIUM | **17** | 1 min, no restart |
-| memory-core not in entries | Noah | HIGH | **26** | 3 min, no restart |
-| Active Memory not configured | Noah | HIGH | **NEW** | 5 min, available now |
+| MEMORY.md never created | Both | CRITICAL | **38** | 15 min, zero risk |
+| IDENTITY.md + USER.md blank | Noah | CRITICAL | **38** | 15 min, zero risk |
+| compaction config missing | Josh | HIGH | **NEW** | 2 min, no restart |
+| memory-core not in entries | Noah | HIGH | **27** | 3 min, no restart |
+| softThresholdTokens too low | Noah | MEDIUM | **NEW** | 1 line, no restart |
+| Dead fallback claude-3.5-haiku | Josh | MEDIUM | **18** | 1 min, no restart |
+| Active Memory not configured | Noah | HIGH | 2 days | 5 min, available now |
 | iMessage bridge paused | Josh | MEDIUM | **28+** | Investigation needed |
-| skills/gog-cli unaudited | Noah | HIGH | **—** | Audit or remove |
+| skills/gog-cli unaudited | Noah | HIGH | — | Audit or remove |
+| AGENTS.md emoji contradiction | Josh | MEDIUM | **38** | 2 min, edit file |
+| AGENTS.md missing trading guardrails | Noah | MEDIUM | **38** | 30 min (write rules) |
+| HEARTBEAT.md broken structure | Noah | HIGH | **38** | Replace file, 5 min |
+| Node.js 22.19 check | Both | LOW | NEW | `node --version` |
 | Config backup before upgrade | Both | HIGH | — | Before any change |
-| SOUL.md identical (both generic) | Both | MEDIUM | **37** | 30 min total |
-| HEARTBEAT.md empty | Both | HIGH | **37** | 10 min total |
 
 ---
 
-## Priority Matrix — Fleet-Wide (Day 37 Morning)
+## Priority Matrix — Fleet-Wide (Day 38 Morning)
 
 ### CRITICAL — Right Now (No Upgrade Needed)
 | Item | Josh | Noah |
 |---|---|---|
-| Fix contextPruning 5m → 30m | N/A | 🔴 **60 sec — Day 11** |
-| Create MEMORY.md | 🔴 **5 min — Day 37** | 🔴 **15 min — Day 37** |
-| Enable memory-core in entries | N/A (upgrade first) | 🔴 **3 min — Day 26** |
-| Enable Active Memory plugin | N/A (upgrade first) | 🟢 **5 min — AVAILABLE NOW** |
-| Fill IDENTITY.md + USER.md | N/A (done) | 🔴 **15 min — Day 34** |
-| Fix dead claude-3.5-haiku fallback | 🔴 **1 min — Day 17** | N/A |
+| Fix contextPruning 5m → 30m | Add it (missing entirely) | 🔴 **60 sec — Day 11** |
+| Add compaction config | 🔴 **2 min — prerequisite for memory** | N/A (has it, update threshold) |
+| Create MEMORY.md | 🔴 **15 min — Day 38** | 🔴 **15 min — Day 38** |
+| Enable memory-core in entries | N/A (upgrade first) | 🔴 **3 min — Day 27** |
+| Increase softThresholdTokens to 10000 | Set 6000 (above) | 🟢 **1 min — NEW** |
+| Enable Active Memory plugin | N/A (upgrade first) | 🟢 **5 min — available now** |
+| Fill IDENTITY.md + USER.md | N/A (done) | 🔴 **15 min — Day 38** |
+| Fix dead claude-3.5-haiku fallback | 🔴 **1 min — Day 18** | N/A |
+| Fix AGENTS.md emoji contradiction | 🔴 **2 min — Day 38** | N/A |
 
 ### HIGH — This Week
 | Item | Josh | Noah |
 |---|---|---|
 | Upgrade to OpenClaw 2026.5.22 | 3.22 → 5.22 | 4.15 → 5.22 |
-| Add HEARTBEAT.md content | □ 10 min | □ 10 min |
+| Replace HEARTBEAT.md (broken) | Add tasks | Replace structure entirely |
 | Enable Discord streaming `progress` | □ 1 min | □ 1 min |
+| Populate TOOLS.md | □ 10 min | □ 10 min |
+| Personalize SOUL.md + AGENTS.md | □ 30 min | □ 30 min (+ add trading rules) |
 | Audit skills/gog-cli | N/A | □ **HIGH security** |
+| Node.js 22.19 check | □ Pre-upgrade | □ Pre-upgrade |
 | Reconnect iMessage bridge | 🟡 Needed for 👍👎 reactions | N/A |
 
 ### MEDIUM — Post-Upgrade
 | Item | Josh | Noah |
 |---|---|---|
-| Personalize SOUL.md | □ 30 min | □ 30 min |
+| Discord button interactions | □ Post-upgrade (zero config) | □ Post-upgrade |
 | Meeting Capture plugin (Discord voice) | □ Post-upgrade | N/A |
 | Active Memory + allowedChatIds | □ Post-upgrade | ✅ Available now |
 | Cron pre/post-market jobs | N/A | □ Post-upgrade |
+| Subagents parallel tasks | □ After HEARTBEAT.md | □ Post-upgrade + cron |
 
 ### LOW / OPPORTUNITY — Post-Upgrade
 | Item | Josh | Noah |
 |---|---|---|
-| iMessage 👍👎 reactions | □ 2026.5.24 stable (~June 1-4) | N/A |
+| iMessage 👍👎 reactions | □ 2026.5.24 stable (≈June 1-4) | N/A |
 | xAI/Grok — X/Twitter signals | N/A | □ **On upgrade (direct alpha edge)** |
-| Alpaca MCP V2 (61 actions) | N/A | □ Post-upgrade |
+| Alpaca MCP V2 (61 actions) | N/A | □ **Post-upgrade (screening + option chains)** |
 | EdgarTools MCP (free EDGAR) | N/A | □ Post-upgrade |
 | Policy plugin (before live keys) | N/A | □ Before any live trading |
 | claude-opus-4-7 to Noah catalog | N/A | □ 1 min today |
+| xai/grok-3-mini to Noah catalog | N/A | □ 1 min today |
 | Discord voice status queries | □ 2026.5.24 stable | N/A |
 
 ---
 
-## Trend Analysis — Day 37
+## Trend Analysis — Day 38
 
-**Zero implementations across 37 days of documented research.**
+**Zero implementations across 38 days of documented research.**
 
-**Josh:** ~25 stable releases behind. Dead fallback model is a 1-minute fix sitting for 17 days. iMessage paused. MEMORY.md missing 37 days. SOUL.md is the byte-for-byte upstream template — identical to Noah's. ~113 cumulative findings, 0 resolved.
+**Josh:** ~25 stable releases behind. No compaction config — even if MEMORY.md is created today, long sessions risk silent data loss. Dead fallback model is an 18-day 1-minute fix. Emoji contradiction in AGENTS.md creates behavioral violations every Discord session. ~120 cumulative findings, 0 resolved.
 
-**Noah:** contextPruning 5m TTL is Day 11 critical against daily market sessions — 6 context resets per research session, every day, for 11 days. Active Memory is now confirmed available today without any upgrade. IDENTITY.md and USER.md blank for 34+ days despite Noah Katz's full profile available in workspace/reports. ~130 cumulative findings, 0 resolved.
+**Noah:** contextPruning 5m TTL is Day 11 critical against daily market sessions — a 60-second fix undone for 11 consecutive trading days. memory-core is whitelisted but never instantiated (Day 27). IDENTITY.md and USER.md blank for 38 days despite Noah Katz’s full profile in workspace/reports. Alpaca MCP V2 now confirmed at 61 actions with new market screening tools. xAI/Grok pipeline confirmed practical via OAuth profile reuse. ~140 cumulative findings, 0 resolved.
 
-**Both:** 37 sessions of complete statelessness. SOUL.md, AGENTS.md, TOOLS.md remain byte-for-byte identical between a personal assistant and a trading agent. The divide between documented capability and implemented capability is now approaching 130 findings across 37 days with zero implementations.
+**Both:** 38 sessions of complete statelessness. SOUL.md, AGENTS.md, TOOLS.md remain byte-for-byte identical between a personal assistant and a trading agent. The divide between documented capability and implemented capability now spans 38 days with zero implementations and ~260 cumulative findings across both instances.
 
-**New this morning (2026-05-25):** 2026.5.22 is confirmed stable — upgrade target corrects for both. Active Memory plugin is available to Noah today (no upgrade). iMessage 👍👎 reactions confirmed in beta (Josh-specific). contextPruning Day 11 — market opens in hours.
+**New this morning (2026-05-26):** Josh has no compaction config — MEMORY.md creation alone is insufficient. Alpaca MCP V2 confirmed at 61 actions with market screening. xAI/Grok OAuth reuse makes pre-market X pipeline practical. Subagents enable parallel task execution for both. Node.js 22.19 minimum — check before upgrade. softThresholdTokens 4000 is too low for Noah’s tool-heavy trading sessions.
 
 ---
 
-*Generated by AlphaClaw Apex Fleet Research Agent — Morning Scan — 2026-05-25 (Day 37)*
+*Generated by AlphaClaw Apex Fleet Research Agent — Morning Scan — 2026-05-26 (Day 38)*
