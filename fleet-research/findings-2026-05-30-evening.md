@@ -1,18 +1,16 @@
-# Fleet Research — Findings: 2026-05-30 Evening Scan
-
----
+# Fleet Research: Findings — 2026-05-30 Evening Scan
 
 ## Scan Metadata
 
 | Field | Value |
 |---|---|
-| Scan date | 2026-05-30 (evening) |
-| Scan type | Daily evening / cumulative review |
-| Instance | Heather Schwartz (Discord personal assistant) |
-| Customer | Josh Meyers |
+| Scan Date | 2026-05-30 (evening) |
+| Scan Type | Incremental + Persistent Review |
+| Instance | Heather Schwartz (Josh Meyers) |
 | Repo | lylle-rgb/josh_repo |
-| Previous scan | 2026-05-29 evening |
-| Analyst | Fleet research bot |
+| Previous Scan | 2026-05-29 evening |
+| Scanner | AlphaClaw Fleet Research |
+| AlphaClaw UI | https://5.78.142.81.sslip.io |
 
 ---
 
@@ -20,48 +18,46 @@
 
 | Item | Current | Latest Stable | Gap | Notes |
 |---|---|---|---|---|
-| OpenClaw version | 2026.3.22 | 2026.5.27 | **69 days behind** | URGENT — upgrade target confirmed |
-| Beta track | — | 2026.5.28-beta.1, beta.2 (May 29) | — | NOT stable; do NOT upgrade to beta |
-| AlphaClaw UI | https://5.78.142.81.sslip.io | — | — | Active |
-| Primary model | google/gemini-3-flash-preview | — | — | OK |
-| OpenRouter fallback | openrouter/anthropic/claude-3.5-haiku | — | — | DEAD — remove |
-| iMessage | paused (confirmed inbox-state.json) | — | — | Fix in 2026.5.27 |
-| Email | Active — recent timestamps confirmed | — | — | OK |
-| Memory layer | None | Active Memory Plugin (avail. post-upgrade) | — | CRITICAL gap |
+| OpenClaw version | 2026.3.22 | 2026.5.27 | **69 days** | Upgrade HIGH priority |
+| Beta track | — | 2026.5.28-beta.2 | — | Not stable; do not target |
+| AlphaClaw UI | Active | — | — | Accessible at sslip.io address |
+| Primary model | google/gemini-3-flash-preview | — | — | As configured in openclaw.json |
+| OpenRouter fallback | openrouter/anthropic/claude-3.5-haiku | — | — | Dead endpoint — remove |
+| iMessage | Paused | — | — | Fix available in 2026.5.27 |
+| Email | Active | — | — | Gmail checked, one thread drafted |
 
 ---
 
 ## New Findings — 2026-05-30 Evening (JOSH-71 through JOSH-76)
 
-### JOSH-71 — Beta Releases 2026.5.28-beta.1 and beta.2 Available (INFO / WATCH)
+### JOSH-71 — Beta Releases 2026.5.28-beta.1 and beta.2 Detected (INFO)
 
-**Severity:** INFO  
-**Requires VPS:** No  
-**Discovery:** OpenClaw released beta.1 and beta.2 on 2026-05-29.
+**Priority:** INFO
+**Status:** New — Do Not Act
+**Detail:**
+OpenClaw released two beta builds on 2026-05-29:
+- `2026.5.28-beta.1` — subagent cwd/workspace separation
+- `2026.5.28-beta.2` — session locks releasing on timeout; hook context staying prompt-local
 
-**What changed in beta:**
-- Subagent cwd/workspace separation
-- Session locks now release on timeout (previously hung)
-- Hook context scoped prompt-local (not session-global)
+These are not stable. The upgrade target remains `2026.5.27`. Tracking here for awareness. If beta.2 clears a stabilization window (typically 7–10 days without a hotfix), it may become the new stable target before Josh's upgrade is executed.
 
-**Disposition:** These betas are NOT stable and should NOT be deployed to Heather's instance. The upgrade target remains **2026.5.27 stable**. Continue monitoring; if beta graduates to stable before Josh upgrades, update the upgrade target accordingly.
+**Action:** Monitor only. No upgrade action until stable.
 
 ---
 
-### JOSH-72 — Active Memory Plugin Available Post-Upgrade (HIGH — Actionable on Upgrade)
+### JOSH-72 — Active Memory Plugin Available Post-Upgrade (HIGH)
 
-**Severity:** HIGH  
-**Requires VPS:** Yes (post-upgrade)  
-**Discovery:** Active Memory Plugin introduced in OpenClaw 2026.4.12. Will become available to Heather upon upgrade from 2026.3.22 → 2026.5.27.
+**Priority:** HIGH
+**Status:** New — Blocked on upgrade to 2026.5.27
+**Detail:**
+The Active Memory Plugin (introduced in OpenClaw 2026.4.12) will become available to Heather immediately upon upgrading from 2026.3.22 → 2026.5.27. This is directly relevant given JOSH-30 (MEMORY.md never created, 69+ days).
 
-**What it does:**  
-A dedicated memory sub-agent runs BEFORE each reply, pre-fetching relevant context from MEMORY.md and daily notes files. This directly addresses JOSH-30 (MEMORY.md never created) and JOSH-31/69 (HEARTBEAT.md empty).
+The plugin runs a dedicated memory sub-agent BEFORE each reply, pre-fetching relevant context from MEMORY.md and any daily note files matching the current date. This directly addresses Heather's zero long-term memory retention problem.
 
-**Recommended config (to be added to openclaw.json `plugins.entries` post-upgrade):**
+**Recommended config (to add to openclaw.json after upgrade):**
 ```json
 {
   "plugin": "active-memory",
-  "enabled": true,
   "scope": "main",
   "channels": ["dm"],
   "queryMode": "recent",
@@ -70,134 +66,142 @@ A dedicated memory sub-agent runs BEFORE each reply, pre-fetching relevant conte
 }
 ```
 
-**Blocking dependency:** Requires MEMORY.md to exist and be populated first. See JOSH-30 and soul-improvements doc.
+Full config block and file path documented in `soul-improvements-2026-05-30-evening.md`.
+
+**Action:** Prepare config now; apply immediately post-upgrade.
 
 ---
 
-### JOSH-73 — inbox-state.json Confirms iMessage Monitoring Paused (HIGH — Confirmed)
+### JOSH-73 — inbox-state.json Confirms iMessage Paused, Email Active (MEDIUM)
 
-**Severity:** HIGH  
-**Requires VPS:** Yes (post-upgrade)  
-**Discovery:** Direct read of `workspace/memory/inbox-state.json` confirms `imessage_monitoring_paused=true`.
+**Priority:** MEDIUM
+**Status:** New confirmation of known iMessage issue
+**Detail:**
+`workspace/memory/inbox-state.json` was read and confirms:
+- `imessage_monitoring_paused: true` — iMessage has been suspended. The iMessage fix is included in 2026.5.27. No workaround exists on current version.
+- Email is actively being checked — recent timestamps present.
+- One Gmail thread has been drafted (not yet sent or confirmed sent).
 
-**Status:**
-- Email: being checked, recent timestamps present, one Gmail thread drafted — **WORKING**
-- iMessage: explicitly paused — **BROKEN**
-
-**Fix:** iMessage monitoring fix ships in OpenClaw 2026.5.27. No workaround available on current 2026.3.22. Upgrade is the fix.
-
-**Note:** Josh's primary channel is Discord; iMessage is a monitored secondary inbox. Impact is moderate day-to-day, but iMessage is part of the personal assistant brief.
+**Action:** iMessage restoration is tied to the 2026.5.27 upgrade (JOSH-39/66). No independent action required here, but flag for Josh that iMessage is NOT currently operational.
 
 ---
 
-### JOSH-74 — Google Integration: API Key Mode vs gog/OAuth Clarification (INFO)
+### JOSH-74 — Google Integration: API Key Mode, Not gog/OAuth (INFO)
 
-**Severity:** INFO  
-**Requires VPS:** No  
-**Discovery:** `hooks/bootstrap/TOOLS.md` states "No Google accounts are currently configured." This is accurate for gog/OAuth pathway but is potentially misleading — Josh has Google services connected via API key mode.
+**Priority:** INFO
+**Status:** New clarification
+**Detail:**
+`hooks/bootstrap/TOOLS.md` states "No Google accounts are currently configured." This is technically accurate for the `gog`-cli OAuth flow, but Josh's Google connectivity (Gmail, Calendar) is handled via native API key mode — not the gog/OAuth path. This is not a bug or misconfiguration.
 
-**Disposition:** Not a bug. Heather's Google integration (Gmail, Calendar, Contacts) runs via native API key mode, not through the gog-cli OAuth flow. The TOOLS.md statement is technically accurate in context. However, if Josh ever reads that file he may think Google is broken. Recommend adding a clarifying comment to TOOLS.md.
+However, this creates a potential confusion point: any automated diagnostic or future team member reading TOOLS.md may incorrectly conclude Google is disconnected. The file should note the API key mode integration to avoid false alarms.
 
-**No immediate action required.** Low priority annotation.
-
----
-
-### JOSH-75 — Zero Long-Term Memory: 69 Days of Activity, No Retention (CRITICAL — Escalating)
-
-**Severity:** CRITICAL  
-**Requires VPS:** No (MEMORY.md creation is GitHub-only)  
-**Discovery:** `workspace/memory/` exists with 2 files (`inbox-state.json`, `onboarding-google.md`) but contains NO `MEMORY.md` and NO daily `YYYY-MM-DD.md` files. 69 days of email, calendar, and contact activity with zero durable memory retention.
-
-**Impact:**
-- Heather has no cross-session context about Josh's business relationships, preferences, or ongoing projects
-- Every session starts cold — no continuity
-- Active Memory Plugin (JOSH-72) cannot function without MEMORY.md
-
-**Action:** Create MEMORY.md immediately. Template provided in soul-improvements doc. This is a GitHub-only action — no VPS access needed.
-
-**Escalation status:** Day 69. This finding first appeared at instance launch. Every additional day compounds the gap.
+**Action:** Add a clarifying comment to `hooks/bootstrap/TOOLS.md` (GitHub-only edit).
 
 ---
 
-### JOSH-76 — SEC "Zero-Tolerance" AI Market Monitoring — Validates Proactive Stance (CONTEXT)
+### JOSH-75 — 69 Days of Email Activity, Zero Long-Term Memory (CRITICAL ESCALATION)
 
-**Severity:** INFO / CONTEXT  
-**Requires VPS:** No  
-**Discovery:** SEC publicly announced AI-driven zero-tolerance market monitoring as of this cycle.
+**Priority:** CRITICAL — Escalating from HIGH
+**Status:** Confirmed by filesystem scan
+**Detail:**
+`workspace/memory/` contains exactly two files:
+- `inbox-state.json`
+- `onboarding-google.md`
 
-**Relevance to Josh:** As a founder/CEO (Bliss Lifestyle) and partner (Oben HiFi), Josh operates in a space where regulatory awareness matters. This validates the fleet-wide push for proactive monitoring posture (HEARTBEAT.md population — JOSH-31/69). A personal assistant that surfaces relevant regulatory context before Josh asks is more valuable than one that only responds reactively.
+There are NO daily `YYYY-MM-DD.md` files and NO `MEMORY.md`. This means 69 days of email processing, calendar events, and assistant interactions have produced zero persistent memory. Every session Heather starts is completely blank — no recollection of Josh's ongoing projects, threads, relationships, or preferences beyond what is in USER.md.
 
-**Action:** Reinforces priority of populating HEARTBEAT.md with proactive monitoring tasks. No direct code change required.
+Combined with JOSH-72 (Active Memory Plugin) and JOSH-30 (MEMORY.md missing), this is the single highest-impact gap in the deployment.
+
+**Action:** Create MEMORY.md immediately (GitHub-only, template in soul-improvements doc). Configure Active Memory Plugin post-upgrade.
 
 ---
 
-## Persistent Findings — Unresolved
+### JOSH-76 — SEC AI Monitoring Context: Proactive Heartbeat Validated (INFO)
 
-| ID | Summary | Severity | VPS Required | Status | Days Open |
+**Priority:** INFO / Strategic context
+**Status:** New external context
+**Detail:**
+The SEC is deploying AI-powered "zero-tolerance" market monitoring infrastructure. This is externally relevant context validating the importance of proactive monitoring posture for all AI assistants operating in business/financial contexts. Josh runs Bliss Lifestyle and partners on Oben HiFi — both consumer-facing businesses where brand reputation and communication responsiveness matter.
+
+Heather's HEARTBEAT.md being empty for 69 days (JOSH-31/69) means there is no proactive monitoring loop at all — no scheduled email checks, no calendar awareness, no memory maintenance. This is the exact gap this external trend makes more acute.
+
+**Action:** Reinforces priority of populating HEARTBEAT.md with proactive monitoring tasks (template in soul-improvements doc). GitHub-only edit.
+
+---
+
+## Persistent Findings — All Unresolved Items
+
+| ID | Summary | Priority | Days Open | Action Type | Status |
 |---|---|---|---|---|---|
-| JOSH-30 | MEMORY.md never created | CRITICAL | No | Open | 69+ |
-| JOSH-31/69 | HEARTBEAT.md empty — no proactive monitoring | HIGH | No | Open | 69 |
-| JOSH-34/70 | Emoji reaction contradiction: AGENTS.md vs USER.md | MEDIUM | No | Open | — |
-| JOSH-37 | SOUL.md never personalized (stock template) | MEDIUM | No | Open | 69 |
-| JOSH-39/66 | Upgrade to 2026.5.27 (69 days behind stable) | HIGH | Yes | Open | 69 |
-| JOSH-42 | ClawHub skills security advisory | MEDIUM | No | Open | — |
-| JOSH-50 | Dead OpenRouter fallback in openclaw.json | MEDIUM | No (JSON edit) | Open | — |
-| JOSH-55 | TOOLS.md empty — no actual tool data | MEDIUM | No | Open | 69 |
-| JOSH-63 | BOOTSTRAP.md never deleted | MEDIUM | No | Open | 69 |
-| JOSH-67 | Security group prompt isolation (post-upgrade) | HIGH | Yes | Blocked on upgrade | — |
-| JOSH-68 | Discord voice/wake improvements (post-upgrade) | INFO | Yes | Blocked on upgrade | — |
-| JOSH-71 | Beta 2026.5.28-beta.1/2 — watch only | INFO | — | Monitoring | New |
-| JOSH-72 | Active Memory Plugin — enable post-upgrade | HIGH | Yes | Blocked on upgrade | New |
-| JOSH-73 | iMessage paused (confirmed) | HIGH | Yes | Blocked on upgrade | New |
-| JOSH-74 | TOOLS.md gog/OAuth vs API key clarification | INFO | No | Low priority | New |
-| JOSH-75 | Zero long-term memory — 69 days, no MEMORY.md | CRITICAL | No | Open — escalating | New |
-| JOSH-76 | SEC AI monitoring context | INFO | — | Context only | New |
+| JOSH-30 | MEMORY.md never created | CRITICAL | 69+ | GitHub-only | Unresolved |
+| JOSH-31/69 | HEARTBEAT.md empty | HIGH → ESCALATING | 69 | GitHub-only | Unresolved |
+| JOSH-34/70 | Emoji contradiction: AGENTS.md vs USER.md | MEDIUM | 69 | GitHub-only | Unresolved |
+| JOSH-37 | SOUL.md never personalized | MEDIUM | 69 | GitHub-only | Unresolved |
+| JOSH-39/66 | Upgrade to 2026.5.27 (iMessage fix, memory plugin) | HIGH | 69 | VPS-required | Unresolved |
+| JOSH-42 | ClawHub skills security advisory | MEDIUM | — | VPS-required | Unresolved |
+| JOSH-50 | Dead OpenRouter fallback in openclaw.json | MEDIUM | — | GitHub-only | Unresolved |
+| JOSH-55 | TOOLS.md completely empty | MEDIUM | — | GitHub-only | Unresolved |
+| JOSH-63 | BOOTSTRAP.md never deleted | MEDIUM | 69 | GitHub-only | Unresolved |
+| JOSH-67 | Security group prompt isolation (post-upgrade) | HIGH | — | VPS-required (post-upgrade) | Blocked on upgrade |
+| JOSH-68 | Discord voice/wake improvements (post-upgrade) | INFO | — | VPS-required (post-upgrade) | Blocked on upgrade |
+| JOSH-71 | Beta 2026.5.28-beta.1/.2 detected | INFO | 0 | Monitor only | New — tracking |
+| JOSH-72 | Active Memory Plugin available post-upgrade | HIGH | 0 | GitHub-only (prep) + VPS (apply) | New — blocked on upgrade |
+| JOSH-73 | iMessage paused confirmed in inbox-state.json | MEDIUM | 0 | VPS-required (via upgrade) | New — confirmed |
+| JOSH-74 | Google API key mode vs gog/OAuth clarification | INFO | 0 | GitHub-only | New |
+| JOSH-75 | 69 days email activity, zero memory retention | CRITICAL | 0 | GitHub-only + VPS (post-upgrade) | New — escalated |
+| JOSH-76 | SEC AI monitoring context — heartbeat urgency | INFO | 0 | Strategic note | New |
 
 ---
 
 ## Immediate Action List
 
-### GitHub-Only Actions (No VPS Access Needed)
+### GitHub-Only (No VPS Access Required) — Do These First
 
-Priority order:
+1. **[CRITICAL] Create MEMORY.md** — `MEMORY.md` in repo root. Template in soul-improvements doc. Resolves JOSH-30 and partially addresses JOSH-75.
+2. **[HIGH] Populate HEARTBEAT.md** — Replace empty file with full proactive monitoring task list. Template in soul-improvements doc. Resolves JOSH-31/69 and JOSH-76.
+3. **[MEDIUM] Fix AGENTS.md emoji contradiction** — Add Josh-specific override block at TOP of `AGENTS.md` disabling emoji reactions, referencing USER.md rule. Exact text in soul-improvements doc. Resolves JOSH-34/70.
+4. **[MEDIUM] Personalize SOUL.md** — Add Heather-specific personality notes for luxury brand founder context. Additions in soul-improvements doc. Resolves JOSH-37.
+5. **[MEDIUM] Populate TOOLS.md** — Document actual tool integrations (Gmail API key mode, Discord, iMessage paused). Resolves JOSH-55.
+6. **[MEDIUM] Fix openclaw.json dead fallback** — Remove `openrouter/anthropic/claude-3.5-haiku` from models list. Resolves JOSH-50.
+7. **[MEDIUM] Delete BOOTSTRAP.md** — Should have been removed at go-live 69 days ago. Resolves JOSH-63.
+8. **[INFO] Clarify hooks/bootstrap/TOOLS.md** — Add note that Google is connected via API key mode, not gog/OAuth. Resolves JOSH-74.
 
-1. **[CRITICAL] Create MEMORY.md** — Template in soul-improvements doc. Heather has no cross-session memory. 69 days of data lost. GitHub file creation only.
-2. **[HIGH] Populate HEARTBEAT.md** — Replace empty file with proactive monitoring task list. See soul-improvements doc for full content.
-3. **[MEDIUM] Fix AGENTS.md emoji contradiction** — Add Josh-specific override block at top of AGENTS.md to disable emoji reactions, referencing USER.md rule. Exact text in soul-improvements doc.
-4. **[MEDIUM] Personalize SOUL.md** — Add Josh/Heather-specific personality notes. Additions in soul-improvements doc.
-5. **[MEDIUM] Remove dead OpenRouter fallback** — Edit openclaw.json to remove `openrouter/anthropic/claude-3.5-haiku` from models list.
-6. **[MEDIUM] Delete BOOTSTRAP.md** — This file should have been removed at launch (69 days ago).
-7. **[LOW] Annotate TOOLS.md** — Add note clarifying Google is connected via API key mode, not gog/OAuth.
+### VPS-Required (Require Server Access)
 
-### VPS-Required Actions (Require Server Access)
-
-Priority order:
-
-1. **[HIGH] Upgrade OpenClaw 2026.3.22 → 2026.5.27** — Unlocks iMessage fix, security prompt isolation, Discord voice improvements, and Active Memory Plugin. Do NOT upgrade to 2026.5.28-beta.
-2. **[HIGH] Enable Active Memory Plugin post-upgrade** — Add config block to openclaw.json (see soul-improvements doc). Requires MEMORY.md to exist first.
-3. **[HIGH] Verify iMessage resumes post-upgrade** — Confirm `imessage_monitoring_paused` clears after 2026.5.27 upgrade.
-4. **[HIGH] Configure security group prompt isolation** — Available post-upgrade.
+1. **[HIGH] Upgrade OpenClaw 2026.3.22 → 2026.5.27** — Resolves JOSH-39/66, enables iMessage (JOSH-73), enables Active Memory Plugin (JOSH-72), enables security group prompt isolation (JOSH-67), enables Discord improvements (JOSH-68). Do NOT upgrade to beta.
+2. **[HIGH — post-upgrade] Apply Active Memory Plugin config** — Add plugin entry to openclaw.json after upgrade. Config in soul-improvements doc. Resolves JOSH-72.
+3. **[HIGH — post-upgrade] Enable security group prompt isolation** — Resolves JOSH-67.
+4. **[HIGH — post-upgrade] Verify iMessage resumes** — Confirm `imessage_monitoring_paused` clears after upgrade.
+5. **[MEDIUM] Review ClawHub skills security advisory** — Resolves JOSH-42.
 
 ---
 
 ## Platform Research Notes
 
-### OpenClaw 2026.5.28-beta.1 / beta.2 (Released 2026-05-29)
+### OpenClaw Beta Tracking (as of 2026-05-30)
 
-Beta changes in this cycle are infrastructure-level (subagent workspace isolation, lock timeouts, hook scope). These are low-risk features but unproven. Standard fleet policy: wait for stable graduation before deployment. Expected stable window: 1–2 weeks if no regressions found.
+- `2026.5.27` — Current stable. Upgrade target for Josh.
+- `2026.5.28-beta.1` — Released 2026-05-29. Subagent cwd/workspace separation.
+- `2026.5.28-beta.2` — Released 2026-05-29. Session locks releasing on timeout; hook context staying prompt-local.
+- Beta stabilization window typically 7–10 days. If no hotfix by ~2026-06-08, beta.2 may be promoted to stable. At that point, reconsider upgrade target before executing Josh's upgrade.
 
-### Active Memory Plugin — Architecture Note
+### Active Memory Plugin — Background
 
-The plugin inserts a pre-reply pass: before Heather generates any response, a memory sub-agent reads MEMORY.md and any matching daily notes, summarizes relevant context, and injects it as a system-level prefix. The `queryMode: "recent"` setting limits the query to the most recent N entries rather than full-file scan, keeping latency low. The `timeoutMs: 15000` setting ensures the pre-pass fails gracefully if it hangs — Heather will still reply, just without the memory prefix. Recommended scope: `main` agent only, `dm` channels only to avoid polluting group channel responses with personal context.
+Introduced in 2026.4.12. Not available on Josh's current 2026.3.22. The plugin addresses a long-standing limitation of OpenClaw base installs: without it, there is no mechanism for the agent to consult accumulated memory before replying. All context must be in the system prompt or the current conversation. With the plugin enabled:
 
-### iMessage Architecture Note
+- A memory sub-agent runs BEFORE each reply.
+- It reads MEMORY.md and any matching daily note (`workspace/memory/YYYY-MM-DD.md`).
+- It injects a compact summary (capped at `maxSummaryChars`) into the reply context.
+- The `timeoutMs` setting (15000ms recommended) ensures the main agent is not blocked if the memory file is large or the sub-agent is slow.
 
-Josh's iMessage monitoring runs through the macOS bridge component of OpenClaw. The `imessage_monitoring_paused=true` flag in inbox-state.json is set by the bridge when it detects an incompatible macOS entitlement state — a known regression introduced between 2026.3.x and fixed in 2026.5.27. The pause is intentional (prevents duplicate/lost message handling) but has been in effect for the full 69-day deployment lifetime of this instance.
+Scoping to `main` agent + `dm` channels only avoids memory overhead in automated/hook contexts where it is not useful.
 
-### Google Integration Mode Note
+### Google Integration Mode
 
-Josh's instance uses native Google API key integration, not the gog-cli OAuth flow. The gog-cli pathway appears in hooks/bootstrap/TOOLS.md because that file is a stock template. The "No Google accounts configured" message refers specifically to gog/OAuth accounts. Josh's actual Google connectivity (Gmail, Calendar, Contacts) is handled by openclaw.json service credentials directly. Both pathways ultimately call the same Google APIs; the difference is auth method and tooling.
+Josh's instance uses Google native API key integration, not the `gog`-cli OAuth flow. The `gog` path shows "no accounts configured" which is accurate for that specific path only. Gmail and Calendar access are functional via the API key configured at install. No action required on Google connectivity — but documentation should reflect this to avoid false alerts in future scans.
 
----
+### iMessage Status
+
+iMessage monitoring was paused at some point during the 69-day deployment. The `inbox-state.json` file shows `imessage_monitoring_paused: true`. The 2026.5.27 release notes include an iMessage fix. Once upgraded, iMessage should resume automatically — confirm in the post-upgrade checklist that the flag clears.
 
 *Document generated: 2026-05-30 evening — fleet research*
