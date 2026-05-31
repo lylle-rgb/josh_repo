@@ -1,418 +1,212 @@
-# Cross-Customer Analysis — AlphaClaw Apex Fleet
-
-**Last Updated:** 2026-05-30 Morning (Day 42)
-**Instances:** Josh (Heather Schwartz, personal assistant) | Noah (Market Catalyst Agent, stock research)
-**Scan cadence:** Morning + Evening daily
-
----
-
-## Day 42 Morning — New Research (2026-05-30)
-
-### Overnight Release: OpenClaw 2026.5.28-beta.3
-
-No new stable release. Current upgrade target for both instances remains **2026.5.27**.
-
-| Instance | Current | Upgrade Target | Days Behind |
-|----------|---------|----------------|-------------|
-| Josh | 2026.3.22 | 2026.5.27 | **70 days** |
-| Noah | 2026.4.15 | 2026.5.27 | **45 days** |
-
-`2026.5.28-beta.3` released overnight. Expected stable promotion: ~2026-06-08. Key changes:
-- **Session locks release on timeout abort** — directly relevant to Noah's 30-min pre-market sessions
-- **iMessage reactions/approvals channel delivery fix** — relevant for Josh post-upgrade
-- **Source-provider chunks in transcript infrastructure** — catalyst provenance for Noah
-- **Startup scan deduplication + package optimization** — faster cold starts for both
-
-Do not target beta. Upgrade to 2026.5.27 first, re-evaluate 2026.5.28 when stable.
+# Fleet Research: Cross-Customer Analysis
+**Last Updated:** 2026-05-31 morning
+**Fleet:** AlphaClaw Apex (2 instances)
+**Customers:** Josh (Heather Schwartz) · Noah (Market Catalyst Agent)
 
 ---
 
-### JOSH-78: memory-core Gemini Embeddings — No New API Keys Needed
+## Fleet-Wide Platform Status
 
-A critical planning update for Josh's post-upgrade memory stack. `memory-core` supports Google as the embedding provider (`google/text-embedding-004`), and Josh already has `google:default` credentials configured in `openclaw.json`. This means the full post-upgrade memory stack runs entirely on existing credentials — no OpenAI API key required.
+| Metric | Josh (Heather) | Noah (MCA) | Fleet Target |
+|---|---|---|---|
+| OpenClaw version | 2026.3.22 | 2026.4.15 | **2026.5.28** |
+| Days behind stable | **71** | **47** | 0 |
+| Latest stable | 2026.5.28 | 2026.5.28 | 2026.5.28 |
+| Latest beta | 2026.5.30-beta.1 | 2026.5.30-beta.1 | (Monitor) |
+| Primary model | google/gemini-3-flash-preview | anthropic/claude-sonnet-4-6 | — |
+| Upgrade action | VPS required | VPS required | **Skip 2026.5.27 — go to 2026.5.28** |
 
-**Post-upgrade addition to `agents.defaults` in `openclaw.json`:**
-```json
-"memorySearch": {
-  "provider": "google",
-  "model": "text-embedding-004"
-}
-```
-
-This changes the post-upgrade plan (previously assumed OpenAI embeddings as default). The complete memory stack becomes:
-- Primary model: `google/gemini-3-flash-preview` ✅ existing
-- Fallback chain: Gemini 3.5 Flash → Gemini 3.1 Flash Lite → Gemini 2.5 Flash ✅ planned
-- Embedding provider: `google/text-embedding-004` ✅ no new keys
+**Key update:** `2026.5.28` was promoted to stable on 2026-05-30. Both instances' upgrade targets are now `2026.5.28`. Do not target `2026.5.27` for either instance.
 
 ---
 
-### NOAH-88: memory-core "Dreaming" — Updated Config Block
+## Workspace Files Gap Analysis
 
-The `memory-core` plugin includes a dreaming subsystem for autonomous off-hours memory consolidation. The updated Noah config block (supersedes Day 41 version in the shared config library below):
+### Josh (lylle-rgb/josh_repo → workspace/)
 
-```json
-"memory-core": {
-  "enabled": true,
-  "config": {
-    "dreaming": {
-      "enabled": true,
-      "frequencyHours": 6,
-      "model": "anthropic/claude-haiku-4-5-20251001",
-      "maxEntriesPerRun": 20
-    },
-    "deduplication": true,
-    "temporalDecay": true,
-    "search": {
-      "hybrid": {
-        "enabled": true,
-        "vectorWeight": 0.5,
-        "textWeight": 0.5,
-        "candidateMultiplier": 6
-      },
-      "mmr": { "enabled": true, "lambda": 0.6 },
-      "temporalDecay": { "enabled": true, "halfLifeDays": 14 }
-    }
-  }
-}
-```
+| File | Status | Days Gap | Notes |
+|---|---|---|---|
+| SOUL.md | Generic template | 71 | Never personalized for Heather/Josh context |
+| AGENTS.md | Functional but contradicts USER.md | 71 | Emoji reactions enabled vs USER.md STRICT disabling |
+| TOOLS.md | **Empty** | 71 | No tool documentation |
+| HEARTBEAT.md | **Empty** | 71 | No proactive monitoring configured |
+| MEMORY.md | **Missing** | 71 | Never created — critical gap |
+| IDENTITY.md | Present (basic) | — | OK |
+| USER.md | Present (basic) | — | OK |
+| BOOTSTRAP.md | Present (stale) | 71 | Should have been deleted at go-live |
+| hooks/ | Present | — | bootstrap-extra-files active |
+| memory/ | Empty dir | 71 | No memory files |
 
-Using Haiku as the dreaming model keeps off-hours consolidation cost minimal. `halfLifeDays: 14` is appropriate for a trading agent — catalyst signals decay quickly.
+**Josh gap summary:** Missing MEMORY.md (CRITICAL), empty HEARTBEAT.md (HIGH), empty TOOLS.md (MEDIUM), stale SOUL.md (MEDIUM), AGENTS.md emoji contradiction (MEDIUM), stale BOOTSTRAP.md (MEDIUM).
 
 ---
 
-### Day 41 Evening Recap — Key Additions (Not in Prior Morning Scan)
+### Noah (lylle-rgb/noah--repo → workspace/)
 
-**Josh (JOSH-71 through JOSH-76):**
-- Beta 2026.5.28-beta.1/.2 detected (now superseded by beta.3)
-- Active Memory Plugin confirmed available post-upgrade (new in 2026.4.12)
-- `workspace/memory/inbox-state.json` read: iMessage paused confirmed, email active
-- Google connectivity is API key mode (not gog/OAuth) — TOOLS.md should document this
-- 70 days of email activity with zero persistent memory (CRITICAL escalation)
-- SEC AI monitoring validates heartbeat urgency
+| File | Status | Days Gap | Notes |
+|---|---|---|---|
+| SOUL.md | Generic template | 47 | Never personalized for trading agent |
+| AGENTS.md | Generic — no trading rules | 47 | No paper-only guardrail, no trading-specific constraints |
+| TOOLS.md | **Blank template** | 3 | gog-cli capabilities completely undocumented |
+| HEARTBEAT.md | **Structurally broken** | 47 | Fenced code block wraps entire content — agent cannot parse |
+| MEMORY.md | **Missing** | 47 | Never created |
+| IDENTITY.md | **Blank template** | 47 | Agent does not know its own name or role |
+| USER.md | **Blank template** | 47 | Agent does not know Noah Katz's context |
+| BOOTSTRAP.md | Present (stale) | 47 | Should have been deleted at go-live |
+| hooks/ | Present | — | bootstrap-extra-files active |
+| memory/ | Not present | 47 | No memory directory |
 
-**Noah (NOAH-80 through NOAH-86):**
-- **gog-cli confirmed as Google Workspace CLI** (Gmail/Calendar/Drive/Sheets/Tasks/Contacts) authenticated to `Ngkatz.ai@gmail.com` — full capability, zero use for 44 days
-- `gmailWatch.enabled: false` — no live email push, EDGAR alerts not reaching agent
-- `sec-filing-watcher` skill confirmed in OpenClaw marketplace (upgrade dependency)
-- USER.md identity now confirmed from gogcli/state.json: Noah Katz, Ngkatz.ai@gmail.com
-- Active Memory plugin available since day 1 of Noah's current version (2026.4.12 ≤ 2026.4.15)
-- contextPruning TTL escalated to Day 15 (now Day 16 as of this morning)
-
----
-
-## Day 42 Fleet Comparison (Full)
-
-| Dimension | Josh / Heather | Noah / Market Catalyst |
-|---|---|---|
-| OpenClaw version | 2026.3.22 | 2026.4.15 |
-| Latest stable | **2026.5.27** | **2026.5.27** |
-| Gap (days behind) | **70 days** | **45 days** |
-| Latest beta | 2026.5.28-beta.3 | 2026.5.28-beta.3 |
-| compaction config | 🔴 **MISSING — Day 42** | ✅ Configured (softThresholdTokens too low at 4000) |
-| contextPruning TTL | ❌ Not set | 🔴 **5m — DAY 16 CRITICAL** |
-| memory-core | ❌ Not in allow list (version-gated until upgrade) | 🔴 Allowlisted, **no entries — Day 45** |
-| Active Memory plugin | ❌ Version-gated (< 2026.4.10) | 🟢 **Eligible now — not configured** |
-| MEMORY.md | ❌ **Day 70** | ❌ **Day 45** |
-| HEARTBEAT.md | ⚠️ Empty (3 comment lines) | 🔴 **Structurally broken (fenced code block) — Day 45** |
-| IDENTITY.md | ✅ Heather (name set, template artifacts remain) | ❌ **Blank template — Day 45** |
-| USER.md | ✅ Josh (well-populated, best file in repo) | ❌ **Blank template — identity confirmed via gogcli** |
-| SOUL.md | ⚠️ Generic template (SHA: 792306ac — identical) | ⚠️ Generic template (SHA: 792306ac — identical) |
-| AGENTS.md | ⚠️ Emoji contradiction vs USER.md | ⚠️ No trading rules, no gog-cli reference |
-| TOOLS.md | ⚠️ Blank examples only | 🔴 Blank — gog-cli invisible — Day 45 |
-| Dead fallback model | 🔴 claude-3.5-haiku → replace with Gemini 3.5 Flash chain | N/A |
-| Gemini 3.5 Flash fallback | 🟢 Update needed | N/A |
-| Gemini embeddings for memory-core | 🟢 **Confirmed: google/text-embedding-004 (no new keys)** | N/A (uses Anthropic) |
-| memory-core dreaming | 🟡 Available post-upgrade | 🟢 **Config ready (NOAH-88 — Haiku model)** |
-| Google Workspace (gog-cli) | ❌ Not installed | 🔴 **Installed + authed (Ngkatz.ai@gmail.com), unused Day 45** |
-| gmailWatch | N/A | 🔴 **Disabled — no live EDGAR alert delivery** |
-| iMessage bridge | 🔴 Paused — fix in 2026.5.27 | N/A |
-| sec-filing-watcher | N/A | 🟢 In marketplace (upgrade dependency) |
-| Session lock fix | 🟡 In 2026.5.28-beta.3 (stable ~2026-06-08) | 🔴 **Relevant NOW (30-min sessions held by stale locks)** |
-| iMessage reactions fix | 🟢 In 2026.5.28-beta.3 (post-upgrade) | N/A |
-| Source provenance transcripts | 🟡 Available post-2026.5.28 | 🟢 Audit trail value — post-2026.5.28 |
-| OTEL v2 observability | 🟡 Available post-2026.5.27 upgrade | 🟢 High value post-upgrade |
-| Alpaca MCP V2 | N/A | 🟢 Available post-upgrade (V1 compat BROKEN) |
-| EdgarTools MCP | N/A | 🟢 Available post-upgrade |
-| Cron jobs | ❌ None | ❌ **None — idle during market hours** |
-| strictInlineEval | Not set | 🔴 `false` in financial env |
-| Cumulative findings | **~135** | **~167** |
-| Resolved findings | **0** | **0** |
-| Days since last implementation | **42** | **42** |
+**Noah gap summary:** IDENTITY.md blank (CRITICAL), USER.md blank (CRITICAL), TOOLS.md blank (CRITICAL), HEARTBEAT.md broken (HIGH), MEMORY.md missing (HIGH), AGENTS.md has no trading guardrails (HIGH), SOUL.md generic (MEDIUM), stale BOOTSTRAP.md (MEDIUM).
 
 ---
 
-## Shared Config Snippet Library (Current — Day 42)
+## Cross-Customer Comparison
 
-### contextPruning — Noah (CRITICAL — apply now, Day 16)
-```json
-"contextPruning": {
-  "mode": "cache-ttl",
-  "ttl": "30m"
-}
-```
+### Configuration Differences
 
-### compaction — Josh (add to agents.defaults)
-```json
-"compaction": {
-  "reserveTokensFloor": 30000,
-  "memoryFlush": { "enabled": true, "softThresholdTokens": 6000 }
-}
-```
+| Config Item | Josh | Noah | Assessment |
+|---|---|---|---|
+| Primary model | google/gemini-3-flash-preview | anthropic/claude-sonnet-4-6 | Different providers — appropriate for each use case |
+| Fallback models | openrouter/gemini-2.5-flash, openrouter/claude-3.5-haiku (dead) | None | Josh has a dead fallback; Noah has none. Both need cleanup. |
+| contextPruning | Not configured | `"ttl": "5m"` — **BUG** | Noah's TTL is critically short; Josh has no TTL configured (default behavior) |
+| Memory flush | Not configured | `softThresholdTokens: 4000`, `enabled: true` | Noah has memory flush active; Josh does not |
+| context reserve | Not configured | `reserveTokensFloor: 40000` | Noah has reserve floor; Josh does not |
+| Discord groupPolicy | `open` | `allowlist` | Noah's is more secure (allowlist); Josh's is open to all |
+| Discord dmPolicy | `open` | `pairing` | Noah's is more secure (pairing required) |
+| Discord streaming | `off` | Default (likely off) | Both off |
+| Plugins | discord, usage-tracker | anthropic, discord, usage-tracker, memory-core (allow only) | Noah has memory-core allowed but not in entries — half-configured |
+| Gateway controlUi | sslip.io + localhost | sslip.io + localhost | Both have remote UI access configured |
+| Cron/automation | None | None | Neither has cron — both need it |
+| active-memory plugin | Not in config | Not in entries | Neither has active-memory properly configured |
 
-### memory-core — Noah (updated Day 42 — includes dreaming)
-```json
-"memory-core": {
-  "enabled": true,
-  "config": {
-    "dreaming": {
-      "enabled": true,
-      "frequencyHours": 6,
-      "model": "anthropic/claude-haiku-4-5-20251001",
-      "maxEntriesPerRun": 20
-    },
-    "deduplication": true,
-    "temporalDecay": true,
-    "search": {
-      "hybrid": {
-        "enabled": true,
-        "vectorWeight": 0.5,
-        "textWeight": 0.5,
-        "candidateMultiplier": 6
-      },
-      "mmr": { "enabled": true, "lambda": 0.6 },
-      "temporalDecay": { "enabled": true, "halfLifeDays": 14 }
-    }
-  }
-}
-```
+### Key Cross-Customer Findings
 
-### Active Memory — Noah (apply after memory-core + MEMORY.md)
-```json
-"active-memory": {
-  "enabled": true,
-  "config": {
-    "agents": ["main"],
-    "allowedChatTypes": ["direct"],
-    "modelFallback": "anthropic/claude-sonnet-4-6",
-    "queryMode": "recent",
-    "promptStyle": "balanced",
-    "timeoutMs": 15000,
-    "maxSummaryChars": 300,
-    "persistTranscripts": false
-  }
-}
-```
+**1. Both instances are behind on OpenClaw upgrades — but by different amounts**
 
-### Active Memory — Josh (apply post-upgrade to 2026.5.27)
-```json
-"active-memory": {
-  "enabled": true,
-  "config": {
-    "agents": ["main"],
-    "allowedChatTypes": ["direct"],
-    "modelFallback": "google/gemini-3-flash-preview",
-    "queryMode": "recent",
-    "promptStyle": "balanced",
-    "timeoutMs": 15000,
-    "maxSummaryChars": 220,
-    "persistTranscripts": false
-  }
-}
-```
+Josh is 71 days behind (2026.3.22). Noah is 47 days behind (2026.4.15). Both should upgrade to 2026.5.28. Josh's upgrade gap is much larger and includes iMessage recovery, a critical feature for his use case.
 
-### memory-core — Josh (apply post-upgrade, with Gemini embeddings — Day 42 update)
-```json
-"memory-core": {
-  "enabled": true,
-  "config": {
-    "dreaming": {
-      "enabled": true,
-      "frequencyHours": 12,
-      "model": "google/gemini-3-flash-preview",
-      "maxEntriesPerRun": 15
-    },
-    "deduplication": true,
-    "temporalDecay": true,
-    "search": {
-      "hybrid": {
-        "enabled": true,
-        "vectorWeight": 0.6,
-        "textWeight": 0.4,
-        "candidateMultiplier": 4
-      },
-      "mmr": { "enabled": true, "lambda": 0.7 },
-      "temporalDecay": { "enabled": true, "halfLifeDays": 60 }
-    }
-  }
-}
-```
+**2. Neither instance has persistent memory**
 
-### memorySearch (Gemini embeddings) — Josh (add to agents.defaults post-upgrade)
-```json
-"memorySearch": {
-  "provider": "google",
-  "model": "text-embedding-004"
-}
-```
+Both MEMORY.md (the file) and the active-memory plugin (the indexer) are missing from both instances. The April 2026 mem0 temporal algorithm research confirms persistent memory now delivers +29.6 pts on temporal queries and +23.1 pts on multi-hop reasoning. This is the highest-leverage improvement available to both agents.
 
-### Josh fallback chain — Day 41 (Gemini 3.5 Flash leads)
-```json
-"fallbacks": [
-  "openrouter/google/gemini-3-5-flash",
-  "openrouter/google/gemini-3-1-flash-lite-preview",
-  "openrouter/google/gemini-2.5-flash"
-]
-```
+- Josh: Needs MEMORY.md created + active-memory plugin configured (post-upgrade to 2026.5.28)
+- Noah: Needs MEMORY.md created + active-memory plugin in `plugins.entries` (available NOW on 2026.4.15)
 
-### Cron jobs — Noah (post-upgrade to 2026.5.27)
-```json
-"cron": {
-  "jobs": [
-    {
-      "name": "premarket-catalyst-scan",
-      "schedule": "0 6 * * 1-5",
-      "timezone": "America/New_York",
-      "command": "Run EDGAR 8-K scan for overnight filings. Poll gog gmail search for EDGAR alerts and broker research emails. Check gog calendar events --today for scheduled catalysts. Screen for material events. Deliver 5-bullet briefing.",
-      "deliverTo": "1496556746444112173"
-    },
-    {
-      "name": "postmarket-pnl",
-      "schedule": "0 17 * * 1-5",
-      "timezone": "America/New_York",
-      "command": "Review Alpaca paper positions. Calculate P&L. Update memory/YYYY-MM-DD.md with catalyst log. Update gog sheets portfolio tracker.",
-      "deliverTo": "1496556746444112173"
-    }
-  ]
-}
-```
+**3. Noah has a critical one-line bug Josh does not have**
+
+Noah's `contextPruning.ttl` of `"5m"` truncates every session over 5 minutes. Josh does not have this misconfiguration. Noah's trading workflow almost certainly runs sessions longer than 5 minutes — every pre-market briefing is degraded. This is the single highest-priority actionable item in the entire fleet.
+
+**4. Noah's security posture is more conservative than Josh's (appropriate for use case)**
+
+Noah's Discord uses `dmPolicy: pairing` and `groupPolicy: allowlist` — appropriate for a trading agent that should not respond to arbitrary Discord DMs. Josh's Discord uses `dmPolicy: open` and `groupPolicy: open` — appropriate for a personal assistant that should respond to all family/team messages. Both configurations are correct for their use cases.
+
+**5. Josh has a dead OpenRouter fallback; Noah has no fallbacks**
+
+Josh's `openrouter/anthropic/claude-3.5-haiku` endpoint is dead and should be removed from the fallbacks array. Noah has no fallbacks configured — if the Anthropic API is unavailable, Noah's agent fails silently. Adding OpenRouter as a fallback for Noah would improve resilience.
+
+**6. Josh's SOUL.md is generic; Noah's workspace is more severely underpopulated**
+
+Josh at least has SOUL.md, IDENTITY.md, and USER.md present (even if SOUL.md is generic and MEMORY.md is missing). Noah has IDENTITY.md and USER.md as completely blank templates, making every session start with zero personalization context. Noah's workspace gap is wider.
+
+**7. Tokenjuice plugin: High priority for Noah, low for Josh**
+
+The new official Tokenjuice plugin compacts exec/bash output. Noah's trading agent is exec-heavy (SEC filing downloads, Alpaca API calls, Gmail search). Josh's personal assistant is conversational-heavy (email, calendar, iMessage). Tokenjuice is a material improvement for Noah post-upgrade; minimal benefit for Josh.
+
+**8. Workboard orchestration: Relevant for Noah, less so for Josh (short term)**
+
+The new Workboard orchestration primitives support multi-agent coordination. Noah's pre-market workflow has natural multi-step structure (catalyst scan → analysis → position sizing → briefing) that could benefit from agent coordination. Josh's personal assistant is single-agent conversational. This is a near-term strategic item for Noah; longer-horizon for Josh.
 
 ---
 
-## Workspace File Gap Analysis (Day 42)
+## Prioritized Fleet Action List
 
-### Files Identical in Both Repos (Zero Customization)
-| File | SHA | State |
-|------|-----|-------|
-| `SOUL.md` | 792306ac | Generic upstream template — byte-for-byte identical in both repos |
-| `AGENTS.md` | 3faead97 | Generic template — no trading rules, no gog-cli ref, no emoji override |
-| `TOOLS.md` | 917e2fa8 | Blank example template only |
+### Zero-Downtime, GitHub-Only (Both Customers)
 
-### Josh Has, Noah Missing
-- `IDENTITY.md` (populated — "Heather Schwartz")
-- `USER.md` (populated — Josh Meyers, LA, Bliss/Oben, NO emoji reactions)
-- iMessage channel (paused but configured — fix in 2026.5.27)
+| Priority | Customer | Action | ID |
+|---|---|---|---|
+| CRITICAL | Noah | Fix contextPruning TTL `"5m"` → `"30m"` in openclaw.json | NOAH-87/95 |
+| CRITICAL | Noah | Populate IDENTITY.md | NOAH-91 |
+| CRITICAL | Noah | Populate USER.md with Noah Katz context | NOAH-91 |
+| CRITICAL | Noah | Rewrite TOOLS.md with gog-cli documentation | NOAH-80 |
+| CRITICAL | Josh | Create workspace/MEMORY.md stub | JOSH-30/79 |
+| HIGH | Noah | Fix HEARTBEAT.md (remove fenced block, add Gmail EDGAR polling) | NOAH-33 |
+| HIGH | Noah | Create workspace/MEMORY.md stub | NOAH-34 |
+| HIGH | Noah | Add active-memory to plugins.entries | NOAH-84 |
+| HIGH | Noah | Add trading rules + paper-only guardrail to AGENTS.md | NOAH-60 |
+| HIGH | Josh | Populate HEARTBEAT.md with proactive monitoring tasks | JOSH-31 |
+| MEDIUM | Josh | Remove dead OpenRouter fallback from openclaw.json | JOSH-50 |
+| MEDIUM | Josh | Fix AGENTS.md emoji contradiction | JOSH-34 |
+| MEDIUM | Josh | Personalize SOUL.md for Heather/Josh context | JOSH-37 |
+| MEDIUM | Josh | Populate TOOLS.md | JOSH-55 |
+| MEDIUM | Josh | Delete BOOTSTRAP.md | JOSH-63 |
+| MEDIUM | Noah | Delete BOOTSTRAP.md | NOAH-69 |
+| INFO | Noah | Add claude-opus-4-8 to models block (optional) | NOAH-98 |
 
-### Noah Has, Josh Missing
-- `workspace/reports/ae-target-companies-2026-04-22.md` (21KB, 38 days old, never referenced in memory)
-- `skills/gog-cli/` (Google Workspace CLI — full Gmail/Calendar/Drive/Sheets/Tasks/Contacts — unused Day 45)
-- `gogcli/state.json` (authenticated to Ngkatz.ai@gmail.com — gmailWatch: false)
-- Compaction config (present but softThresholdTokens too low; Josh has nothing)
-- memory-core in allow list (not in entries)
-- Active Memory plugin eligibility (Josh version-gated until upgrade)
-- `workspace/reports/` directory
+### VPS-Required (Both Customers)
 
-### Missing in Both
-- `MEMORY.md` — Josh: Day 70, Noah: Day 45
-- Functional `HEARTBEAT.md` (Josh: empty; Noah: broken fenced code block)
-- Populated `TOOLS.md`
-- Customized `SOUL.md`
-- Cron job automation
-
----
-
-## Active Behavioral Gaps (Day 42)
-
-**Josh — AGENTS.md Emoji Contradiction (Day 42):**
-`USER.md`: `STRICT: DO NOT SEND EMOJI REACTIONS TO MESSAGES.`
-`AGENTS.md` (stock template): "React Like a Human!" with detailed emoji reaction instructions.
-Direct contradiction active in every Discord session. One-line GitHub fix.
-
-**Josh — Zero Memory Retention (Day 70):**
-`workspace/memory/` has only `inbox-state.json` and `onboarding-google.md`. Zero daily notes. Zero MEMORY.md. 70 days of email + calendar interactions have produced no persistent memory. Every session starts cold.
-
-**Noah — gog-cli Invisible (Day 45):**
-`TOOLS.md` is blank examples. `AGENTS.md` is stock template. The agent cannot discover or use gog-cli — its installed, authenticated Google Workspace tool providing Gmail, Calendar, Sheets, Drive, Tasks access. All dark.
-
-**Noah — gmailWatch Disabled (Day 45):**
-Real-time email push off. EDGAR filing alerts (if subscribed at SEC.gov), Alpaca confirmations, and broker research are not received in real time. Polling workaround possible via HEARTBEAT.md — but HEARTBEAT.md is structurally broken.
-
-**Noah — contextPruning 5m TTL (Day 16):**
-Every pre-market session resets every 5 minutes. One-line JSON edit. 16 days unresolved.
-
-**Noah — No Trading Guardrails in AGENTS.md (Day 42):**
-No paper-only rule. No audit trail requirement. No ET timezone. No gog-cli reference. The trading agent has zero custom instructions for its core function.
+| Priority | Customer | Action | ID |
+|---|---|---|---|
+| HIGH | Josh | Upgrade OpenClaw 2026.3.22 → **2026.5.28** (skip 2026.5.27) | JOSH-39/81 |
+| HIGH | Noah | Upgrade OpenClaw 2026.4.15 → **2026.5.28** (skip 2026.5.27) | NOAH-32/93 |
+| HIGH | Noah | Enable gmailWatch in gogcli/state.json | NOAH-81 |
+| HIGH | Noah | Configure pre/post-market cron (6:30 AM ET / 4:30 PM ET) | NOAH-39 |
+| HIGH | Josh | Verify iMessage resumes post-upgrade | JOSH-73 |
+| HIGH (post-upgrade) | Noah | Enable Tokenjuice plugin | NOAH-94 |
+| HIGH (post-upgrade) | Josh | Configure active-memory plugin | JOSH-72 |
+| HIGH (post-upgrade) | Noah | Install sec-filing-watcher skill | NOAH-82 |
+| HIGH (post-upgrade) | Noah | Evaluate Alpaca MCP Server V2 | NOAH-36 |
+| HIGH (post-upgrade) | Noah | Evaluate EdgarTools MCP | NOAH-37 |
+| MEDIUM | Both | Review ClawHub skills security advisory | JOSH-42 |
 
 ---
 
-## Zero-Config Backlog (Day 42)
+## Common Patterns Across Fleet
 
-| Action | Target | Effort | Days Documented | Status |
-|--------|--------|--------|-----------------|--------|
-| Fix contextPruning 5m → 30m | **Noah** | 60 sec | **16 days** | 🔴 DO IT NOW |
-| Update fallback chain to Gemini 3.5 Flash | **Josh** | 1 min | Day 42 | 🔴 DO IT |
-| Add compaction config | **Josh** | 2 min | 6 days | 🔴 DO IT |
-| Enable memory-core in entries (with dreaming) | **Noah** | 3 min | **45 days** | 🔴 DO IT |
-| Add Active Memory config | **Noah** | 3 min | **Day 42** | 🟢 DO IT (after memory-core) |
-| Increase softThresholdTokens to 10000 | **Noah** | 1 min | 6 days | 🟢 DO IT |
-| Create MEMORY.md | **Both** | 15 min each | Josh: **70 days** / Noah: **45 days** | 🔴 DO IT |
-| Fill IDENTITY.md + USER.md | **Noah** | 15 min | **45 days** | 🔴 DO IT |
-| Fix AGENTS.md emoji contradiction | **Josh** | 2 min | **42 days** | 🔴 DO IT |
-| Add trading rules + gog-cli to AGENTS.md | **Noah** | 30 min | 6 days | 🟢 DO IT |
-| Replace HEARTBEAT.md (broken code block) | **Noah** | 5 min | **45 days** | 🔴 DO IT |
-| Populate HEARTBEAT.md | **Josh** | 5 min | **42 days** | 🟢 Easy |
-| Populate TOOLS.md with gog-cli reference | **Noah** | 15 min | **Day 42** | 🔴 DO IT |
-| Populate TOOLS.md with env data (incl. API key note) | **Josh** | 10 min | **42 days** | ✅ Easy |
-| Add memorySearch Gemini embeddings to agents.defaults | **Josh** | 1 min | **Day 42 NEW** | ✅ Easy (post-upgrade) |
-| Delete BOOTSTRAP.md | **Both** | 30 sec | 3 days | ✅ Easy |
+### What Both Instances Share (Shared Template Base)
 
-**Total: ~100 minutes of GitHub edits. Zero implementations in 42 days.**
+Both repos share identical `workspace/AGENTS.md` (SHA: `3faead9716a2c168df79c2fba558bd04cd8c76d0`) and `workspace/SOUL.md` (SHA: `792306ac60f6c600b8ded97899354557ce900f40`) — these are the same files, meaning both instances started from an identical template and neither has been customized. Both also share the same `workspace/TOOLS.md` template (SHA: `917e2fa86ccb01bab7227e223555daa1f5a76ebc`).
 
----
+This means fleet-wide improvements to the shared template propagate to both instances simultaneously.
 
-## Platform Risk Summary (Day 42)
+### What Both Instances Lack (Fleet Gaps)
 
-| Risk | Instance | Severity | Day # |
-|------|----------|----------|-------|
-| contextPruning 5m TTL — destroys pre-market sessions | Noah | CRITICAL | **16** |
-| MEMORY.md never created | Both | CRITICAL | Josh: **70** / Noah: **45** |
-| IDENTITY.md + USER.md blank | Noah | CRITICAL | **45** |
-| gog-cli invisible to agent | Noah | CRITICAL | **45** |
-| 70 days email activity, zero persistent memory | Josh | CRITICAL | **1** |
-| gmailWatch disabled — EDGAR alerts lost | Noah | HIGH | **45** |
-| compaction config missing | Josh | HIGH | 6 |
-| memory-core not in entries | Noah | HIGH | **45** |
-| HEARTBEAT.md broken structure | Noah | HIGH | **45** |
-| HEARTBEAT.md empty | Josh | HIGH | **42** |
-| Active Memory not configured | Noah | HIGH | **Day 42** |
-| Dead fallback (update to Gemini 3.5 Flash chain) | Josh | MEDIUM | 23 |
-| AGENTS.md emoji contradiction | Josh | MEDIUM | **42** |
-| AGENTS.md missing trading guardrails | Noah | MEDIUM | 6 |
-| softThresholdTokens too low | Noah | MEDIUM | 6 |
-| strictInlineEval: false in financial env | Noah | MEDIUM | 4 |
-| iMessage bridge paused | Josh | MEDIUM | **34+** |
+1. **Persistent memory** — Neither has MEMORY.md or active-memory plugin properly configured
+2. **Proactive monitoring** — Neither has a functional HEARTBEAT.md
+3. **Tool documentation** — Neither has TOOLS.md populated
+4. **Upgraded OpenClaw** — Both are behind (71 days and 47 days respectively)
+5. **SOUL.md personalization** — Both use the generic template
+6. **Cron automation** — Neither has scheduled tasks configured
+
+### What Each Instance Uniquely Needs
+
+**Josh (Heather):**
+- iMessage recovery (requires 2026.5.28 upgrade)
+- Dead OpenRouter fallback removal
+- AGENTS.md emoji contradiction fix
+- Lower urgency on IDENTITY.md/USER.md (already populated, just not deep)
+
+**Noah (Market Catalyst Agent):**
+- contextPruning TTL bug fix (CRITICAL — Day 17)
+- IDENTITY.md and USER.md populated from blank (CRITICAL)
+- Trading-specific AGENTS.md rules and paper-only guardrail
+- SEC filing workflow integrations (gmailWatch, cron, EDGAR, Alpaca MCP V2)
+- Tokenjuice plugin (exec-heavy workloads)
+- Workboard orchestration for multi-step trading sessions
 
 ---
 
-## Trend Analysis — Day 42
+## Fleet Trend: Version Gap Widening
 
-**Zero implementations across 42 days of documented research.**
+| Date | Josh Gap | Noah Gap | Notes |
+|---|---|---|---|
+| 2026-03-24 | 0 days | — | Josh last touched |
+| 2026-04-22 | — | 0 days | Noah last touched |
+| 2026-05-31 (morning) | **71 days** | **47 days** | After 2026.5.28 stable release |
 
-Day 42 morning adds three new findings per instance:
+The gap is widening for both instances. OpenClaw is actively releasing new stable versions. With 2026.5.28 now stable and 2026.5.30-beta.1 released today, the gap will continue to grow until VPS access is applied for upgrades.
 
-**Josh (JOSH-77, 78, 79):**
-1. beta.3 overnight — iMessage reactions fix + faster cold starts (useful post-upgrade context)
-2. Gemini embeddings for memory-core confirmed — entire post-upgrade memory stack runs on existing Google credentials, no new API keys
-3. Package optimization in 2026.5.28 — faster cold starts when AlphaClaw restarts Heather
-
-**Noah (NOAH-87, 88, 89):**
-1. beta.3 overnight — session lock release directly solves the ghost-session problem for 30-min pre-market sessions
-2. memory-core dreaming — autonomous off-hours memory consolidation; updated config block uses Haiku for cost efficiency
-3. Package optimization — faster 6:30 AM cold starts once cron is configured
-
-**Day 41 evening additions (JOSH-71–76, NOAH-80–86) recapped above.**
-
-**Cumulative: ~135 Josh findings, ~167 Noah findings, 0 resolved.**
+**Recommendation:** Prioritize upgrades for both customers as soon as VPS access is available. The GitHub-only fixes can and should be applied immediately — they don't require any VPS interaction and the AlphaClaw self-healing watchdog provides a safety net.
 
 ---
 
-*Generated by AlphaClaw Apex Fleet Research Agent — Morning Scan — 2026-05-30 (Day 42)*
+*Analysis last updated: 2026-05-31 morning by AlphaClaw Fleet Research daemon.*
