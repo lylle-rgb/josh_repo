@@ -1,250 +1,113 @@
-# Fleet Research — Evening Scan Findings
+# Fleet Research — Morning Scan Findings
 **Instance:** Heather Schwartz (Josh — personal assistant)
-**Scan date:** 2026-06-08
-**Scanner:** AlphaClaw Fleet Agent (automated evening scan)
+**Scan date:** 2026-06-08 (morning)
+**Scanner:** AlphaClaw Fleet Agent (automated morning scan)
+**Previous scan:** 2026-06-08 evening (see `2026-06-08-evening-findings.md`)
 
 ---
 
 ## Summary
 
-6 critical issues, 6 moderate issues found. Most urgent: agent has been effectively inactive for ~5.5 weeks, heartbeat is unconfigured, and long-term memory infrastructure does not exist. OpenClaw is 76 days behind current release.
+All 10 findings from the June 8 evening scan remain open. This morning scan adds 5 new findings from web research. Most urgent issues unchanged: MEMORY.md missing (Day 78), HEARTBEAT.md empty, OpenClaw **78 days behind npm stable (2026.5.28)**.
+
+**Version note (corrected):** `openclaw update` via npm installs **2026.5.28** — the npm stable channel. The 2026.6.2 tag exists on GitHub but is not yet the npm stable. Both versions are significant improvements over Heather's current 2026.3.22.
 
 ---
 
-## Finding 1 — OpenClaw Version Critically Stale
-**Severity:** HIGH
-**What was found:** `openclaw.json` shows `lastTouchedVersion: 2026.3.22` (last touched March 24, 2026). Current release is **2026.6.2** — 76 days and approximately 40+ releases behind.
+## NEW FINDINGS (Morning Scan — June 8)
 
-**Why it matters:** Missing features include:
-- **Skill Workshop** (2026.6.x) — review-first skill creation from agent work; Heather could use this to codify Google Workspace workflows as reusable skills
-- **Discord voice error fixes** — Heather uses Discord as primary channel
-- **Channel reliability patches** — duplicate transcript mirror fixes, Discord streaming and approval path fixes
-- **Safer plugin installs** — operator install policy replaces old dangerous-code scanner
-- **Security hardening** — rejects corrupt shell snapshots, suspicious gateway configs, malformed config values
-- **Structured task progress** (2026.4.x+) — agent shows each step of long tasks
-- **GPT-5.5 support** (2026.4.23+) — if ever needed as fallback
+### New Finding A — iMessage BlueBubbles Private API Path Available (April 2026)
+**Severity:** MEDIUM
+**What was found:** OpenClaw shipped full BlueBubbles Private API integration in April 2026 (2026.4.x), providing a more reliable iMessage bridge than the AppleScript method Heather was using before iMessage was paused. Multi-account routing was also added in March 2026.
 
-**Exact change to apply:**
-```bash
-# On the VPS, run:
-openclaw update
-# Then restart via AlphaClaw watchdog or:
-openclaw restart
+**Why it matters:** Heather's iMessage monitoring has been paused since ~April 30 (`imessage_monitoring_paused: true`). The original AppleScript bridge is fragile and a likely cause of the pause. BlueBubbles uses a dedicated Mac app + private API, which is significantly more stable and now the recommended iMessage path for all OpenClaw instances.
+
+**Exact steps to implement:**
+1. Upgrade Heather to 2026.5.28: `openclaw update && openclaw restart`
+2. Run `openclaw doctor --fix` (handles SQLite migration)
+3. Install BlueBubbles app on Josh's Mac
+4. Re-configure iMessage via the BlueBubbles integration rather than the AppleScript bridge
+
+**Risk level:** MEDIUM — requires Josh's Mac. Confirm with Josh before resuming iMessage.
+
+---
+
+### New Finding B — Gemini Native Search Grounding Underused
+**Severity:** MEDIUM
+**What was found:** Gemini 2.5 Flash and Gemini 3 Flash Preview (Heather's primary model) support built-in Google Search grounding natively, returning AI-synthesized answers backed by live search results and citations — no additional search skill or API key needed.
+
+**Why it matters:** Heather has no web search configured (no Brave, Serper, or Firecrawl in `openclaw.json`). With native Gemini grounding, search could be available with zero additional cost or configuration complexity. The OpenClaw Google provider plugin may already expose this via model config.
+
+**Exact investigation steps:**
+1. After upgrading to 2026.5.28, run `/help search` inside a session to confirm if Google Search grounding is surfaced
+2. If supported, check whether `googleSearchGrounding: true` is a valid model option in `openclaw.json` under `agents.defaults.models["google/gemini-3-flash-preview"]`
+
+**Risk level:** LOW — informational investigation; no config change until confirmed supported
+
+---
+
+### New Finding C — Mandatory Memory Retrieval Rule Missing from AGENTS.md
+**Severity:** MEDIUM
+**What was found:** OpenClaw 2026 best practices recommend an explicit "search memory before acting" rule in AGENTS.md. Without it, agents skip documented context and guess at information that's already written down.
+
+**Why it matters:** Especially important for Heather since she starts from zero memory every session. Once MEMORY.md is created (Finding 5 from evening scan), she needs an explicit rule to check it before responding to questions about Josh's preferences, past decisions, or ongoing projects.
+
+**Exact change to apply:** Add to the Session Startup section of `workspace/AGENTS.md`:
 ```
-Or trigger via the AlphaClaw UI Watchdog tab: `https://5.78.142.81.sslip.io#watchdog`
-
-**Risk level:** LOW — updates are rolling and backwards-compatible; AlphaClaw watchdog handles restart
-
----
-
-## Finding 2 — Agent Has Been Inactive ~5.5 Weeks
-**Severity:** HIGH
-**What was found:** `workspace/memory/inbox-state.json` shows the last recorded activity was approximately **April 30, 2026**. Current date is June 8, 2026. No daily memory files (`memory/YYYY-MM-DD.md`) have ever been created.
-
-**Why it matters:** Heather has not been checking Josh's email, calendar, or iMessage for over a month. Josh's inbox and calendar have had zero proactive monitoring. Any time-sensitive items (emails, upcoming events) may have been missed entirely.
-
-**Root cause:** HEARTBEAT.md is empty (see Finding 4). Without heartbeat tasks configured, there is nothing to trigger proactive checks.
-
-**Exact change to apply:** Configure HEARTBEAT.md (see Finding 4). Once heartbeat is active, Heather will resume proactive monitoring automatically.
-
-**Risk level:** LOW to apply; HIGH risk of continued missing activity if left unfixed
-
----
-
-## Finding 3 — BOOTSTRAP.md Still Exists Post-Onboarding
-**Severity:** MODERATE
-**What was found:** `workspace/BOOTSTRAP.md` still exists. Per AGENTS.md instructions, BOOTSTRAP.md is the "birth certificate" that should be deleted after first-run identity setup. Onboarding was completed on 2026-03-21 (per `memory/onboarding-google.md`).
-
-**Why it matters:** The file's presence is a signal that the post-onboarding cleanup was never completed. On a session restart, the file could cause confusion about whether identity is fully established. It's dead weight in the workspace.
-
-**Exact change to apply:** Delete `workspace/BOOTSTRAP.md` from the repo (or ask Heather to do it on next session start).
-
-**Risk level:** LOW — safe to delete; identity is already established in IDENTITY.md and USER.md
-
----
-
-## Finding 4 — HEARTBEAT.md Empty — No Proactive Monitoring Active
-**Severity:** HIGH
-**What was found:** `workspace/HEARTBEAT.md` contains only a comment saying it's empty. No tasks are configured. Heather is not running any periodic checks.
-
-**Why it matters:** Heather's core value proposition is proactive personal assistance. AGENTS.md explicitly instructs her to check email, calendar, weather, and social notifications 2-4 times per day via heartbeat. With no heartbeat tasks, she is purely reactive — only responding when Josh messages her directly.
-
-**Exact change to apply:** Replace `workspace/HEARTBEAT.md` with the following:
-```markdown
-# HEARTBEAT.md
-
-## Active Checks (rotate through these, 2-4x/day)
-
-### 1. Email & iMessage
-- Check Gmail for urgent/unread messages from the last check
-- If iMessage monitoring is paused, note it; don't attempt to force-resume
-- Update memory/heartbeat-state.json with timestamp
-
-### 2. Calendar
-- Check Google Calendar for events in next 48 hours
-- Alert Josh if anything is within 2 hours that he hasn't acknowledged
-
-### 3. Quiet Hours
-- Do not reach out 23:00–08:00 PST unless genuinely urgent
-- If nothing actionable: reply HEARTBEAT_OK
-
-## Memory Maintenance (weekly, during a heartbeat)
-- Read recent memory/YYYY-MM-DD.md files
-- Distill significant events into MEMORY.md
-- Remove stale entries from MEMORY.md
+## Memory Rule
+**Search memory before acting.** Before answering questions about Josh's preferences, past conversations, or decisions — check MEMORY.md and today's memory/YYYY-MM-DD.md first. Never guess at information that might be written down. No mental notes.
 ```
 
-**Risk level:** LOW — heartbeat is opt-in; Heather won't take external actions without reason
+**Risk level:** LOW — additive documentation change
 
 ---
 
-## Finding 5 — No Long-Term Memory (MEMORY.md Missing)
-**Severity:** HIGH
-**What was found:** `workspace/MEMORY.md` does not exist. AGENTS.md instructs Heather to maintain this as her curated long-term memory — the distilled essence of important context across sessions. No daily memory files exist either.
+### New Finding D — NVIDIA SkillSpector Context for Future Skill Installs (June 2026)
+**Severity:** INFO
+**What was found:** OpenClaw partnered with NVIDIA in June 2026 to add SkillSpector scanning to all ClawHub skill publications. Every ClawHub skill now ships with a Skill Card (verdict: Clean / Suspicious / Malicious) based on 64 vulnerability patterns including hidden instructions, prompt injection, trigger abuse, memory poisoning, and purpose-access mismatch.
 
-**Why it matters:** Every session Heather wakes up knowing Josh's name and general profile (from USER.md) but has zero memory of:
-- Previous conversations and decisions
-- Ongoing projects Josh mentioned
-- Preferences she's learned over time
-- Things Josh asked her to remember
-- Past mistakes to avoid repeating
+**Why it matters:** Heather currently has no community skills installed. When skills are added in the future (Google Workspace CLI `gog`, voice TTS `sag`, etc.), verify each has a "Clean" Skill Card on ClawHub before installing. This is now the standard vetting protocol for all OpenClaw skill installs.
 
-**Exact change to apply:** Create `workspace/memory/MEMORY.md` with a bootstrapped first entry:
-```markdown
-# MEMORY.md — Heather's Long-Term Memory
-_Load this ONLY in main sessions (direct chat with Josh). Do not load in Discord group chats._
-
-## About Josh
-- Founder & CEO, Bliss (luxury lifestyle brand)
-- Partner, Oben HiFi
-- Based in Los Angeles (PST/PDT)
-- Discord: Jpm855
-- Named me Heather
-
-## Behavioral Rules
-- STRICT: DO NOT SEND EMOJI REACTIONS TO MESSAGES (Josh explicitly requested this)
-- Josh prefers I just help — no filler phrases like "Great question!" or "Happy to help!"
-
-## Google Workspace
-- OAuth redirect URI: https://5.78.142.81.sslip.io/auth/google/callback
-- Onboarding completed: 2026-03-21
-- gog-cli available for Gmail, Calendar, Drive, Sheets, Docs, Tasks, Contacts
-
-## Pending / To Follow Up
-- iMessage monitoring is paused (imessage_monitoring_paused: true in inbox-state.json)
-  - Ask Josh if he wants to resume it or leave it paused
-
-## Session History
-_Add significant events, decisions, and lessons here as you accumulate them._
-```
-
-**Risk level:** LOW — creating a new file; no risk to existing data
+**Risk level:** LOW — informational; no immediate action required
 
 ---
 
-## Finding 6 — iMessage Monitoring Paused
-**Severity:** MODERATE
-**What was found:** `workspace/memory/inbox-state.json` contains `"imessage_monitoring_paused": true`. This was set and never revisited.
+### New Finding E — npm Stable is 2026.5.28 (Prior Scan Correction)
+**Severity:** INFO
+**What was found:** As of June 8, 2026: `openclaw update` installs **2026.5.28** from npm. Previous scans referenced 2026.6.2 as "current stable" — that tag exists on GitHub but is not yet promoted to the npm stable channel.
 
-**Why it matters:** Heather is Josh's personal assistant with iMessage integration as a key feature. If iMessage monitoring is intentionally paused, that's fine — but it should be a conscious choice documented in MEMORY.md, not an unacknowledged state.
+**Why it matters:** No change to the action plan — `openclaw update` is still the correct command. But the target version is 2026.5.28, not 2026.6.2. Notable 2026.5.28 security improvements: group prompt text kept out of system prompt, blocked unsafe command wrappers, rejected no-auth Tailscale exposure.
 
-**Exact change to apply:** On next session start, Heather should ask Josh: "Your iMessage monitoring has been paused since setup. Do you want me to resume it, or keep it off?"
-
-**Risk level:** LOW — user decision required; no automated action
+**Risk level:** NONE — informational correction
 
 ---
 
-## Finding 7 — SOUL.md Is Unmodified Generic Template
-**Severity:** MODERATE
-**What was found:** `workspace/SOUL.md` is byte-for-byte identical to the OpenClaw default template (SHA: 792306ac). It contains zero personalization for Josh's context.
+## Open Findings (Carried Over from 2026-06-08 Evening Scan)
 
-**Why it matters:** SOUL.md is Heather's core behavioral document. A generic soul means Heather doesn't have internalized rules specific to her role (luxury brand context, professional communications, Josh's explicit preferences like no emoji reactions, his business context).
+All 10 prior findings remain open. Full detail in `2026-06-08-evening-findings.md`.
 
-**Exact change to apply:** See `fleet-research/soul-improvements.md` for specific additions.
-
-**Risk level:** LOW — additive changes only
-
----
-
-## Finding 8 — TOOLS.md Is Unmodified Generic Template
-**Severity:** MODERATE
-**What was found:** `workspace/TOOLS.md` is byte-for-byte identical to the default template. It contains only example placeholders.
-
-**Why it matters:** TOOLS.md should document Heather's actual setup — Google account details, OAuth endpoint, channel specifics. Without this, Heather has to re-derive setup details from memory/onboarding-google.md each session.
-
-**Exact change to apply:**
-Replace `workspace/TOOLS.md` with:
-```markdown
-# TOOLS.md — Heather's Setup Notes
-
-## Google Workspace
-- Account: Josh's personal Google account (configured via OAuth)
-- OAuth redirect: https://5.78.142.81.sslip.io/auth/google/callback
-- Onboarded: 2026-03-21
-- Skill: gog-cli (if installed) for Gmail, Calendar, Drive, Sheets, Docs, Tasks, Contacts
-- Provider: google:default (api_key mode in openclaw.json)
-
-## AlphaClaw UI
-- URL: https://5.78.142.81.sslip.io
-- Tabs: General, Watchdog, Providers, Envars, Webhooks, Browse
-
-## Discord
-- Guild: 1484448262290276464
-- DM policy: open (all users)
-- Group policy: open
-- streaming: off
-- Josh's handle: Jpm855
-
-## iMessage
-- Status: PAUSED (as of ~2026-04-30, reason unknown)
-- To resume: ask Josh
-
-## Formatting Rules
-- Discord/WhatsApp: No markdown tables — use bullet lists
-- Discord links: Wrap multiple links in <> to suppress embeds
-```
-
-**Risk level:** LOW — documentation only, no behavioral change
+| # | Severity | Finding | Days Open |
+|---|---|---|---|
+| 1 | HIGH | OpenClaw 78 days behind npm stable (2026.5.28) | 78 |
+| 2 | HIGH | Agent inactive ~5.5 weeks | — |
+| 3 | MODERATE | BOOTSTRAP.md still exists post-onboarding | — |
+| 4 | HIGH | HEARTBEAT.md empty — no proactive monitoring | — |
+| 5 | **HIGH** | **MEMORY.md missing** | **78** |
+| 6 | MODERATE | iMessage monitoring paused (see Finding A above for fix path) | — |
+| 7 | MODERATE | SOUL.md generic template | — |
+| 8 | MODERATE | TOOLS.md generic template | — |
+| 9 | LOW | Duplicate JSON key in inbox-state.json | — |
+| 10 | LOW | Bootstrap TOOLS.md says no Google configured | — |
 
 ---
 
-## Finding 9 — duplicate JSON key in inbox-state.json
-**Severity:** LOW
-**What was found:** `workspace/memory/inbox-state.json` has `last_email_check_ms` defined twice. The second value (1777551900000) wins in most parsers, but the file is technically invalid JSON.
+## Research Sources
 
-**Exact change to apply:** Remove the first `last_email_check_ms` key, keeping only the latest value (1777551900000).
-
-**Risk level:** LOW — minor cleanup
-
----
-
-## Finding 10 — hooks/bootstrap/TOOLS.md Says No Google Accounts Configured
-**Severity:** LOW
-**What was found:** `workspace/hooks/bootstrap/TOOLS.md` ends with `"## Available Google Accounts\n\nNo Google accounts are currently configured."` — but Google OAuth was completed on 2026-03-21 per `memory/onboarding-google.md`.
-
-**Why it matters:** This bootstrap TOOLS.md is loaded on every session (it's in the `bootstrap-extra-files` hook entries). Every session Heather reads a stale note saying no Google is configured, which may cause confusion.
-
-**Exact change to apply:** Update the final section of `workspace/hooks/bootstrap/TOOLS.md` to reflect the actual Google account status.
-
-**Risk level:** LOW — docs fix
-
----
-
-## Web Research Summary — OpenClaw 2026.6.2 Highlights
-
-Key improvements Heather should benefit from after updating:
-
-| Feature | Version | Benefit |
-|---|---|---|
-| Skill Workshop | 2026.6.x | Build reusable Google Workspace skills from repeated tasks |
-| Discord voice error fixes | 2026.6.x | More reliable Discord delivery |
-| Channel reliability | 2026.6.x | Safer duplicate transcript handling |
-| Structured task progress | 2026.4.x | Heather shows step-by-step progress on long tasks |
-| GPT-5.5 support | 2026.4.23 | Available as fallback model |
-| dreaming memory system | 2026.4.5 | Light/deep/REM memory phases for better long-term retention |
-
-**Sources:**
+- [OpenClaw Releases · GitHub](https://github.com/openclaw/openclaw/releases)
+- [OpenClaw CHANGELOG](https://github.com/openclaw/openclaw/blob/main/CHANGELOG.md)
 - [OpenClaw Release Notes (Releasebot)](https://releasebot.io/updates/openclaw)
-- [AlphaClaw docs](https://alphaclaw.md/)
-- [OpenClaw X/Twitter](https://x.com/openclaw)
-- [Alpha Batcher on X — 2026.4.5 features](https://x.com/alphabatcher/status/2041156996355760337)
+- [OpenClaw iMessage BlueBubbles 2026](https://openclawconsult.com/lab/openclaw-imessage)
+- [OpenClaw Memory Masterclass (VelvetShark)](https://velvetshark.com/openclaw-memory-masterclass)
+- [OpenClaw Web Search / Gemini Grounding](https://docs.openclaw.ai/tools/web)
+- [NVIDIA SkillSpector Partnership](https://openclaw.ai/blog/openclaw-nvidia-skill-security)
+- [OpenClaw 2026.6.1 Release Notes (SEN-X)](https://senx.ai/openclaw-news/2026-06-02-openclaw-news)
