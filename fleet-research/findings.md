@@ -1,103 +1,87 @@
 # Fleet Research — Morning Scan Findings
 **Instance:** Heather Schwartz (Josh — personal assistant)
-**Scan date:** 2026-06-08 (morning)
+**Scan date:** 2026-06-09 (morning)
 **Scanner:** AlphaClaw Fleet Agent (automated morning scan)
-**Previous scan:** 2026-06-08 evening (see `2026-06-08-evening-findings.md`)
+**Previous scan:** 2026-06-09 evening (see `2026-06-09-evening-findings.md`)
 
 ---
 
 ## Summary
 
-All 10 findings from the June 8 evening scan remain open. This morning scan adds 5 new findings from web research. Most urgent issues unchanged: MEMORY.md missing (Day 78), HEARTBEAT.md empty, OpenClaw **78 days behind npm stable (2026.5.28)**.
+All prior open findings remain unresolved. This morning scan adds 3 new findings from web research.
 
-**Version note (corrected):** `openclaw update` via npm installs **2026.5.28** — the npm stable channel. The 2026.6.2 tag exists on GitHub but is not yet the npm stable. Both versions are significant improvements over Heather's current 2026.3.22.
+Most urgent issues unchanged:
+- **MEMORY.md missing — Day 79** (CRITICAL, GitHub-only)
+- **HEARTBEAT.md empty — Day 79** (HIGH, GitHub-only)
+- **Google Workspace not connected** (CRITICAL, VPS/setup)
+- **OpenClaw 79 days behind stable (2026.6.2)** (HIGH, VPS upgrade)
 
----
-
-## NEW FINDINGS (Morning Scan — June 8)
-
-### New Finding A — iMessage BlueBubbles Private API Path Available (April 2026)
-**Severity:** MEDIUM
-**What was found:** OpenClaw shipped full BlueBubbles Private API integration in April 2026 (2026.4.x), providing a more reliable iMessage bridge than the AppleScript method Heather was using before iMessage was paused. Multi-account routing was also added in March 2026.
-
-**Why it matters:** Heather's iMessage monitoring has been paused since ~April 30 (`imessage_monitoring_paused: true`). The original AppleScript bridge is fragile and a likely cause of the pause. BlueBubbles uses a dedicated Mac app + private API, which is significantly more stable and now the recommended iMessage path for all OpenClaw instances.
-
-**Exact steps to implement:**
-1. Upgrade Heather to 2026.5.28: `openclaw update && openclaw restart`
-2. Run `openclaw doctor --fix` (handles SQLite migration)
-3. Install BlueBubbles app on Josh's Mac
-4. Re-configure iMessage via the BlueBubbles integration rather than the AppleScript bridge
-
-**Risk level:** MEDIUM — requires Josh's Mac. Confirm with Josh before resuming iMessage.
+**Version note:** npm stable is now **2026.6.2** — advanced from 2026.5.28. The 2026.6.5-beta.5 track shipped June 8 with QQBot reasoning tag stripping, Parallel web search, MCP tool result coercion, and SQLite state storage.
 
 ---
 
-### New Finding B — Gemini Native Search Grounding Underused
+## NEW FINDINGS (Morning Scan — June 9)
+
+### New Finding A — Cron jobs-state.json Isolation (2026.4.20+) — Foundation for Email/Calendar Scheduling
 **Severity:** MEDIUM
-**What was found:** Gemini 2.5 Flash and Gemini 3 Flash Preview (Heather's primary model) support built-in Google Search grounding natively, returning AI-synthesized answers backed by live search results and citations — no additional search skill or API key needed.
+**What was found:** OpenClaw 2026.4.20 isolated cron runtime state into `jobs-state.json`, separate from main session state. Cron jobs now survive VPS restarts without state corruption. `openclaw cron run --wait` gains timeout + poll-interval controls. This improvement is included in the 2026.6.2 upgrade target.
 
-**Why it matters:** Heather has no web search configured (no Brave, Serper, or Firecrawl in `openclaw.json`). With native Gemini grounding, search could be available with zero additional cost or configuration complexity. The OpenClaw Google provider plugin may already expose this via model config.
+**Why it matters:** Heather's email/calendar morning digest should be built as a cron job (exact 8 AM timing, not heartbeat drift). The cron reliability improvements make scheduled tasks crash-resilient — critical for a personal assistant whose user wakes up expecting a briefing.
 
-**Exact investigation steps:**
-1. After upgrading to 2026.5.28, run `/help search` inside a session to confirm if Google Search grounding is surfaced
-2. If supported, check whether `googleSearchGrounding: true` is a valid model option in `openclaw.json` under `agents.defaults.models["google/gemini-3-flash-preview"]`
-
-**Risk level:** LOW — informational investigation; no config change until confirmed supported
-
----
-
-### New Finding C — Mandatory Memory Retrieval Rule Missing from AGENTS.md
-**Severity:** MEDIUM
-**What was found:** OpenClaw 2026 best practices recommend an explicit "search memory before acting" rule in AGENTS.md. Without it, agents skip documented context and guess at information that's already written down.
-
-**Why it matters:** Especially important for Heather since she starts from zero memory every session. Once MEMORY.md is created (Finding 5 from evening scan), she needs an explicit rule to check it before responding to questions about Josh's preferences, past decisions, or ongoing projects.
-
-**Exact change to apply:** Add to the Session Startup section of `workspace/AGENTS.md`:
-```
-## Memory Rule
-**Search memory before acting.** Before answering questions about Josh's preferences, past conversations, or decisions — check MEMORY.md and today's memory/YYYY-MM-DD.md first. Never guess at information that might be written down. No mental notes.
+**Exact steps to implement (after upgrading to 2026.6.2):**
+Add to `openclaw.json`:
+```json
+"cron": {
+  "jobs": {
+    "morning-digest": {
+      "enabled": true,
+      "schedule": "0 8 * * *",
+      "prompt": "Check Josh's Gmail for urgent unread messages. Check today's calendar events. Deliver a concise morning briefing to Josh via Discord.",
+      "channel": "discord",
+      "model": "google/gemini-3-flash-preview"
+    }
+  }
+}
 ```
 
-**Risk level:** LOW — additive documentation change
+**Risk level:** LOW — informational now; applies post-upgrade
 
 ---
 
-### New Finding D — NVIDIA SkillSpector Context for Future Skill Installs (June 2026)
-**Severity:** INFO
-**What was found:** OpenClaw partnered with NVIDIA in June 2026 to add SkillSpector scanning to all ClawHub skill publications. Every ClawHub skill now ships with a Skill Card (verdict: Clean / Suspicious / Malicious) based on 64 vulnerability patterns including hidden instructions, prompt injection, trigger abuse, memory poisoning, and purpose-access mismatch.
+### New Finding B — QQBot Reasoning Tag Stripping (2026.6.5-beta) — Discord Output Safety
+**Severity:** LOW
+**What was found:** OpenClaw 2026.6.5-beta.5 strips model reasoning/thinking scaffolding (`<thinking>` tags) before Discord channel delivery.
 
-**Why it matters:** Heather currently has no community skills installed. When skills are added in the future (Google Workspace CLI `gog`, voice TTS `sag`, etc.), verify each has a "Clean" Skill Card on ClawHub before installing. This is now the standard vetting protocol for all OpenClaw skill installs.
+**Why it matters:** Heather uses Gemini (no reasoning tags by default). However, the OpenRouter Anthropic fallback could produce reasoning tags if extended thinking is activated. This protection ensures clean Discord output. Track for next upgrade cycle after 2026.6.5-stable ships.
 
-**Risk level:** LOW — informational; no immediate action required
-
----
-
-### New Finding E — npm Stable is 2026.5.28 (Prior Scan Correction)
-**Severity:** INFO
-**What was found:** As of June 8, 2026: `openclaw update` installs **2026.5.28** from npm. Previous scans referenced 2026.6.2 as "current stable" — that tag exists on GitHub but is not yet promoted to the npm stable channel.
-
-**Why it matters:** No change to the action plan — `openclaw update` is still the correct command. But the target version is 2026.5.28, not 2026.6.2. Notable 2026.5.28 security improvements: group prompt text kept out of system prompt, blocked unsafe command wrappers, rejected no-auth Tailscale exposure.
-
-**Risk level:** NONE — informational correction
+**Risk level:** N/A — informational
 
 ---
 
-## Open Findings (Carried Over from 2026-06-08 Evening Scan)
+### New Finding C — Operator Install Policy (2026.6.2) — Safer Skill Installs
+**Severity:** LOW
+**What was found:** OpenClaw 2026.6.2 replaced the dangerous-code scanner path with an operator install policy — explicit authorization model, better doctor/CLI integration, clearer install surfaces.
 
-All 10 prior findings remain open. Full detail in `2026-06-08-evening-findings.md`.
+**Why it matters:** When gog-cli (Google Workspace, JOSH-44) and the BlueBubbles iMessage skill are installed post-upgrade, they use the new policy-based path — fewer false-positive rejections, more predictable install flow.
+
+**Risk level:** N/A — benefit applies automatically at 2026.6.2 upgrade
+
+---
+
+## Open Findings (Carried Over — Full Detail in 2026-06-09-evening-findings.md)
 
 | # | Severity | Finding | Days Open |
 |---|---|---|---|
-| 1 | HIGH | OpenClaw 78 days behind npm stable (2026.5.28) | 78 |
-| 2 | HIGH | Agent inactive ~5.5 weeks | — |
-| 3 | MODERATE | BOOTSTRAP.md still exists post-onboarding | — |
-| 4 | HIGH | HEARTBEAT.md empty — no proactive monitoring | — |
-| 5 | **HIGH** | **MEMORY.md missing** | **78** |
-| 6 | MODERATE | iMessage monitoring paused (see Finding A above for fix path) | — |
-| 7 | MODERATE | SOUL.md generic template | — |
-| 8 | MODERATE | TOOLS.md generic template | — |
-| 9 | LOW | Duplicate JSON key in inbox-state.json | — |
-| 10 | LOW | Bootstrap TOOLS.md says no Google configured | — |
+| JOSH-30 | **CRITICAL** | MEMORY.md never created | **79** |
+| JOSH-44 | **CRITICAL** | Google Workspace not connected | 6 |
+| JOSH-31 | HIGH | HEARTBEAT.md empty — no proactive monitoring | 79 |
+| JOSH-47 | HIGH | Dreaming blocked (needs upgrade + MEMORY.md) | 6 |
+| JOSH-29/48 | HIGH | Platform 79 days behind stable 2026.6.2 | **79** |
+| JOSH-55 | MEDIUM | TOOLS.md template-only | 1 |
+| JOSH-37 | MEDIUM | SOUL.md not personalized | 79 |
+| JOSH-33/45 | MEDIUM | iMessage paused + malformed state | 43 |
+| JOSH-54 | LOW | BOOTSTRAP.md not deleted | 1 |
+| JOSH-34 | LOW | Emoji contradiction in AGENTS.md vs USER.md | 79 |
 
 ---
 
@@ -106,8 +90,8 @@ All 10 prior findings remain open. Full detail in `2026-06-08-evening-findings.m
 - [OpenClaw Releases · GitHub](https://github.com/openclaw/openclaw/releases)
 - [OpenClaw CHANGELOG](https://github.com/openclaw/openclaw/blob/main/CHANGELOG.md)
 - [OpenClaw Release Notes (Releasebot)](https://releasebot.io/updates/openclaw)
-- [OpenClaw iMessage BlueBubbles 2026](https://openclawconsult.com/lab/openclaw-imessage)
-- [OpenClaw Memory Masterclass (VelvetShark)](https://velvetshark.com/openclaw-memory-masterclass)
-- [OpenClaw Web Search / Gemini Grounding](https://docs.openclaw.ai/tools/web)
-- [NVIDIA SkillSpector Partnership](https://openclaw.ai/blog/openclaw-nvidia-skill-security)
-- [OpenClaw 2026.6.1 Release Notes (SEN-X)](https://senx.ai/openclaw-news/2026-06-02-openclaw-news)
+- [OpenClaw Cron Jobs Docs](https://docs.openclaw.ai/automation/cron-jobs)
+- [OpenClaw 2026.6.5-beta Notes (OpenClaw Playbook)](https://www.openclawplaybook.ai/blog/openclaw-2026-4-9-release-dreaming-security-hardening/)
+- [AlphaClaw Apex 0.9.18 (Chrys Bader, X)](https://x.com/chrysb/status/2035479976074760664)
+- [OpenClaw Community Tips (AI Edge, X)](https://x.com/aiedge_/status/2025163629080051989)
+- [AlphaClaw Apex (Product Hunt)](https://www.producthunt.com/products/alphaclaw-apex)
