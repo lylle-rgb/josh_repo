@@ -1,97 +1,116 @@
 # Fleet Research — Morning Scan Findings
 **Instance:** Heather Schwartz (Josh — personal assistant)
-**Scan date:** 2026-06-09 (morning)
+**Scan date:** 2026-06-10 (morning)
 **Scanner:** AlphaClaw Fleet Agent (automated morning scan)
-**Previous scan:** 2026-06-09 evening (see `2026-06-09-evening-findings.md`)
+**Previous scan:** 2026-06-09 morning (see `2026-06-09-morning-findings.md`)
 
 ---
 
 ## Summary
 
-All prior open findings remain unresolved. This morning scan adds 3 new findings from web research.
+All prior open findings remain unresolved. This morning scan adds 4 new findings from web research.
 
 Most urgent issues unchanged:
-- **MEMORY.md missing — Day 79** (CRITICAL, GitHub-only)
-- **HEARTBEAT.md empty — Day 79** (HIGH, GitHub-only)
+- **MEMORY.md missing — Day 80** (CRITICAL, GitHub-only)
+- **HEARTBEAT.md empty — Day 80** (HIGH, GitHub-only)
 - **Google Workspace not connected** (CRITICAL, VPS/setup)
-- **OpenClaw 79 days behind stable (2026.6.2)** (HIGH, VPS upgrade)
+- **OpenClaw 80 days behind stable (2026.6.2+)** (HIGH, VPS upgrade)
 
-**Version note:** npm stable is now **2026.6.2** — advanced from 2026.5.28. The 2026.6.5-beta.5 track shipped June 8 with QQBot reasoning tag stripping, Parallel web search, MCP tool result coercion, and SQLite state storage.
+**Version note:** npm stable was **2026.6.2** as of June 9. Web research June 10 indicates **2026.6.5 may have shipped to npm stable** — the beta.5 track from June 8 appears to have graduated. Verify via `openclaw update --dry-run` on VPS before upgrading.
 
 ---
 
-## NEW FINDINGS (Morning Scan — June 9)
+## NEW FINDINGS (Morning Scan — June 10)
 
-### New Finding A — Cron jobs-state.json Isolation (2026.4.20+) — Foundation for Email/Calendar Scheduling
+### New Finding A — OpenClaw 2026.6.5 Possible npm Stable Graduation
+**Severity:** HIGH
+**What was found:** The 2026.6.5-beta.5 track (last tracked June 8) appears to have shipped. Multiple web sources reference "OpenClaw 2026.6.5" without beta qualifier. The npm stable target may have advanced from 2026.6.2 → 2026.6.5.
+
+**Why it matters for Heather:** The 2026.6.5 release includes:
+- **Bundled Parallel web search** — available automatically post-upgrade, no config needed
+- **Extended thinking session recovery** — Anthropic sessions survive Gateway restart (relevant for OpenRouter fallback fix)
+- **MCP tool result coercion** — prevents malformed image blocks corrupting responses
+- **Channel safety hardening** — stronger Discord output safety
+
+**Exact steps:** On VPS, run `openclaw update --dry-run` to check available version. If 2026.6.5 available: `openclaw update`. Or AlphaClaw UI → General tab.
+
+**Risk level:** MEDIUM
+
+---
+
+### New Finding B — Gemini 3.1 Flash Lite: Speed + Cost Improvement for Heather
 **Severity:** MEDIUM
-**What was found:** OpenClaw 2026.4.20 isolated cron runtime state into `jobs-state.json`, separate from main session state. Cron jobs now survive VPS restarts without state corruption. `openclaw cron run --wait` gains timeout + poll-interval controls. This improvement is included in the 2026.6.2 upgrade target.
+**What was found:** `google/gemini-3.1-flash-lite-preview` — 363 tokens/sec (45% faster), 1/8th cost of Gemini 3 Pro. Strong candidate for heartbeat/routine tasks.
 
-**Why it matters:** Heather's email/calendar morning digest should be built as a cron job (exact 8 AM timing, not heartbeat drift). The cron reliability improvements make scheduled tasks crash-resilient — critical for a personal assistant whose user wakes up expecting a briefing.
-
-**Exact steps to implement (after upgrading to 2026.6.2):**
-Add to `openclaw.json`:
+**Exact config change (additive):**
 ```json
-"cron": {
-  "jobs": {
-    "morning-digest": {
-      "enabled": true,
-      "schedule": "0 8 * * *",
-      "prompt": "Check Josh's Gmail for urgent unread messages. Check today's calendar events. Deliver a concise morning briefing to Josh via Discord.",
-      "channel": "discord",
-      "model": "google/gemini-3-flash-preview"
-    }
+"model": {
+  "primary": "google/gemini-3-flash-preview",
+  "fallbacks": [
+    "google/gemini-3.1-flash-lite-preview",
+    "openrouter/google/gemini-2.5-flash",
+    "openrouter/anthropic/claude-haiku-4-5-20251001"
+  ]
+}
+```
+
+**Risk level:** LOW
+
+---
+
+### New Finding C — Discord Progressive Streaming Config
+**Severity:** MEDIUM
+**What was found:** `"streaming": "off"` delays all responses. Progressive streaming with coalescing gives more natural UX.
+
+**Exact config change:**
+```json
+"channels": {
+  "discord": {
+    "streaming": "progress",
+    "blockStreamingCoalesce": { "minChars": 300, "idleMs": 500 },
+    "chunkMode": "newline",
+    "maxLinesPerMessage": 40
   }
 }
 ```
 
-**Risk level:** LOW — informational now; applies post-upgrade
+**Risk level:** LOW
 
 ---
 
-### New Finding B — QQBot Reasoning Tag Stripping (2026.6.5-beta) — Discord Output Safety
-**Severity:** LOW
-**What was found:** OpenClaw 2026.6.5-beta.5 strips model reasoning/thinking scaffolding (`<thinking>` tags) before Discord channel delivery.
+### New Finding D — Dead Fallback Slug Fix (JOSH-29 Confirmation)
+**Severity:** MEDIUM
+**What was found:** Correct OpenRouter Haiku slug confirmed: `openrouter/anthropic/claude-haiku-4-5-20251001`. Current config has outdated `openrouter/anthropic/claude-3.5-haiku`.
 
-**Why it matters:** Heather uses Gemini (no reasoning tags by default). However, the OpenRouter Anthropic fallback could produce reasoning tags if extended thinking is activated. This protection ensures clean Discord output. Track for next upgrade cycle after 2026.6.5-stable ships.
+**Fix:** Replace dead slug in fallbacks array.
 
-**Risk level:** N/A — informational
-
----
-
-### New Finding C — Operator Install Policy (2026.6.2) — Safer Skill Installs
-**Severity:** LOW
-**What was found:** OpenClaw 2026.6.2 replaced the dangerous-code scanner path with an operator install policy — explicit authorization model, better doctor/CLI integration, clearer install surfaces.
-
-**Why it matters:** When gog-cli (Google Workspace, JOSH-44) and the BlueBubbles iMessage skill are installed post-upgrade, they use the new policy-based path — fewer false-positive rejections, more predictable install flow.
-
-**Risk level:** N/A — benefit applies automatically at 2026.6.2 upgrade
+**Risk level:** LOW
 
 ---
 
-## Open Findings (Carried Over — Full Detail in 2026-06-09-evening-findings.md)
+## Open Findings (Carried Over — Full Detail in 2026-06-09-morning-findings.md)
 
 | # | Severity | Finding | Days Open |
 |---|---|---|---|
-| JOSH-30 | **CRITICAL** | MEMORY.md never created | **79** |
-| JOSH-44 | **CRITICAL** | Google Workspace not connected | 6 |
-| JOSH-31 | HIGH | HEARTBEAT.md empty — no proactive monitoring | 79 |
-| JOSH-47 | HIGH | Dreaming blocked (needs upgrade + MEMORY.md) | 6 |
-| JOSH-29/48 | HIGH | Platform 79 days behind stable 2026.6.2 | **79** |
-| JOSH-55 | MEDIUM | TOOLS.md template-only | 1 |
-| JOSH-37 | MEDIUM | SOUL.md not personalized | 79 |
-| JOSH-33/45 | MEDIUM | iMessage paused + malformed state | 43 |
-| JOSH-54 | LOW | BOOTSTRAP.md not deleted | 1 |
-| JOSH-34 | LOW | Emoji contradiction in AGENTS.md vs USER.md | 79 |
+| JOSH-30 | **CRITICAL** | MEMORY.md never created | **80** |
+| JOSH-44 | **CRITICAL** | Google Workspace not connected | 7 |
+| JOSH-31 | HIGH | HEARTBEAT.md empty — no proactive monitoring | 80 |
+| JOSH-47 | HIGH | Dreaming blocked (needs upgrade + MEMORY.md) | 7 |
+| JOSH-29/48 | HIGH | Platform 80 days behind stable (2026.6.2+) | **80** |
+| JOSH-55 | MEDIUM | TOOLS.md template-only | 2 |
+| JOSH-37 | MEDIUM | SOUL.md not personalized | 80 |
+| JOSH-33/45 | MEDIUM | iMessage paused + malformed state | 44 |
+| JOSH-54 | LOW | BOOTSTRAP.md not deleted | 2 |
+| JOSH-34 | LOW | Emoji contradiction in AGENTS.md vs USER.md | 80 |
 
 ---
 
 ## Research Sources
 
 - [OpenClaw Releases · GitHub](https://github.com/openclaw/openclaw/releases)
-- [OpenClaw CHANGELOG](https://github.com/openclaw/openclaw/blob/main/CHANGELOG.md)
 - [OpenClaw Release Notes (Releasebot)](https://releasebot.io/updates/openclaw)
-- [OpenClaw Cron Jobs Docs](https://docs.openclaw.ai/automation/cron-jobs)
-- [OpenClaw 2026.6.5-beta Notes (OpenClaw Playbook)](https://www.openclawplaybook.ai/blog/openclaw-2026-4-9-release-dreaming-security-hardening/)
-- [AlphaClaw Apex 0.9.18 (Chrys Bader, X)](https://x.com/chrysb/status/2035479976074760664)
-- [OpenClaw Community Tips (AI Edge, X)](https://x.com/aiedge_/status/2025163629080051989)
-- [AlphaClaw Apex (Product Hunt)](https://www.producthunt.com/products/alphaclaw-apex)
+- [Gemini 3.1 Flash Lite on OpenRouter](https://openrouter.ai/google/gemini-3.1-flash-lite-preview)
+- [Best Gemini Models for OpenClaw 2026 (haimaker.ai)](https://haimaker.ai/blog/best-gemini-models-for-openclaw/)
+- [OpenClaw Discord Streaming & Chunking Docs](https://docs.openclaw.ai/concepts/streaming)
+- [Discord Config Improvements (X — Tuncer Deniz)](https://x.com/tuncerdeniz/status/2025029106950353298)
+- [OpenClaw 2026.6.5 Release Notes (Releasebot)](https://releasebot.io/updates/openclaw)
