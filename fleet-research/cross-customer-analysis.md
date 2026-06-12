@@ -1,7 +1,8 @@
-# Cross-Customer Analysis — Fleet Scan 2026-06-11
+# Cross-Customer Analysis — Fleet Scan 2026-06-12
 
 **Researcher:** AlphaClaw Fleet Agent  
-**Customers analyzed:** Josh (Heather Schwartz) · Noah (Market Catalyst Agent)
+**Customers analyzed:** Josh (Heather Schwartz) · Noah (Market Catalyst Agent)  
+**Previous scan:** 2026-06-11
 
 ---
 
@@ -12,7 +13,7 @@
 | Josh / Heather | 2026.3.22 | 2026.6.5 | **3 months** | iMessage recovery, parallel search, cron wipe |
 | Noah / Catalyst | 2026.4.15 | 2026.6.5 | **2 months** | MCP Anthropic 400s, extended-thinking recovery |
 
-Both instances need updates. Noah's bugs are higher-severity (silent session corruption on Anthropic). Josh's bugs are more operational (iMessage failures, search gaps).
+Both instances still need updates. Neither updated since the June 11 scan. Noah's bugs are higher-severity (silent session corruption on Anthropic). Josh's bugs are more operational.
 
 ---
 
@@ -21,26 +22,29 @@ Both instances need updates. Noah's bugs are higher-severity (silent session cor
 | File | Josh | Noah | Notes |
 |---|---|---|---|
 | `SOUL.md` | ✅ Identical | ✅ Identical | Same SHA — shared baseline |
-| `AGENTS.md` (bootstrap) | ✅ Identical | ✅ Identical | Same SHA — shared baseline |
-| `TOOLS.md` (workspace) | ⚠️ Template only | ⚠️ Template only | Same SHA — **neither customized** |
-| `TOOLS.md` (bootstrap) | ✅ Filled (AlphaClaw UI) | ✅ Filled (localhost UI) | Different — Noah has Google account listed |
-| `USER.md` | ✅ Filled | ❌ Blank template | Josh’s is solid; Noah’s has no user context |
-| `IDENTITY.md` | ❌ Missing from workspace | ❌ Blank template | Neither instance has a real identity configured |
-| `HEARTBEAT.md` | ✅ Present | ✅ Present | Both have heartbeat |
+| `AGENTS.md` | ✅ Identical | ✅ Identical | Same SHA — shared baseline |
+| `TOOLS.md` (workspace) | ⚠️ Template only | ⚠️ Template only | **Neither customized** |
+| `USER.md` | ✅ Filled | ❌ Blank template | Noah has no user context at all |
+| `IDENTITY.md` | ❌ Not present | ❌ Blank template | Neither has real identity configured |
+| `HEARTBEAT.md` | ⚠️ Empty (template) | ⚠️ Empty (template) | **Both dormant — no proactive checks running** |
+| `MEMORY.md` | ❌ Missing | ❌ Missing | **Neither has a long-term fact store** |
 | `BOOTSTRAP.md` | ✅ Present | ✅ Present | Both have bootstrap docs |
-| `MEMORY.md` | ❌ Missing | ❌ Missing | **Neither instance has a MEMORY.md** |
 
-### Gap: No MEMORY.md in either repo
+### NEW Gap Identified 2026-06-12: HEARTBEAT.md Not Populated in Either Instance
 
-Best practice (per OpenClaw docs and community) is to maintain a `MEMORY.md` at the workspace root — a durable file that survives compaction and holds facts that should never be forgotten. SOUL.md covers personality; AGENTS.md covers behavior rules; MEMORY.md covers persistent facts about the user and world.
+Both instances have the HEARTBEAT.md template file but no actual check tasks defined. This means both agents reply `HEARTBEAT_OK` on every heartbeat poll without doing any proactive work. For Josh, this means no email/calendar/weather monitoring. For Noah, it means no market-cycle-aware checks.
 
-Neither instance has one. This means both agents rely entirely on session memory and whatever gets written to other files — there’s no dedicated long-term fact store.
+This is a 5-minute fix in each repo with high impact for both use cases.
 
-**Recommendation:** Create `workspace/memory/MEMORY.md` (or `workspace/MEMORY.md`) in both repos with a structured template covering:
-- Key facts about the user
-- Ongoing projects and status
-- Preferences discovered over time
-- Known constraints and hard rules
+### Ongoing Gap: No MEMORY.md in Either Repo
+
+Neither instance has a `MEMORY.md`. Best practice per OpenClaw docs is to maintain a durable, compaction-safe long-term fact file. SOUL.md covers personality; AGENTS.md covers behavior rules; MEMORY.md covers persistent facts about the user and world.
+
+### NEW Gap Identified 2026-06-12: Dreaming Not Configured in Either Instance
+
+OpenClaw's optional background memory consolidation ("Dreaming") is not configured in either instance. This feature automates the MEMORY.md maintenance that both AGENTS.md files describe as a manual heartbeat task. It runs nightly, scores daily memory entries for significance, and promotes only high-signal items — keeping MEMORY.md curated without spending active session tokens.
+
+Both instances would benefit from enabling this, but the configuration and memory structure differ by use case (see customer-specific sections below).
 
 ---
 
@@ -52,13 +56,17 @@ Neither instance has one. This means both agents rely entirely on session memory
 | Primary model | gemini-3-flash-preview | claude-sonnet-4-6 | Even (different use cases) |
 | Model fallbacks | ✅ 2 fallbacks configured | ❌ None | **Josh** |
 | Compaction / memoryFlush | ❌ Not configured | ✅ Configured | **Noah** |
-| contextPruning | ❌ Not configured | ⚠️ 5m TTL (may be too aggressive) | Neither ideal |
+| contextPruning | ❌ Not configured | ⚠️ 5m TTL (too aggressive) | Neither ideal |
 | Google Workspace | ❌ Not connected | ✅ Connected (full r/w) | **Noah** |
-| Discord streaming | ❌ Off | N/A (no setting) | Josh should enable |
-| Discord group policy | ⚠️ Open (anyone can DM) | ✅ Allowlist + pairing | **Noah** (more secure) |
+| Discord streaming | ❌ Off | N/A | Josh should enable |
+| Discord group policy | ⚠️ Open (anyone) | ✅ Allowlist + pairing | **Noah** (more secure) |
 | memory-core plugin | ❌ Not in config | ⚠️ Allowed but not in entries | Neither fully enabled |
+| Dreaming | ❌ Not configured | ❌ Not configured | Neither |
+| HEARTBEAT.md | ❌ Empty | ❌ Empty | Neither |
+| MEMORY.md | ❌ Missing | ❌ Missing | Neither |
 | Skills directory | ❌ None | ✅ gog-cli | **Noah** |
 | Reports directory | ❌ None | ✅ Has output reports | **Noah** |
+| Version | 2026.3.22 | 2026.4.15 | Noah (less outdated) |
 
 ---
 
@@ -67,24 +75,30 @@ Neither instance has one. This means both agents rely entirely on session memory
 ### Josh (Personal Assistant — Heather Schwartz)
 
 **Critical gap: Google Workspace not connected.**  
-This is the single most important fix. Heather is supposed to manage Josh's email, calendar, and contacts. Without a connected Google account, she can't do any of it. Noah's instance has `Ngkatz.ai@gmail.com` with full read/write on all Google services. Josh has zero.
+Heather is supposed to manage Josh's email, calendar, and contacts. Without a connected Google account, she can't do any of it. Noah's instance has full Google Workspace access. Josh has zero.
 
-**Secondary gap: No memory protection.**  
-Personal assistant relationships are built on continuity. Every session compaction with no memoryFlush means Heather loses what Josh told her. Noah has this configured. Josh doesn't.
+**High gap: No memory protection, no long-term memory.**  
+No compaction/memoryFlush + no MEMORY.md + no Dreaming = no continuity. Personal assistant relationships are built on remembering. Every session reset destroys context. Noah has memoryFlush; Josh has none of these.
 
-**Discord security gap:**  
-Josh's Discord is set to `"groupPolicy": "open"` and `"dmPolicy": "open"` with `"allowFrom": ["*"]`. This means literally anyone can DM Heather and get responses. Noah's instance uses `pairing` and `allowlist`. For a personal assistant with access to Josh's calendar and contacts, this is a significant exposure risk.
+**Security gap: Discord open to all.**  
+Josh's Discord uses `groupPolicy: open` and `dmPolicy: open` with `allowFrom: ["*"]`. Anyone can DM Heather and get responses. Heather has access to Josh's calendar and contacts. Noah uses pairing + allowlist. This is a significant exposure risk that should be addressed alongside the Google Workspace setup.
+
+**New (2026-06-12): HEARTBEAT.md empty + Dreaming not configured.**  
+Both of these mean proactive behavior is completely dormant despite being designed into AGENTS.md.
 
 ### Noah (Market Catalyst Agent)
 
-**Critical gap: Blank user and identity files.**  
-Market Catalyst doesn't know who Noah is, their timezone (critical for market hours), risk tolerance, or trading focus. Every session starts from scratch. Josh’s USER.md is detailed and useful. Noah’s is an empty template.
+**Critical gap: Active Anthropic bugs.**  
+MCP coercion (Anthropic 400s) and extended-thinking recovery bugs are both unpatched on 2026.4.15. These cause silent session corruption during analysis runs. Update to 2026.6.5 is the single highest-priority action.
 
-**Active bug risk: MCP coercion + extended thinking.**  
-Noah is on Anthropic and 2 months behind on a fix that directly prevents silent session corruption on Anthropic providers. This is a production risk for any live or paper trading activity.
+**Medium gap: Blank user and identity files.**  
+Market Catalyst doesn't know who Noah is, their timezone (critical for market hours), risk tolerance, or trading focus. Josh's USER.md is detailed and useful. Noah's is an empty template.
 
-**Cron state wipe:**  
-Any scheduled catalyst scans set up before the SQLite migration (somewhere around 2026.4.x–2026.5.x) may have been silently wiped. Worth auditing whether any cron jobs are actually firing.
+**Medium gap: memory-core plugin not in entries.**  
+memory-core is in the plugin allow-list but not in entries — it may not be loading at all.
+
+**New (2026-06-12): HEARTBEAT.md empty + Dreaming not configured.**  
+For a trading agent, a populated HEARTBEAT.md could implement market-hours-aware checks: pre-market catalyst scan, post-close summary, earnings calendar review. Dreaming would preserve catalyst signals and watchlist context long-term.
 
 ---
 
@@ -95,8 +109,9 @@ Any scheduled catalyst scans set up before the SQLite migration (somewhere aroun
 | Update to 2026.6.5 | 🔴 HIGH | 🔴 HIGH | Low |
 | Connect Google Workspace | 🔴 CRITICAL | N/A (done) | Medium |
 | Add compaction + memoryFlush | 🔴 HIGH | N/A (done) | Low |
+| Create MEMORY.md + Enable Dreaming | 🔴 HIGH | 🔴 HIGH | Low |
+| Populate HEARTBEAT.md | 🟡 MEDIUM | 🟡 MEDIUM | Low (5 min) |
 | Fill in USER.md | N/A (done) | 🟡 MEDIUM | Low |
-| Create MEMORY.md | 🟡 MEDIUM | 🟡 MEDIUM | Low |
 | Tighten Discord security | 🟡 MEDIUM | N/A (done) | Low |
 | Enable memory-core in entries | N/A | 🟡 MEDIUM | Low |
 | Customize TOOLS.md | 🟠 LOW | 🟠 LOW | Low |
@@ -112,20 +127,20 @@ Any scheduled catalyst scans set up before the SQLite migration (somewhere aroun
 4. Reports output directory
 5. More secure Discord policy (pairing + allowlist)
 6. memory-core in plugin allowlist
+7. More recent version (2026.4.15 vs 2026.3.22)
 
 ## What Josh Has That Noah Doesn't
 1. USER.md filled in (user context actually exists)
 2. Model fallbacks (OpenRouter fallbacks provide resilience)
-3. Public AlphaClaw UI (accessible at real IP, not just localhost)
+3. Public AlphaClaw UI accessible at real IP
+
+## Shared Gaps (Both Instances)
+1. **MEMORY.md missing** — neither has a durable long-term fact store
+2. **Dreaming not configured** — automated memory consolidation not running on either instance
+3. **HEARTBEAT.md empty** — proactive polling behavior completely dormant on both
+4. **TOOLS.md blank** — neither has environment-specific notes filled in
+5. **Not updated to 2026.6.5** — both are running older versions with known bugs
 
 ---
 
-## Shared Recommendations (Apply to Both)
-
-1. **Update to 2026.6.5** — single most important action. One command, zero config changes required.
-2. **Create workspace/MEMORY.md** — durable fact file that survives compaction. Neither instance has one.
-3. **Populate workspace/TOOLS.md** — both instances have the blank template; neither has any actual environment notes.
-
----
-
-*Scan completed: 2026-06-11. Next recommended scan: 2026-06-18.*
+*Scan completed: 2026-06-12 (morning). Next recommended scan: 2026-06-13 morning.*
