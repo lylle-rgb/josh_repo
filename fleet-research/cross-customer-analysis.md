@@ -1,3 +1,87 @@
+# Cross-Customer Fleet Analysis — 2026-06-13 Morning Update
+
+**Researcher:** AlphaClaw Fleet Agent  
+**Customers analyzed:** Josh (Heather Schwartz) · Noah (Market Catalyst Agent)  
+**Previous scan:** 2026-06-12 morning  
+**Changes since June 12:** Zero fixes applied on either instance.
+
+---
+
+## ⚠️ NEW CRITICAL — Josh: gemini-2.5-flash Deprecation Deadline in 4 Days
+
+**Deadline: June 17, 2026**
+
+Josh's first fallback model (`openrouter/google/gemini-2.5-flash`) will stop responding on June 17 when Google shuts down the `gemini-2.5-flash` and `gemini-2.5-pro` model IDs. OpenRouter routes to the underlying Google API — when Google kills the model, the OpenRouter endpoint dies too.
+
+**GitHub-only fix (30 seconds):**
+
+```json
+// openclaw.json → agents.defaults.model.fallbacks
+// CHANGE:
+"openrouter/google/gemini-2.5-flash"
+// TO:
+"openrouter/google/gemini-3.5-flash"
+```
+
+`gemini-3.5-flash` reached GA on May 19 at Google I/O 2026. It is available on OpenRouter today.
+
+This is the highest-priority action across the entire fleet this week.
+
+---
+
+## ⚠️ ESCALATION — Noah: contextPruning TTL=5m Is Now Day 29
+
+~406 sessions have been truncated at the 5-minute mark since this was first identified. The fix is one JSON value change. It remains unresolved.
+
+```json
+// openclaw.json → agents.defaults.contextPruning
+"ttl": "5m"  →  "ttl": "30m"
+```
+
+---
+
+## June 13 Platform Delta: New in 2026.6.5
+
+Both instances are still at their June 12 versions. 2026.6.5 shipped with:
+
+| Feature | Relevant for | Impact |
+|---------|-------------|--------|
+| Bundled Parallel web search | Noah (multi-source EDGAR research) | HIGH |
+| Cleaner Anthropic recovery | Noah (Anthropic direct) | HIGH |
+| Stronger Discord chat safety | Josh (Discord primary channel) | MEDIUM |
+| Durable auth/storage | Both | MEDIUM |
+| Safer upgrade paths | Both | LOW |
+
+Parallel web search requires adding `PARALLEL_API_KEY` to the VPS environment post-upgrade. No config file change needed — OpenClaw discovers it automatically.
+
+---
+
+## June 13 Status vs June 12: Nothing Changed
+
+| Instance | GitHub-only fixes open | Applied since June 12 | Days stagnant |
+|---------|----------------------|----------------------|--------------|
+| Josh / Heather | 6 | 0 | 1 |
+| Noah / Catalyst | 10 | 0 | 1 |
+
+The June 12 cross-customer analysis below remains fully accurate and actionable. All findings from that scan are still open.
+
+---
+
+## Immediate Action List (Fleet Priority, GitHub-Only)
+
+1. **Josh: Fix gemini-2.5-flash fallback → gemini-3.5-flash** (30s, deadline June 17)
+2. **Noah: Fix contextPruning TTL 5m → 30m** (30s, Day 29)
+3. **Noah: Create workspace/memory/ directory + initial 2026-06-13.md stub** (2min)
+4. **Noah: Enable memory-core in plugins.entries with Dreaming config** (2min)
+5. **Noah: Add fallback models to openclaw.json** (2min)
+6. **Both: Create workspace/MEMORY.md** (5min each)
+7. **Noah: Populate IDENTITY.md and USER.md** (10min)
+8. **Both: Populate TOOLS.md** (5min each)
+9. **Noah: Fix HEARTBEAT.md** (5min)
+10. **Both: Delete BOOTSTRAP.md** (1min each)
+
+---
+
 # Cross-Customer Analysis — Fleet Scan 2026-06-12
 
 **Researcher:** AlphaClaw Fleet Agent  
@@ -106,6 +190,7 @@ For a trading agent, a populated HEARTBEAT.md could implement market-hours-aware
 
 | Action | Josh | Noah | Effort |
 |---|---|---|---|
+| Fix gemini-2.5-flash fallback (deadline June 17) | 🔴 CRITICAL | N/A | 30s |
 | Update to 2026.6.5 | 🔴 HIGH | 🔴 HIGH | Low |
 | Connect Google Workspace | 🔴 CRITICAL | N/A (done) | Medium |
 | Add compaction + memoryFlush | 🔴 HIGH | N/A (done) | Low |
@@ -131,7 +216,7 @@ For a trading agent, a populated HEARTBEAT.md could implement market-hours-aware
 
 ## What Josh Has That Noah Doesn't
 1. USER.md filled in (user context actually exists)
-2. Model fallbacks (OpenRouter fallbacks provide resilience)
+2. Model fallbacks (OpenRouter fallbacks provide resilience — but fix the gemini-2.5-flash one NOW)
 3. Public AlphaClaw UI accessible at real IP
 
 ## Shared Gaps (Both Instances)
@@ -143,4 +228,6 @@ For a trading agent, a populated HEARTBEAT.md could implement market-hours-aware
 
 ---
 
-*Scan completed: 2026-06-12 (morning). Next recommended scan: 2026-06-13 morning.*
+*June 12 scan completed: 2026-06-12 morning.*  
+*June 13 update appended: 2026-06-13 morning.*  
+*Next recommended scan: 2026-06-14 morning.*
