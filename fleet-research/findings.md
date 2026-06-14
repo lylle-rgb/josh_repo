@@ -1,13 +1,13 @@
 # Fleet Research Findings — Josh / Heather Schwartz
 
-**Scan date:** 2026-06-12 (morning) · Previous scan: 2026-06-11  
-**Researcher:** AlphaClaw Fleet Agent  
-**Instance:** josh_repo (Heather Schwartz — personal assistant)  
-**Current version:** 2026.3.22  
-**Latest stable:** 2026.6.5 (June 9, 2026)  
+**Scan date:** 2026-06-14 (evening) · Previous scan: 2026-06-12 (morning)
+**Researcher:** AlphaClaw Fleet Agent
+**Instance:** josh_repo (Heather Schwartz — personal assistant)
+**Current version:** 2026.3.22
+**Latest stable:** 2026.6.5 (June 9, 2026)
 **Latest beta:** 2026.6.6-beta.1 (June 10, 2026)
 
-> ⚠️ All 6 findings from the June 11 scan remain unresolved. Findings 7–8 are new today.
+> ⚠️ All 9 findings from the June 12 scan remain unresolved. Findings 10–12 are new this evening.
 
 ---
 
@@ -39,7 +39,7 @@ Or via the AlphaClaw Watchdog tab: `https://5.78.142.81.sslip.io#watchdog`
 
 The bootstrap TOOLS.md shows no Google accounts configured. Heather's entire value proposition is managing Josh's iMessage, email, and calendar. Without Google Workspace, she cannot access Gmail, Google Calendar, or Google Contacts.
 
-**Why it matters:**  
+**Why it matters:**
 Josh is a Founder/CEO (Bliss, Oben HiFi) based in LA. Email and calendar management for a founder is high-value and time-sensitive. A personal assistant who can't access the calendar or inbox is severely limited.
 
 **Action:**
@@ -56,7 +56,7 @@ Josh is a Founder/CEO (Bliss, Oben HiFi) based in LA. Email and calendar managem
 
 A known OpenClaw issue (#30675) affects `google/gemini-3-flash-preview`: when a subagent fires multiple parallel `web_search` calls in one turn, subsequent calls fail silently with `missing_gemini_api_key`. Research tasks may return incomplete answers without surfacing an error.
 
-**Action:**  
+**Action:**
 Update to 2026.6.5 first (Finding 1). If it persists, add to `openclaw.json` under `agents.defaults`:
 ```json
 "webSearch": {
@@ -83,10 +83,10 @@ Noah's instance (for comparison) has:
 }
 ```
 
-**Why it matters:**  
+**Why it matters:**
 For a personal assistant, continuity is the product. If Heather forgets what Josh told her last session, the relationship breaks down.
 
-**Action:**  
+**Action:**
 Add to `openclaw.json` under `agents.defaults`:
 ```json
 "compaction": {
@@ -111,7 +111,7 @@ The 6h TTL is appropriate for a personal assistant. Noah's 5m TTL is too aggress
 
 `workspace/TOOLS.md` contains only the default placeholder text — no actual device names, SSH aliases, or environment notes. Heather must ask or guess about Josh's setup every session.
 
-**Action:**  
+**Action:**
 Populate `workspace/TOOLS.md` with Josh's devices, any SSH aliases, preferred communication format preferences, and shortcuts for frequently mentioned places or people.
 
 ---
@@ -122,18 +122,18 @@ Populate `workspace/TOOLS.md` with Josh's devices, any SSH aliases, preferred co
 
 `openclaw.json` has `"streaming": "off"`. Heather's replies appear all at once after full generation, which feels slow for longer responses.
 
-**Action:**  
+**Action:**
 Change `"streaming": "off"` → `"streaming": "on"` in `openclaw.json`.
 
 ---
 
-## Finding 7 — Dreaming (Memory Consolidation) Not Enabled ⭐ NEW 2026-06-12
+## Finding 7 — Dreaming (Memory Consolidation) Not Enabled
 
 **Risk: HIGH**
 
 OpenClaw's optional "Dreaming" feature runs a background memory consolidation pass on a configurable schedule. It scans recent daily memory files, scores entries for significance, and promotes only items that pass score, recall-frequency, and query-diversity gates into MEMORY.md. It is disabled by default.
 
-**Why it matters for Heather:**  
+**Why it matters for Heather:**
 Heather's AGENTS.md explicitly says to periodically review daily memory files and update MEMORY.md with distilled learnings. Right now, this requires Heather to manually spend a heartbeat turn on it. Dreaming automates this completely — running nightly at 3 AM, keeping MEMORY.md high-signal without burning any active session tokens.
 
 Currently there is no MEMORY.md at all. Both need to be set up together for long-term memory to work.
@@ -176,7 +176,7 @@ This runs at 3 AM nightly and promotes up to 10 high-significance items into MEM
 
 ---
 
-## Finding 8 — HEARTBEAT.md Not Populated ⭐ NEW 2026-06-12
+## Finding 8 — HEARTBEAT.md Not Populated
 
 **Risk: MEDIUM**
 
@@ -184,7 +184,7 @@ This runs at 3 AM nightly and promotes up to 10 high-significance items into MEM
 
 AGENTS.md contains detailed guidance on what to check: emails, calendar (<2h events), mentions, weather, rotated 2-4x per day. None of this runs because HEARTBEAT.md is empty.
 
-**Action:**  
+**Action:**
 Replace `workspace/HEARTBEAT.md` with:
 ```markdown
 # HEARTBEAT.md — Heather's Proactive Checks
@@ -215,7 +215,84 @@ Do not message Josh between 23:00-08:00 PST unless urgent.
 
 **Risk: INFO**
 
-`2026.6.6-beta.1` dropped June 10 and has not yet promoted to stable as of this scan (June 12). No action needed — update to 2026.6.5 now (Finding 1) and watch for the 2026.6.6 stable announcement.
+`2026.6.6-beta.1` dropped June 10 and has not yet promoted to stable as of this scan (June 14). No action needed — update to 2026.6.5 now (Finding 1) and watch for the 2026.6.6 stable announcement.
+
+---
+
+## Finding 10 — AGENTS.md Emoji Rule Contradicts USER.md Strict Preference ⭐ NEW 2026-06-14 Evening
+
+**Risk: HIGH**
+
+This is a direct behavioral contradiction discovered on close read of both files:
+
+- `workspace/USER.md` states: **"STRICT: DO NOT SEND EMOJI REACTIONS TO MESSAGES."**
+- `workspace/AGENTS.md` (section "React Like a Human!") states: **"On platforms that support reactions (Discord, Slack), use emoji reactions naturally"** and lists specific cases when to react (👍, ❤️, 😂, etc.).
+
+AGENTS.md is loaded at startup. USER.md is also loaded at startup. These rules directly contradict each other. Because AGENTS.md has the more detailed and enthusiastic guidance (with examples), the agent is likely defaulting to AGENTS.md behavior and violating Josh's explicit preference.
+
+**Why it matters:**
+Josh's no-emoji preference is explicit and marked STRICT. If Heather is using emoji reactions, Josh has noticed. This may erode trust faster than any missing feature.
+
+**Action — immediate:**
+1. Add the no-emoji rule explicitly to `workspace/SOUL.md` (the highest-priority file loaded at startup) so it overrides AGENTS.md:
+```markdown
+## Josh-Specific Rules (HARD RULES — never override)
+
+**No emoji reactions. Ever.** Josh explicitly said: STRICT: DO NOT SEND EMOJI REACTIONS TO MESSAGES.
+Not thumbs-up. Not hearts. Nothing. This overrides any general guidance about "reacting like a human."
+```
+
+2. Update the AGENTS.md "React Like a Human!" section to add an exception note:
+```markdown
+**Exception:** If USER.md or SOUL.md contains an explicit no-emoji rule for your human, skip all reactions entirely. Always check your human's hard rules before applying defaults.
+```
+
+The SOUL.md fix is the higher priority — do that first.
+
+---
+
+## Finding 11 — No gog-cli Skill in Josh's Repo ⭐ NEW 2026-06-14 Evening
+
+**Risk: MEDIUM-HIGH**
+
+The `workspace/memory/inbox-state.json` file shows active email and iMessage tracking (with real timestamps, thread IDs, and a monitored inbox state). This implies Heather is doing some level of email management.
+
+However, unlike Noah's repo which has `skills/gog-cli/` with a full Google Workspace CLI skill (Gmail, Calendar, Contacts, Drive), **Josh's repo has no `skills/` directory at all.** There is no gog-cli skill defined or installed for Heather.
+
+This creates a gap: the inbox-state suggests email integration is happening through some mechanism, but without an explicit gog-cli skill, Heather doesn't have a structured interface to Gmail, Calendar, or Contacts. She may be using a built-in or another integration, but there's no skill documentation for it.
+
+**Why it matters:**
+- Heather lacks documented command reference for the tools she's supposed to be using
+- If Google Workspace access exists via another mechanism, it's undocumented and fragile
+- If it doesn't exist, inbox-state.json may be from a failed integration attempt
+
+**Action:**
+1. Check AlphaClaw General tab → Google Workspace section to confirm connection status
+2. If connected: install the gog-cli skill (or equivalent) and confirm it appears in `skills/`
+3. If not connected: complete the Google Workspace OAuth setup (see Finding 2)
+4. Once installed, populate `workspace/TOOLS.md` with the connected account details
+
+---
+
+## Finding 12 — All June 12 Findings Unresolved (2 Days) ⭐ STATUS UPDATE
+
+**Risk: ESCALATION**
+
+The June 12 morning scan identified 8 actionable findings. As of this June 14 evening scan (48 hours later), **all remain unresolved**:
+
+- Version still 2026.3.22 (Finding 1)
+- Google Workspace still not confirmed connected (Finding 2)
+- No compaction/memoryFlush settings (Finding 4)
+- TOOLS.md still blank (Finding 5)
+- Dreaming not enabled, MEMORY.md not created (Finding 7)
+- HEARTBEAT.md still empty (Finding 8)
+
+**Priority escalation:** Findings 1, 4, 7, and 10 (new today) should be treated as a bundle — they can all be applied in a single session of ~30 minutes:
+- `openclaw update` → resolves Finding 1
+- Edit `openclaw.json` → adds compaction + dreaming → resolves Findings 4 and 7
+- Edit `workspace/SOUL.md` → adds Josh rules + no-emoji override → resolves Finding 10
+- Create `workspace/MEMORY.md` → resolves the memory gap (Finding 7)
+- Edit `workspace/HEARTBEAT.md` → resolves Finding 8
 
 ---
 
@@ -223,16 +300,19 @@ Do not message Josh between 23:00-08:00 PST unless urgent.
 
 | Finding | Priority | Effort | Impact | Status |
 |---|---|---|---|---|
-| Update to 2026.6.5 | HIGH | Low (one command) | iMessage fixes, web search, MCP fixes | ⏳ Unresolved |
-| Connect Google Workspace | CRITICAL | Medium (OAuth setup) | Unlocks email + calendar access | ⏳ Unresolved |
+| Update to 2026.6.5 | HIGH | Low (one command) | iMessage fixes, web search, MCP fixes | ⏳ Unresolved (2 days) |
+| Connect Google Workspace | CRITICAL | Medium (OAuth setup) | Unlocks email + calendar access | ⏳ Unresolved (2 days) |
 | Concurrent search bug | MEDIUM | Low (update first) | More reliable research tasks | ⏳ Unresolved |
-| Add compaction/memoryFlush | HIGH | Low (config change) | Persistent memory on compaction | ⏳ Unresolved |
-| Populate TOOLS.md | LOW | Low (5 min) | Fewer clarifying questions | ⏳ Unresolved |
+| Add compaction/memoryFlush | HIGH | Low (config change) | Persistent memory on compaction | ⏳ Unresolved (2 days) |
+| Populate TOOLS.md | LOW | Low (5 min) | Fewer clarifying questions | ⏳ Unresolved (2 days) |
 | Enable Discord streaming | LOW | Low (one line) | Better perceived response speed | ⏳ Unresolved |
-| Enable Dreaming + create MEMORY.md | HIGH | Low-Medium | Automated long-term memory | 🆕 New 06-12 |
-| Populate HEARTBEAT.md | MEDIUM | Low (5 min) | Proactive email/calendar alerts | 🆕 New 06-12 |
-| Monitor 2026.6.6-beta | INFO | None | Awareness only | 🆕 New 06-12 |
+| Enable Dreaming + create MEMORY.md | HIGH | Low-Medium | Automated long-term memory | ⏳ Unresolved (2 days) |
+| Populate HEARTBEAT.md | MEDIUM | Low (5 min) | Proactive email/calendar alerts | ⏳ Unresolved (2 days) |
+| Monitor 2026.6.6-beta | INFO | None | Awareness only | ⏳ Monitoring |
+| AGENTS.md emoji rule contradicts USER.md | HIGH | Low (5 min) | Stops Heather violating Josh's hard rule | 🆕 New 06-14 |
+| No gog-cli skill in Josh's repo | MEDIUM-HIGH | Medium | Confirms/fixes email tool chain | 🆕 New 06-14 |
+| All June 12 findings still unresolved | ESCALATION | — | Batch fix recommended | 🆕 Status 06-14 |
 
 ---
 
-*Sources: [OpenClaw Releases](https://github.com/openclaw/openclaw/releases), [OpenClaw Memory docs](https://docs.openclaw.ai/concepts/memory), [Memory config reference](https://docs.openclaw.ai/reference/memory-config), [OpenClaw Memory Masterclass](https://velvetshark.com/openclaw-memory-masterclass), [AlphaClaw Releases](https://github.com/chrysb/alphaclaw/releases)*
+*Sources: [OpenClaw Releases](https://github.com/openclaw/openclaw/releases), [OpenClaw Memory docs](https://docs.openclaw.ai/concepts/memory), [Memory config reference](https://docs.openclaw.ai/reference/memory-config), [OpenClaw Memory Masterclass](https://velvetshark.com/openclaw-memory-masterclass), [AlphaClaw Releases](https://github.com/chrysb/alphaclaw/releases), [X: @BunsDev on 2026.5.7](https://x.com/BunsDev/status/2052600614207516752), [X: @chrysb AlphaClaw 0.8.0](https://x.com/chrysb/status/2032943853012136120)*
