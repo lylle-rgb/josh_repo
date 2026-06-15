@@ -1,13 +1,14 @@
 # Fleet Research Findings — Josh / Heather Schwartz
 
-**Scan date:** 2026-06-14 (evening) · Previous scan: 2026-06-12 (morning)
+**Scan date:** 2026-06-15 (morning) · Previous scan: 2026-06-14 evening
 **Researcher:** AlphaClaw Fleet Agent
 **Instance:** josh_repo (Heather Schwartz — personal assistant)
 **Current version:** 2026.3.22
-**Latest stable:** 2026.6.5 (June 9, 2026)
-**Latest beta:** 2026.6.6-beta.1 (June 10, 2026)
+**Latest stable:** 2026.6.5 (June 3, 2026)
+**Latest beta:** 2026.6.5-beta.6 (June 9, 2026)
 
-> ⚠️ All 9 findings from the June 12 scan remain unresolved. Findings 10–12 are new this evening.
+> ⛔ DEADLINE IN 2 DAYS: gemini-2.5-flash deprecates June 17. One line in openclaw.json. 30 seconds.
+> All 12 prior findings remain unresolved (Day 11). Findings 13–15 are new this morning.
 
 ---
 
@@ -15,7 +16,7 @@
 
 **Risk: HIGH**
 
-Heather is running OpenClaw `2026.3.22`. The current stable is `2026.6.5` and a beta `2026.6.6-beta.1` dropped June 10. That's a 3-month gap with ~8 releases in between.
+Heather is running OpenClaw `2026.3.22`. The current stable is `2026.6.5` and beta `2026.6.5-beta.6` dropped June 9. That's a 3-month gap with ~8 releases in between.
 
 **Why it matters for Heather:**
 Several fixes in this window directly affect the personal assistant use case:
@@ -24,12 +25,15 @@ Several fixes in this window directly affect the personal assistant use case:
 - **MCP tool result coercion** (2026.6.5): Non-text/image MCP blocks no longer poison session history with errors.
 - **Cron state bug** (prior releases): Cron state was wiped during a SQLite migration — any scheduled reminders or tasks may have been silently lost.
 - **Model override drop on idle rollover** (prior releases): User model overrides were dropped on daily session rollover — fixed.
+- **Meeting Notes** (2026.5.26): Real-time Discord voice call transcription — missed entirely at current version.
 
 **Action:**
 ```bash
 openclaw update
 ```
 Or via the AlphaClaw Watchdog tab: `https://5.78.142.81.sslip.io#watchdog`
+
+Recommended staged upgrade: 2026.3.22 → 2026.5.27 → 2026.6.2 → 2026.6.5
 
 ---
 
@@ -39,14 +43,15 @@ Or via the AlphaClaw Watchdog tab: `https://5.78.142.81.sslip.io#watchdog`
 
 The bootstrap TOOLS.md shows no Google accounts configured. Heather's entire value proposition is managing Josh's iMessage, email, and calendar. Without Google Workspace, she cannot access Gmail, Google Calendar, or Google Contacts.
 
-**Why it matters:**
-Josh is a Founder/CEO (Bliss, Oben HiFi) based in LA. Email and calendar management for a founder is high-value and time-sensitive. A personal assistant who can't access the calendar or inbox is severely limited.
+**Update (June 14):** Analysis of `workspace/memory/inbox-state.json` confirms email and iMessage have been offline for **85+ days** (iMessage paused ~April 27, email last checked ~April 30). This is not a recent issue.
 
 **Action:**
 1. Go to AlphaClaw UI: `https://5.78.142.81.sslip.io#general`
 2. Under Google Workspace, provide OAuth client credentials from Google Cloud Console
 3. Authorize: Gmail, Google Calendar, Google Contacts (minimum); Drive and Tasks recommended
 4. Confirm the account appears in TOOLS.md
+
+**Alternative path if OAuth is blocked:** See Finding 14 (Nylas CLI).
 
 ---
 
@@ -112,7 +117,7 @@ The 6h TTL is appropriate for a personal assistant. Noah's 5m TTL is too aggress
 `workspace/TOOLS.md` contains only the default placeholder text — no actual device names, SSH aliases, or environment notes. Heather must ask or guess about Josh's setup every session.
 
 **Action:**
-Populate `workspace/TOOLS.md` with Josh's devices, any SSH aliases, preferred communication format preferences, and shortcuts for frequently mentioned places or people.
+Populate `workspace/TOOLS.md` with Josh's devices, any SSH aliases, preferred communication format preferences, and shortcuts for frequently mentioned places or people (Bliss HQ, Oben HiFi contacts, etc.).
 
 ---
 
@@ -122,8 +127,8 @@ Populate `workspace/TOOLS.md` with Josh's devices, any SSH aliases, preferred co
 
 `openclaw.json` has `"streaming": "off"`. Heather's replies appear all at once after full generation, which feels slow for longer responses.
 
-**Action:**
-Change `"streaming": "off"` → `"streaming": "on"` in `openclaw.json`.
+**Updated action (see also Finding 13 for recommended mode):**
+Change to `"streaming": "progress"` rather than just `"on"` — progress mode is available in v2026.5.3+ and produces cleaner output when tools are used mid-response.
 
 ---
 
@@ -131,12 +136,7 @@ Change `"streaming": "off"` → `"streaming": "on"` in `openclaw.json`.
 
 **Risk: HIGH**
 
-OpenClaw's optional "Dreaming" feature runs a background memory consolidation pass on a configurable schedule. It scans recent daily memory files, scores entries for significance, and promotes only items that pass score, recall-frequency, and query-diversity gates into MEMORY.md. It is disabled by default.
-
-**Why it matters for Heather:**
-Heather's AGENTS.md explicitly says to periodically review daily memory files and update MEMORY.md with distilled learnings. Right now, this requires Heather to manually spend a heartbeat turn on it. Dreaming automates this completely — running nightly at 3 AM, keeping MEMORY.md high-signal without burning any active session tokens.
-
-Currently there is no MEMORY.md at all. Both need to be set up together for long-term memory to work.
+OpenClaw's optional "Dreaming" feature runs a background memory consolidation pass on a configurable schedule. It is disabled by default. Currently there is no MEMORY.md at all. Both need to be set up together for long-term memory to work.
 
 **Action:**
 
@@ -180,9 +180,7 @@ This runs at 3 AM nightly and promotes up to 10 high-significance items into MEM
 
 **Risk: MEDIUM**
 
-`workspace/HEARTBEAT.md` contains only the template placeholder. Heather returns `HEARTBEAT_OK` on every heartbeat poll without doing any proactive work. The entire proactive assistant pipeline — email urgency checks, calendar alerts, weather — is completely dormant.
-
-AGENTS.md contains detailed guidance on what to check: emails, calendar (<2h events), mentions, weather, rotated 2-4x per day. None of this runs because HEARTBEAT.md is empty.
+`workspace/HEARTBEAT.md` contains only the template placeholder. Heather returns `HEARTBEAT_OK` on every heartbeat poll without doing any proactive work. The entire proactive assistant pipeline — email urgency checks, calendar alerts, weather — is completely dormant. This has been the case for 85+ days.
 
 **Action:**
 Replace `workspace/HEARTBEAT.md` with:
@@ -211,88 +209,126 @@ Do not message Josh between 23:00-08:00 PST unless urgent.
 
 ---
 
-## Finding 9 — 2026.6.6-beta.1 Available (Monitor)
+## Finding 9 — 2026.6.5 Stable; 2026.6.5-beta.6 Latest Beta (Monitor)
 
 **Risk: INFO**
 
-`2026.6.6-beta.1` dropped June 10 and has not yet promoted to stable as of this scan (June 14). No action needed — update to 2026.6.5 now (Finding 1) and watch for the 2026.6.6 stable announcement.
+2026.6.5 is the current stable (June 3). 2026.6.5-beta.6 dropped June 9. No new stable since June 3. Do not chase the beta. Upgrade target remains 2026.6.5 stable.
 
 ---
 
-## Finding 10 — AGENTS.md Emoji Rule Contradicts USER.md Strict Preference ⭐ NEW 2026-06-14 Evening
+## Finding 10 — AGENTS.md Emoji Rule Contradicts USER.md Strict Preference
 
 **Risk: HIGH**
 
-This is a direct behavioral contradiction discovered on close read of both files:
+This is a direct behavioral contradiction:
 
 - `workspace/USER.md` states: **"STRICT: DO NOT SEND EMOJI REACTIONS TO MESSAGES."**
-- `workspace/AGENTS.md` (section "React Like a Human!") states: **"On platforms that support reactions (Discord, Slack), use emoji reactions naturally"** and lists specific cases when to react (👍, ❤️, 😂, etc.).
+- `workspace/AGENTS.md` (section "React Like a Human!") states: **"use emoji reactions naturally"** with specific cases when to react (👍, ❤️, 😂, etc.).
 
-AGENTS.md is loaded at startup. USER.md is also loaded at startup. These rules directly contradict each other. Because AGENTS.md has the more detailed and enthusiastic guidance (with examples), the agent is likely defaulting to AGENTS.md behavior and violating Josh's explicit preference.
-
-**Why it matters:**
-Josh's no-emoji preference is explicit and marked STRICT. If Heather is using emoji reactions, Josh has noticed. This may erode trust faster than any missing feature.
+Because AGENTS.md has more detailed and enthusiastic guidance with examples, Heather is likely defaulting to AGENTS.md behavior and violating Josh's explicit preference.
 
 **Action — immediate:**
-1. Add the no-emoji rule explicitly to `workspace/SOUL.md` (the highest-priority file loaded at startup) so it overrides AGENTS.md:
+1. Add to the top of `workspace/SOUL.md` under a new "Josh-Specific Hard Rules" section:
 ```markdown
-## Josh-Specific Rules (HARD RULES — never override)
+## Josh-Specific Hard Rules (NEVER override)
 
-**No emoji reactions. Ever.** Josh explicitly said: STRICT: DO NOT SEND EMOJI REACTIONS TO MESSAGES.
-Not thumbs-up. Not hearts. Nothing. This overrides any general guidance about "reacting like a human."
+**No emoji reactions. Ever.** Josh's explicit instruction: STRICT: DO NOT SEND EMOJI REACTIONS TO MESSAGES.
+Not 👍. Not ❤️. Nothing. This overrides the "React Like a Human" guidance in AGENTS.md.
 ```
 
-2. Update the AGENTS.md "React Like a Human!" section to add an exception note:
+2. Add an exception to the "React Like a Human!" section in AGENTS.md:
 ```markdown
-**Exception:** If USER.md or SOUL.md contains an explicit no-emoji rule for your human, skip all reactions entirely. Always check your human's hard rules before applying defaults.
+**Exception:** If USER.md or SOUL.md contains an explicit no-emoji rule, skip all reactions entirely.
+Always check your human's hard rules before applying any defaults.
 ```
 
-The SOUL.md fix is the higher priority — do that first.
+SOUL.md fix is higher priority — do that one first.
 
 ---
 
-## Finding 11 — No gog-cli Skill in Josh's Repo ⭐ NEW 2026-06-14 Evening
+## Finding 11 — No gog-cli Skill in Josh's Repo
 
 **Risk: MEDIUM-HIGH**
 
-The `workspace/memory/inbox-state.json` file shows active email and iMessage tracking (with real timestamps, thread IDs, and a monitored inbox state). This implies Heather is doing some level of email management.
-
-However, unlike Noah's repo which has `skills/gog-cli/` with a full Google Workspace CLI skill (Gmail, Calendar, Contacts, Drive), **Josh's repo has no `skills/` directory at all.** There is no gog-cli skill defined or installed for Heather.
-
-This creates a gap: the inbox-state suggests email integration is happening through some mechanism, but without an explicit gog-cli skill, Heather doesn't have a structured interface to Gmail, Calendar, or Contacts. She may be using a built-in or another integration, but there's no skill documentation for it.
-
-**Why it matters:**
-- Heather lacks documented command reference for the tools she's supposed to be using
-- If Google Workspace access exists via another mechanism, it's undocumented and fragile
-- If it doesn't exist, inbox-state.json may be from a failed integration attempt
+Unlike Noah's repo which has `skills/gog-cli/` with a full Google Workspace CLI skill, Josh's repo has no `skills/` directory at all. There is no structured Gmail/Calendar/Contacts interface defined for Heather.
 
 **Action:**
 1. Check AlphaClaw General tab → Google Workspace section to confirm connection status
-2. If connected: install the gog-cli skill (or equivalent) and confirm it appears in `skills/`
-3. If not connected: complete the Google Workspace OAuth setup (see Finding 2)
+2. If connected: install gog-cli skill and confirm it appears in `skills/`
+3. If not connected: complete Google Workspace OAuth (Finding 2) or Nylas CLI (Finding 14)
 4. Once installed, populate `workspace/TOOLS.md` with the connected account details
 
 ---
 
-## Finding 12 — All June 12 Findings Unresolved (2 Days) ⭐ STATUS UPDATE
+## Finding 12 — Prolonged Stagnation (11 Days, No Action)
 
 **Risk: ESCALATION**
 
-The June 12 morning scan identified 8 actionable findings. As of this June 14 evening scan (48 hours later), **all remain unresolved**:
+As of this June 15 morning scan, all findings first identified in the June 4–12 window remain completely unresolved 11 days later. Priority batch that can be done via GitHub file editor alone (no VPS access needed):
 
-- Version still 2026.3.22 (Finding 1)
-- Google Workspace still not confirmed connected (Finding 2)
-- No compaction/memoryFlush settings (Finding 4)
-- TOOLS.md still blank (Finding 5)
-- Dreaming not enabled, MEMORY.md not created (Finding 7)
-- HEARTBEAT.md still empty (Finding 8)
+- Fix gemini-2.5-flash fallback → gemini-3.5-flash (30 sec, ⛔ June 17 deadline)
+- Create `workspace/MEMORY.md` (5 min)
+- Populate `workspace/HEARTBEAT.md` (5 min)
+- Add Josh hard rules to `workspace/SOUL.md` (5 min)
+- Delete `workspace/BOOTSTRAP.md` (reduces wasteful context on every session startup)
+- Add emoji override to `workspace/AGENTS.md` (2 min)
 
-**Priority escalation:** Findings 1, 4, 7, and 10 (new today) should be treated as a bundle — they can all be applied in a single session of ~30 minutes:
-- `openclaw update` → resolves Finding 1
-- Edit `openclaw.json` → adds compaction + dreaming → resolves Findings 4 and 7
-- Edit `workspace/SOUL.md` → adds Josh rules + no-emoji override → resolves Finding 10
-- Create `workspace/MEMORY.md` → resolves the memory gap (Finding 7)
-- Edit `workspace/HEARTBEAT.md` → resolves Finding 8
+Total GitHub-only effort: ~20–30 minutes. These six actions resolve Findings 10, 7, 8, 12, and JOSH-50.
+
+---
+
+## Finding 13 — Discord Streaming: Use "progress" Mode ⭐ NEW 2026-06-15 Morning
+
+**Risk: LOW**
+
+Finding 6 documented `"streaming": "off"` → `"streaming": "on"` as the fix. Web research this morning reveals a better approach: `"progress"` mode, unified across Discord/Telegram/Slack/Matrix/Teams since v2026.5.3.
+
+**Why "progress" is better than "on":**
+- `"on"` sends raw chunks; produces an edit storm in Discord when tools fire mid-response (Heather uses Google Workspace tools regularly)
+- `"progress"` is progress-aware; batches tool-use turns; produces cleaner, more readable responses
+
+**Updated action:**
+```json
+"channels": {
+  "discord": {
+    "streaming": "progress"
+  }
+}
+```
+
+**Dependency:** OpenClaw ≥ 2026.5.3, included in the 2026.6.5 upgrade target (Finding 1).
+
+---
+
+## Finding 14 — Nylas CLI: Alternative Email/Calendar Integration Path ⭐ NEW 2026-06-15 Morning
+
+**Risk: MEDIUM**
+
+Finding 2 (Google Workspace not connected) has been open 85+ days. If GCP OAuth setup is the blocker, **Nylas CLI** provides an alternative path:
+- 72+ commands across Gmail, Outlook, Exchange, Yahoo, iCloud, IMAP
+- Single authentication flow — no Google Cloud Console project required
+- Covers email reading, sending, calendar events, and contacts
+- OpenClaw skill install: `openclaw skill install nylas-cli`
+
+**Risk:** Nylas is middleware — email transits a third-party API. Appropriate for unblocking the integration while a more direct path is set up, or for lower-sensitivity accounts.
+
+**Why it matters:** Heather has been completely offline from Josh's email for 85+ days. The Nylas path may restore core personal assistant capability faster than completing the GCP OAuth setup.
+
+---
+
+## Finding 15 — NVIDIA SkillSpector Skill Security (Post-Upgrade Passive Benefit) ⭐ NEW 2026-06-15 Morning
+
+**Risk: LOW (passive)**
+
+OpenClaw 2026.6.1 shipped Skill Workshop with NVIDIA SkillSpector integration:
+- Every ClawHub skill ships with a Skill Card documenting data access scope
+- All skills are scanned for prompt injection, hidden instructions, and agentic risks before reaching production
+- Review queue available before skills touch live workflows
+
+**Why it matters for Heather:** Heather has access to Josh's personal calendar, contacts, and business communications. Skill-level security attestation reduces data exfiltration risk from supply chain attacks.
+
+**Action:** No immediate action. Passive security improvement that activates automatically on upgrade to 2026.6.5 (Finding 1).
 
 ---
 
@@ -300,19 +336,22 @@ The June 12 morning scan identified 8 actionable findings. As of this June 14 ev
 
 | Finding | Priority | Effort | Impact | Status |
 |---|---|---|---|---|
-| Update to 2026.6.5 | HIGH | Low (one command) | iMessage fixes, web search, MCP fixes | ⏳ Unresolved (2 days) |
-| Connect Google Workspace | CRITICAL | Medium (OAuth setup) | Unlocks email + calendar access | ⏳ Unresolved (2 days) |
-| Concurrent search bug | MEDIUM | Low (update first) | More reliable research tasks | ⏳ Unresolved |
-| Add compaction/memoryFlush | HIGH | Low (config change) | Persistent memory on compaction | ⏳ Unresolved (2 days) |
-| Populate TOOLS.md | LOW | Low (5 min) | Fewer clarifying questions | ⏳ Unresolved (2 days) |
-| Enable Discord streaming | LOW | Low (one line) | Better perceived response speed | ⏳ Unresolved |
-| Enable Dreaming + create MEMORY.md | HIGH | Low-Medium | Automated long-term memory | ⏳ Unresolved (2 days) |
-| Populate HEARTBEAT.md | MEDIUM | Low (5 min) | Proactive email/calendar alerts | ⏳ Unresolved (2 days) |
-| Monitor 2026.6.6-beta | INFO | None | Awareness only | ⏳ Monitoring |
-| AGENTS.md emoji rule contradicts USER.md | HIGH | Low (5 min) | Stops Heather violating Josh's hard rule | 🆕 New 06-14 |
-| No gog-cli skill in Josh's repo | MEDIUM-HIGH | Medium | Confirms/fixes email tool chain | 🆕 New 06-14 |
-| All June 12 findings still unresolved | ESCALATION | — | Batch fix recommended | 🆕 Status 06-14 |
+| ⛔ JOSH-50: gemini-2.5-flash deadline Jun 17 | **CRITICAL** | 30 sec | Fallback chain integrity | ⛔ 2 DAYS LEFT |
+| 2. Connect Google Workspace | CRITICAL | Medium | Unlocks all email/calendar | ⏳ Unresolved — Day 11 |
+| 7. Enable Dreaming + create MEMORY.md | HIGH | Low-Medium | Automated long-term memory | ⏳ Unresolved — Day 11 |
+| 10. AGENTS.md emoji contradicts USER.md | HIGH | Low | Stops violating Josh's rule | ⏳ Unresolved — Day 11 |
+| 1. Update to 2026.6.5 | HIGH | Low | iMessage, web search, MCP fixes | ⏳ Unresolved — Day 11 |
+| 4. Add compaction/memoryFlush | HIGH | Low | Memory safe on compaction | ⏳ Unresolved — Day 11 |
+| 8. Populate HEARTBEAT.md | MEDIUM | Low (5 min) | Proactive email/calendar alerts | ⏳ Unresolved — Day 11 |
+| 11. No gog-cli skill | MEDIUM-HIGH | Medium | Email toolchain gap | ⏳ Unresolved — Day 2 |
+| 3. Concurrent search bug | MEDIUM | Low (update first) | Research reliability | ⏳ Unresolved |
+| 14. Nylas CLI alternative email path | MEDIUM | Low-Medium | Alternative to blocked OAuth | 🆕 New 06-15 morning |
+| 12. 11-day stagnation escalation | ESCALATION | — | Batch fix recommended | ⏳ Day 11 |
+| 6 / 13. Discord streaming → "progress" mode | LOW | Low | Cleaner streaming responses | 🆕 New 06-15 (replaces Finding 6) |
+| 5. Populate TOOLS.md | LOW | Low | Fewer clarifying questions | ⏳ Unresolved — Day 11 |
+| 9. Monitor 2026.6.6 stable | INFO | None | Awareness only | ⏳ Monitoring — 2026.6.5 still latest |
+| 15. NVIDIA SkillSpector post-upgrade | LOW | None | Passive skill security | 🆕 New 06-15 morning |
 
 ---
 
-*Sources: [OpenClaw Releases](https://github.com/openclaw/openclaw/releases), [OpenClaw Memory docs](https://docs.openclaw.ai/concepts/memory), [Memory config reference](https://docs.openclaw.ai/reference/memory-config), [OpenClaw Memory Masterclass](https://velvetshark.com/openclaw-memory-masterclass), [AlphaClaw Releases](https://github.com/chrysb/alphaclaw/releases), [X: @BunsDev on 2026.5.7](https://x.com/BunsDev/status/2052600614207516752), [X: @chrysb AlphaClaw 0.8.0](https://x.com/chrysb/status/2032943853012136120)*
+*Sources: [OpenClaw Releases](https://github.com/openclaw/openclaw/releases), [OpenClaw Streaming docs](https://docs.openclaw.ai/concepts/streaming), [Nylas CLI OpenClaw guide](https://cli.nylas.com/guides/nylas-openclaw-personal-assistant), [OpenClaw NVIDIA Skill Workshop](https://openclaw.ai/blog/openclaw-nvidia-skill-security), [Brave Search/OpenClaw blog](https://brave.com/blog/openclaw/), [OpenClaw Memory docs](https://docs.openclaw.ai/concepts/memory), [AlphaClaw Releases](https://github.com/chrysb/alphaclaw/releases), [SEN-X OpenClaw 2026.6.1](https://senx.ai/openclaw-news/2026-06-02-openclaw-news)*
