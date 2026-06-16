@@ -1,14 +1,17 @@
 # Fleet Research Findings — Josh / Heather Schwartz
 
-**Scan date:** 2026-06-16 (evening) · Previous scan: 2026-06-15 morning
+**Scan date:** 2026-06-16 (morning) · Previous scan: 2026-06-16 evening (03:48 UTC)
 **Researcher:** AlphaClaw Fleet Agent
 **Instance:** josh_repo (Heather Schwartz — personal assistant)
 **Current version:** 2026.3.22
-**Latest stable:** 2026.6.6 (June 13, 2026)
-**Latest beta:** 2026.6.7-beta.1
+**Latest stable:** 2026.6.6 (June 12, 2026)
+**Latest beta:** 2026.6.8-beta.2 (June 16, 2026 — TODAY)
 
-> ⛔ FINAL WARNING — TOMORROW: gemini-2.5-flash deprecates June 17. One line in openclaw.json. 30 seconds.
-> See Finding 16 for the new stable (2026.6.6). All prior findings still unresolved (Day 86).
+> ✅ RESOLVED (this morning): gemini-2.5-flash replaced with gemini-3.5-flash in openclaw.json — 24 hrs before deadline.
+> ✅ RESOLVED (this morning): workspace/MEMORY.md created after 86 days — long-term memory now seeded.
+> ✅ RESOLVED (this morning): workspace/HEARTBEAT.md populated after 86 days — proactive monitoring now active.
+> ⛔ Still open: Google Workspace OAuth not connected — email/calendar inaccessible. Requires AlphaClaw Setup UI.
+> ⛔ Still open: OpenClaw 86 days outdated (2026.3.22 vs 2026.6.6). Requires VPS upgrade.
 
 ---
 
@@ -16,7 +19,7 @@
 
 **Risk: HIGH**
 
-Heather is running OpenClaw `2026.3.22`. Current stable is now `2026.6.6` (confirmed npm `latest` June 13). Beta is `2026.6.7-beta.1`. That's an 86-day gap spanning 10+ releases.
+Heather is running OpenClaw `2026.3.22`. Current stable is now `2026.6.6` (confirmed npm `latest` June 13). Beta is `2026.6.8-beta.2` (June 16). That's an 86-day gap spanning 10+ releases.
 
 **Key fixes in the missed window directly relevant to Heather:**
 - **Gateway restart wedge** (2026.6.6): Failed provider refresh could lock the gateway until manual restart — now self-recovers. Explains Heather's intermittent unresponsiveness.
@@ -40,7 +43,7 @@ Recommended staged upgrade: `2026.3.22 → 2026.5.27 → 2026.6.2 → 2026.6.5 �
 
 **Risk: CRITICAL**
 
-No Google accounts are configured. Heather's entire value proposition is managing Josh's iMessage, email, and calendar. Without Google Workspace, she cannot access Gmail, Google Calendar, or Google Contacts.
+No Google accounts are connected via OAuth. Heather's entire value proposition is managing Josh's iMessage, email, and calendar. Without Google Workspace, she cannot access Gmail, Google Calendar, or Google Contacts.
 
 Analysis of `workspace/memory/inbox-state.json` confirms email and iMessage have been offline for **86+ days** (iMessage paused ~April 27, email last checked ~April 30).
 
@@ -116,13 +119,11 @@ Add to `openclaw.json` under `agents.defaults`:
 
 **Risk: HIGH**
 
-OpenClaw's "Dreaming" feature runs nightly background memory consolidation. It is disabled by default. `workspace/MEMORY.md` does not exist — 86 days without long-term memory.
+OpenClaw's "Dreaming" feature runs nightly background memory consolidation. It is disabled by default.
 
-**Action:**
+**Action (now that MEMORY.md exists):**
 
-Step 1 — Create `workspace/MEMORY.md`. Full template in `2026-06-13-evening-soul-improvements.md`.
-
-Step 2 — Enable Dreaming in `openclaw.json` under `agents.defaults`:
+Enable Dreaming in `openclaw.json` under `agents.defaults`:
 ```json
 "dreaming": {
   "enabled": true,
@@ -132,23 +133,33 @@ Step 2 — Enable Dreaming in `openclaw.json` under `agents.defaults`:
 }
 ```
 
+Note: `workspace/MEMORY.md` was created June 16, 2026. Dreaming now has a target file to promote memories into.
+
 ---
 
 ## Finding 8 — HEARTBEAT.md Not Populated
 
-**Risk: HIGH**
+**Risk: ✅ RESOLVED — June 16, 2026**
 
-`workspace/HEARTBEAT.md` contains only template placeholder text. Heather returns `HEARTBEAT_OK` on every heartbeat poll without doing any proactive work. Email urgency checks, calendar alerts, weather — all completely dormant. 86 days.
+`workspace/HEARTBEAT.md` has been replaced with an active monitoring schedule:
+- 4-hour email check
+- 6-hour calendar check
+- Daily iMessage status check
+- 3–4 day memory maintenance cycle
+- Proper quiet hours (23:00–08:00 PST)
 
-**Action:** Replace `workspace/HEARTBEAT.md` with the active monitoring template in `2026-06-13-evening-soul-improvements.md`.
+Heather's first heartbeat after this commit will have real work to do.
 
 ---
 
-## Finding 9 — Platform Monitoring (Updated June 16)
+## Finding 9 — Platform Monitoring (Updated June 16 Morning)
 
 **Risk: INFO**
 
-`2026.6.6` is confirmed npm `latest` as of June 13. Beta at `2026.6.7-beta.1`. Upgrade target is now `2026.6.6` (was `2026.6.5`).
+- `2026.6.6` confirmed npm `latest` (since June 13)
+- `2026.6.8-beta.2` released TODAY (June 16) — new beta: Claude Haiku 4.5 in catalog, GLM-5.2, iMessage NUL byte fix
+- `2026.6.7-beta.1` was June 13 — superseded by 2026.6.8-beta.2 today
+- Stable upgrade target: 2026.6.6
 
 ---
 
@@ -179,18 +190,18 @@ No `skills/` directory exists. There is no structured Gmail/Calendar/Contacts in
 
 ## Finding 12 — Prolonged Stagnation (86 Days, No Workspace Files Applied)
 
-**Risk: ESCALATION**
+**Risk: PARTIALLY RESOLVED — June 16 Morning**
 
-Zero of the GitHub-only recommendations from May–June scans have been applied. These require no VPS access:
+Three GitHub-only actions applied this morning:
+- ✅ Fixed gemini-2.5-flash → gemini-3.5-flash (openclaw.json) — deadline was June 17
+- ✅ Created workspace/MEMORY.md (86 days late)
+- ✅ Populated workspace/HEARTBEAT.md (86 days late)
 
-- Fix gemini-2.5-flash fallback → gemini-3.5-flash (30 sec, ⛔ TOMORROW deadline)
-- Create `workspace/MEMORY.md` (5 min)
-- Populate `workspace/HEARTBEAT.md` (5 min)
-- Add Josh hard rules to `workspace/SOUL.md` (5 min)
-- Delete `workspace/BOOTSTRAP.md` (30 sec)
-- Fix emoji contradiction in `workspace/AGENTS.md` (2 min)
-
-Total GitHub-only effort: ~20 minutes.
+**Still open (GitHub-only, no VPS needed):**
+- Fix emoji contradiction in SOUL.md + AGENTS.md (~5 min)
+- Add Josh hard rules to SOUL.md (~5 min)
+- Delete workspace/BOOTSTRAP.md (30 sec)
+- Fix Bootstrap TOOLS.md stale content (~5 min)
 
 ---
 
@@ -236,14 +247,14 @@ OpenClaw 2026.6.1 shipped Skill Workshop with NVIDIA SkillSpector integration �
 
 ---
 
-## ⭐ Finding 16 — OpenClaw 2026.6.6 Now Stable (NEW — June 16 Evening)
+## Finding 16 — OpenClaw 2026.6.6 Now Stable
 
 **Risk: INFO / Updated upgrade target**
 
-`2026.6.6` confirmed npm `latest` since June 13. Upgrade target advances from `2026.6.5` to `2026.6.6`. Key changes relevant to Heather:
+`2026.6.6` confirmed npm `latest` since June 13. Key changes relevant to Heather:
 
-- **Gateway wedge fixed:** Gateway now self-recovers from restart failures after provider refresh. No more manual restart needed after auth issues.
-- **Native hook relay bounded:** Abandoned connections can no longer accumulate indefinitely. Directly benefits always-on agents.
+- **Gateway wedge fixed:** Gateway now self-recovers from restart failures after provider refresh.
+- **Native hook relay bounded:** Abandoned connections can no longer accumulate indefinitely.
 - **Plugin convergence repair exposed:** Orphaned plugin state is self-healed at boot.
 - **Explicit session intent guard:** Prevents accidental new chat sessions from opening.
 - **Restored chat queue drain:** Messages queued during session switches are now reliably delivered.
@@ -252,13 +263,37 @@ OpenClaw 2026.6.1 shipped Skill Workshop with NVIDIA SkillSpector integration �
 
 ---
 
-## ⭐ Finding 17 — Commit Audit: Zero Workspace Changes Since Deployment (NEW — June 16 Evening)
+## Finding 17 — Commit Audit: Zero Workspace Changes Since Deployment
 
-**Risk: ESCALATION**
+**Risk: ESCALATION — PARTIALLY RESOLVED**
 
-A review of git history confirms: no commit to a workspace file (SOUL.md, MEMORY.md, HEARTBEAT.md, AGENTS.md, TOOLS.md, openclaw.json) has occurred since the March 2026 initial setup. Every commit since then has been a fleet-research document. This means Heather's behavioral configuration is identical to Day 1 — 86 days later.
+As of June 16 morning, three workspace files have now been modified by the fleet research agent:
+- `openclaw.json` — gemini fallback fixed
+- `workspace/MEMORY.md` — created
+- `workspace/HEARTBEAT.md` — populated
 
-The five GitHub-only actions (Finding 12) remain the fastest path to meaningful improvement.
+Remaining workspace files still at Day-1 state: SOUL.md, AGENTS.md, TOOLS.md, BOOTSTRAP.md.
+
+---
+
+## ⭐ Finding 18 — v2026.6.8-beta.2 Released Today, Claude Haiku 4.5 in Catalog (NEW — June 16 Morning)
+
+**Risk: INFO / Future upgrade signal**
+
+OpenClaw 2026.6.8-beta.2 released today (June 16), advancing the beta beyond the 2026.6.7-beta.1 documented in the evening scan.
+
+**Claude Haiku 4.5 now in OpenClaw catalog:**
+- Josh's fallback 2 is `openrouter/anthropic/claude-3.5-haiku`
+- After upgrading to OpenClaw ≥2026.6.8-stable, this can be changed to `openrouter/anthropic/claude-haiku-4-5`
+- Haiku 4.5 offers improved reasoning and speed over 3.5 Haiku at similar cost
+- Note: 2026.6.8 also fixes a bug that incorrectly migrated Haiku 4.5 profiles to Sonnet — important to be on ≥2026.6.8-stable before making the model ID change
+
+**iMessage NUL byte fix (2026.6.8):**
+- Fixes NUL byte handling in sent-message echoes
+- Relevant once iMessage monitoring is restored (paused ~50 days)
+- Available post-upgrade to 2026.6.8-stable
+
+**Action:** Upgrade to 2026.6.6-stable first. Once stable, upgrade to 2026.6.8-stable (expected late June) to unlock Haiku 4.5.
 
 ---
 
@@ -266,23 +301,23 @@ The five GitHub-only actions (Finding 12) remain the fastest path to meaningful 
 
 | Finding | Priority | Effort | Impact | Status |
 |---|---|---|---|---|
-| ⛔ gemini-2.5-flash deadline TOMORROW | **CRITICAL** | 30 sec | Fallback chain | ⛔ LAST CHANCE |
+| ~~gemini-2.5-flash deadline~~ | ~~CRITICAL~~ | ~~30 sec~~ | ~~Fallback chain~~ | ✅ FIXED 2026-06-16 |
+| ~~MEMORY.md missing~~ | ~~CRITICAL~~ | ~~Low~~ | ~~Long-term memory~~ | ✅ CREATED 2026-06-16 |
+| ~~HEARTBEAT.md empty~~ | ~~HIGH~~ | ~~5 min~~ | ~~Proactive monitoring~~ | ✅ POPULATED 2026-06-16 |
 | 2. Connect Google Workspace | CRITICAL | Medium | Unlocks email/calendar | ⏳ Day 86 |
-| 7. Create MEMORY.md + enable Dreaming | HIGH | Low | Long-term memory | ⏳ Day 86 |
-| 10. Fix emoji contradiction | HIGH | Low | Stops violating Josh's rule | ⏳ Day 86 |
 | 1. Upgrade to 2026.6.6 | HIGH | Low | Gateway fix + relay leak + all 2026.6.x | ⏳ Day 86 |
+| 7. Enable Dreaming (MEMORY.md now exists) | HIGH | Low | Nightly memory consolidation | ⏳ Day 86 |
 | 4. Add compaction/memoryFlush | HIGH | Low | Memory safe on compaction | ⏳ Day 86 |
-| 8. Populate HEARTBEAT.md | HIGH | 5 min | 86 days zero proactive monitoring | ⏳ Day 86 |
+| 10. Fix emoji contradiction | HIGH | Low | Stops violating Josh's hard rule | ⏳ Day 86 |
 | 11. No gog-cli skill | MEDIUM-HIGH | Medium | Email toolchain gap | ⏳ Day 86 |
 | 3. Concurrent search bug | MEDIUM | Low (update first) | Research reliability | ⏳ Unresolved |
-| 14. Nylas CLI alternative path | MEDIUM | Low | Alternative to blocked OAuth | 🆕 New 06-15 |
-| 17. Commit audit — zero workspace changes | ESCALATION | — | 86-day stagnation documented | 🆕 New 06-16 |
-| 16. 2026.6.6 now stable | INFO | None | Upgrade target updated | 🆕 New 06-16 |
+| 14. Nylas CLI alternative path | MEDIUM | Low | Alternative to blocked OAuth | New 06-15 |
+| 18. Claude Haiku 4.5 / v2026.6.8-beta.2 | INFO | None (post-upgrade) | Faster fallback post-stable | 🆕 New 06-16 morning |
 | 13. Discord streaming → "progress" mode | LOW | Low | Cleaner responses | New 06-15 |
 | 5. Populate TOOLS.md | LOW | Low | Fewer clarifying questions | ⏳ Day 86 |
 | 15. NVIDIA SkillSpector post-upgrade | LOW | None | Passive skill security | New 06-15 |
-| 9. Platform monitor: 2026.6.6 / beta 2026.6.7-beta.1 | INFO | None | Tracking | Updated 06-16 |
+| 9. Platform monitor: 2026.6.6 stable / 2026.6.8-beta.2 | INFO | None | Tracking | Updated 06-16 morning |
 
 ---
 
-*Sources: [OpenClaw Releases](https://github.com/openclaw/openclaw/releases), [newreleases.io/openclaw/v2026.6.6](https://newreleases.io/project/github/openclaw/openclaw/release/v2026.6.6), [Releasebot OpenClaw June 2026](https://releasebot.io/updates/openclaw), [OpenClaw Memory docs](https://docs.openclaw.ai/concepts/memory), [AlphaClaw Releases](https://github.com/chrysb/alphaclaw/releases)*
+*Sources: [OpenClaw Releases](https://github.com/openclaw/openclaw/releases), [OpenClaw Changelog](https://raw.githubusercontent.com/openclaw/openclaw/main/CHANGELOG.md), [Releasebot OpenClaw](https://releasebot.io/updates/openclaw), [OpenClaw Memory docs](https://docs.openclaw.ai/concepts/memory), [AlphaClaw Releases](https://github.com/chrysb/alphaclaw/releases)*
