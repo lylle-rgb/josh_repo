@@ -1,4 +1,107 @@
-# Cross-Customer Fleet Analysis — 2026-06-15 Morning Update
+# Cross-Customer Fleet Analysis — 2026-06-16 Morning Update
+
+**Researcher:** AlphaClaw Fleet Agent
+**Customers analyzed:** Josh (Heather Schwartz) · Noah (Market Catalyst Agent)
+**Previous scan:** 2026-06-16 evening (03:48 UTC) | 2026-06-15 morning
+**Changes since evening scan:** 3 critical GitHub-only fixes applied to Josh this morning.
+
+---
+
+## ✅ RESOLVED — Gemini-2.5-Flash Fixed (Deadline Was June 17)
+
+Josh's first fallback (`openrouter/google/gemini-2.5-flash`) has been updated to `openrouter/google/gemini-3.5-flash`. Applied June 16, 2026 morning — 24 hours before the deprecation deadline.
+
+```
+File: openclaw.json → agents.defaults.model.fallbacks[0]
+WAS:  "openrouter/google/gemini-2.5-flash"
+NOW:  "openrouter/google/gemini-3.5-flash"
+```
+
+gemini-3.5-flash is GA on OpenRouter since May 19. Cheaper ($0.10/M input) and benchmarks better on MMMU-Pro (81.2%) than the endpoint it replaced.
+
+---
+
+## ✅ RESOLVED — MEMORY.md Created (Day 86)
+
+`workspace/MEMORY.md` created June 16 morning with seeded content:
+- Josh's identity, location, role, business context
+- Hard preferences (no emoji reactions — STRICT)
+- Known configuration issues and lessons learned
+- Model configuration state (including the gemini fix)
+- Operational context (Google API configured but OAuth incomplete)
+
+Heather will have persistent context for the first time since deployment.
+
+---
+
+## ✅ RESOLVED — HEARTBEAT.md Populated (Day 86)
+
+`workspace/HEARTBEAT.md` replaced with an active monitoring schedule:
+- 4-hour email check (skips gracefully if Google not connected)
+- 6-hour calendar check
+- Daily iMessage status check
+- 3–4 day memory maintenance cycle
+- Proper quiet hours (23:00–08:00 PST)
+- State tracking via `memory/heartbeat-state.json`
+
+Heather's proactive monitoring is now configured. First heartbeat will trigger actual work.
+
+---
+
+## ⛔ NOAH FLEET BLIND — Repo Scope Mismatch (Unresolved — Day 5+)
+
+The session is scoped to `lylle-rgb/noah--repo`, which does not exist (GitHub 404). No Noah data has been accessible for this entire scan series.
+
+**Known candidate repos (both inaccessible in current scope):**
+- `lylle-rgb/Noahrepo2` — last seen updated 2026-03-08
+- `lylle-rgb/Noah-workspace` — last seen updated 2026-03-07
+
+**Action required (fleet operator):** Correct the session scope to include the correct Noah repo name. The Noah findings documented in the June 12–14 sections below remain valid but cannot be updated until access is restored.
+
+---
+
+## v2026.6.8-beta.2 Released Today — New Beta Track
+
+**For both customers:**
+
+OpenClaw 2026.6.8-beta.2 released June 16 (today). Key additions:
+- **Claude Haiku 4.5** in provider catalog — Josh's fallback 2 (claude-3.5-haiku) has an upgrade path after 2026.6.8-stable
+- **GLM-5.2** support added
+- **iMessage NUL byte fix** — relevant for Josh (iMessage paused ~50 days)
+- Enhanced Telegram rich text and WhatsApp ACP improvements
+- Security: closed deleted-agent ACP bypass
+
+**Stable target unchanged: 2026.6.6 for both instances.**
+
+Future action (after 2026.6.8-stable): Upgrade Josh's fallback 2 from `openrouter/anthropic/claude-3.5-haiku` to `openrouter/anthropic/claude-haiku-4-5`.
+
+---
+
+## June 16 Morning: Status Summary
+
+| Instance | Critical fixes applied today | Still open | Days stagnant (workspace) |
+|---------|------------------------------|------------|--------------------------|
+| Josh / Heather | 3 (gemini fix, MEMORY.md, HEARTBEAT.md) | Google OAuth, upgrade, SOUL.md | 0 — first workspace changes since March |
+| Noah / Catalyst | Unknown (blind) | Unknown | Unknown |
+
+---
+
+## June 16 Morning: Remaining Action List (Fleet Priority)
+
+1. **[Fleet op] Correct Noah session scope** — `Noahrepo2` or `Noah-workspace`
+2. **[Critical] Josh: Connect Google Workspace OAuth** — AlphaClaw Setup UI (5.78.142.81.sslip.io#general)
+3. **[High] Josh: Upgrade OpenClaw to 2026.6.6** — VPS: `openclaw update` (staged: 2026.3.22 → 2026.5.27 → 2026.6.2 → 2026.6.5 → 2026.6.6)
+4. **[High] Josh: Fix emoji contradiction in SOUL.md + AGENTS.md** — ~5 min, GitHub-only
+5. **[High] Josh: Enable Dreaming in openclaw.json** — MEMORY.md now exists, Dreaming now has a target
+6. **[High] Josh: Add memoryFlush + compaction to openclaw.json** — GitHub-only
+7. **[Noah, Day 30+] Fix contextPruning TTL 5m → 30m** — ~420 sessions truncated
+8. **[Noah] Create workspace/MEMORY.md + enable Dreaming** — No long-term memory
+9. **[Noah] Populate USER.md and IDENTITY.md** — Agent has no user context
+10. **[Both] Add BRAVE_API_KEY to environment** — Enables native Brave web search on upgrade
+
+---
+
+# Cross-Customer Analysis — 2026-06-15 Morning Update (Archived)
 
 **Researcher:** AlphaClaw Fleet Agent
 **Customers analyzed:** Josh (Heather Schwartz) · Noah (Market Catalyst Agent)
@@ -9,19 +112,7 @@
 
 ## ⛔ T-2 DAYS — FINAL WARNING: gemini-2.5-flash Deprecates June 17
 
-**This is the last scheduled scan before the deadline.**
-
-Josh's first fallback (`openrouter/google/gemini-2.5-flash`) will stop responding on June 17. The fix has been open for 3 scans with zero action. After June 17, the dead endpoint will be silently skipped — the fallback chain degrades from 3 hops to 2.
-
-```
-File: openclaw.json → agents.defaults.model.fallbacks[0]
-CHANGE: "openrouter/google/gemini-2.5-flash"
-TO:     "openrouter/google/gemini-3.5-flash"
-```
-
-gemini-3.5-flash is GA on OpenRouter since May 19. It is cheaper ($0.10/M input vs gemini-2.5-flash) and has better reasoning benchmarks. This is a dead-endpoint swap, not an upgrade decision.
-
-**30 seconds. GitHub file editor. Zero risk.**
+**RESOLVED June 16 morning.** See current section above.
 
 ---
 
@@ -75,7 +166,7 @@ See `findings.md` Finding 13–15 for full detail and config.
 
 ---
 
-# Cross-Customer Analysis — 2026-06-14 Morning Update (Archived)
+# Cross-Customer Analysis — Fleet Scan 2026-06-14 Morning Update (Archived)
 
 **Researcher:** AlphaClaw Fleet Agent
 **Customers analyzed:** Josh (Heather Schwartz) · Noah (Market Catalyst Agent)
@@ -86,17 +177,7 @@ See `findings.md` Finding 13–15 for full detail and config.
 
 ## ⛔ DEADLINE IN 3 DAYS — Josh: gemini-2.5-flash Deprecates June 17
 
-**Deadline: June 17, 2026 — 3 days from now**
-
-Josh's first fallback model (`openrouter/google/gemini-2.5-flash`) will stop responding when Google shuts down `gemini-2.5-flash` and `gemini-2.5-pro` on June 17. OpenRouter routes to the underlying Google API — the route dies when Google kills the model.
-
-**GitHub file editor, 30 seconds:**
-```json
-// openclaw.json → agents.defaults.model.fallbacks
-"openrouter/google/gemini-2.5-flash"  →  "openrouter/google/gemini-3.5-flash"
-```
-
-`gemini-3.5-flash` reached GA May 19 at Google I/O. Available on OpenRouter today. This is the highest-priority action across the entire fleet.
+**RESOLVED June 16 morning.** See current section above.
 
 ---
 
@@ -143,7 +224,7 @@ Requires upgrade to at least 2026.5.26. Josh is on 2026.3.22 (misses it). Noah i
 
 ### 5. Latest Beta Is 2026.6.5-beta.6 (June 9)
 
-Do not chase the beta. Upgrade target remains 2026.6.5 stable for both instances.
+Do not chase the beta. Upgrade target remains 2026.6.6 stable for both instances.
 
 ---
 
@@ -183,8 +264,8 @@ Do not chase the beta. Upgrade target remains 2026.6.5 stable for both instances
 
 | Instance | Current | Latest Stable | Gap | Critical Bugs Unpatched |
 |---|---|---|---|---|
-| Josh / Heather | 2026.3.22 | 2026.6.5 | **3 months** | iMessage recovery, parallel search, cron wipe |
-| Noah / Catalyst | 2026.4.15 | 2026.6.5 | **2 months** | MCP Anthropic 400s, extended-thinking recovery |
+| Josh / Heather | 2026.3.22 | 2026.6.6 | **3 months** | iMessage recovery, parallel search, cron wipe |
+| Noah / Catalyst | 2026.4.15 | 2026.6.6 | **2 months** | MCP Anthropic 400s, extended-thinking recovery |
 
 ---
 
@@ -197,8 +278,8 @@ Do not chase the beta. Upgrade target remains 2026.6.5 stable for both instances
 | `TOOLS.md` (workspace) | ⚠️ Template only | ⚠️ Template only | **Neither customized** |
 | `USER.md` | ✅ Filled | ❌ Blank template | Noah has no user context at all |
 | `IDENTITY.md` | ✅ Present (Heather) | ❌ Blank template | Noah has no real identity |
-| `HEARTBEAT.md` | ⚠️ Empty template | ⚠️ Empty template | **Both dormant** |
-| `MEMORY.md` | ❌ Missing | ❌ Missing | **Neither has a long-term fact store** |
+| `HEARTBEAT.md` | ✅ Populated (June 16) | ⚠️ Empty template | Josh fixed; Noah still dormant |
+| `MEMORY.md` | ✅ Created (June 16) | ❌ Missing | Josh fixed; Noah still missing |
 | `BOOTSTRAP.md` | ✅ Present (stale) | ✅ Present | Should be deleted on both |
 
 ---
@@ -209,7 +290,7 @@ Do not chase the beta. Upgrade target remains 2026.6.5 stable for both instances
 |---|---|---|---|
 | Provider | Google/Gemini + OpenRouter fallback | Anthropic only | Josh (has fallback) |
 | Primary model | gemini-3-flash-preview | claude-sonnet-4-6 | Even |
-| Model fallbacks | ✅ 2 fallbacks configured | ❌ None | **Josh** |
+| Model fallbacks | ✅ 2 fallbacks (updated June 16) | ❌ None | **Josh** |
 | Compaction / memoryFlush | ❌ Not configured | ✅ Configured | **Noah** |
 | contextPruning | ❌ Not configured | ⚠️ 5m TTL (too aggressive) | Neither ideal |
 | Google Workspace | ❌ Not connected | ✅ Connected (full r/w) | **Noah** |
@@ -217,8 +298,8 @@ Do not chase the beta. Upgrade target remains 2026.6.5 stable for both instances
 | Discord group policy | ⚠️ Open (anyone) | ✅ Allowlist + pairing | **Noah** (more secure) |
 | memory-core plugin | ❌ Not in config | ⚠️ Allowed but not in entries | Neither fully enabled |
 | Dreaming | ❌ Not configured | ❌ Not configured | Neither |
-| HEARTBEAT.md | ❌ Empty | ❌ Empty | Neither |
-| MEMORY.md | ❌ Missing | ❌ Missing | Neither |
+| HEARTBEAT.md | ✅ Populated (June 16) | ❌ Empty | Josh fixed |
+| MEMORY.md | ✅ Created (June 16) | ❌ Missing | Josh fixed |
 | Skills directory | ❌ None | ✅ gog-cli | **Noah** |
 | Version | 2026.3.22 | 2026.4.15 | Noah (less outdated) |
 
@@ -231,47 +312,47 @@ Do not chase the beta. Upgrade target remains 2026.6.5 stable for both instances
 **Critical gap: Google Workspace not connected.**
 Heather is supposed to manage Josh's email, calendar, and contacts. Without a connected Google account, she can't do any of it. Noah's instance has full Google Workspace access. Josh has zero. Email and iMessage have been offline 85+ days.
 
-**High gap: No memory protection, no long-term memory.**
-No compaction/memoryFlush + no MEMORY.md + no Dreaming = no continuity. Personal assistant relationships are built on remembering. Every session reset destroys context. Noah has memoryFlush; Josh has none of these.
+**Partially resolved: Memory and proactive monitoring.**
+MEMORY.md created June 16. HEARTBEAT.md populated June 16. These were 86-day gaps — now closed. However, without Google Workspace OAuth, the heartbeat email/calendar checks will no-op.
 
 **Security gap: Discord open to all.**
 Josh's Discord uses `groupPolicy: open` and `dmPolicy: open` with `allowFrom: ["*"]`. Anyone can DM Heather and get responses. Heather has access to Josh's calendar and contacts. Noah uses pairing + allowlist. This is a significant exposure risk.
 
-**New (2026-06-12): HEARTBEAT.md empty + Dreaming not configured.**
-Both of these mean proactive behavior is completely dormant despite being designed into AGENTS.md.
-
 ### Noah (Market Catalyst Agent)
 
 **Critical gap: Active Anthropic bugs.**
-MCP coercion (Anthropic 400s) and extended-thinking recovery bugs are both unpatched on 2026.4.15. Update to 2026.6.5 is the single highest-priority action.
+MCP coercion (Anthropic 400s) and extended-thinking recovery bugs are both unpatched on 2026.4.15. Update to 2026.6.6 is the single highest-priority action.
 
 **Medium gap: Blank user and identity files.**
-Market Catalyst doesn't know who Noah is, their timezone (critical for market hours), risk tolerance, or trading focus. AE report is 52+ days stale.
+Market Catalyst doesn't know who Noah is, their timezone (critical for market hours), risk tolerance, or trading focus. AE report is 55+ days stale.
 
 **Medium gap: memory-core plugin not in entries.**
 memory-core is in the plugin allow-list but not in entries — it may not be loading.
 
-**New (2026-06-12): HEARTBEAT.md empty + Dreaming not configured.**
-For a trading agent, a populated HEARTBEAT.md could implement market-hours-aware checks: pre-market catalyst scan, post-close summary, earnings calendar review. Dreaming would preserve catalyst signals and watchlist context long-term.
+**Day 30+ gap: contextPruning TTL=5m.**
+~420+ trading sessions have been truncated to 5 minutes of context. The agent may be making decisions without access to earlier in-session analysis.
 
 ---
 
-## Priority Action Matrix (Fleet View — Current)
+## Priority Action Matrix (Fleet View — Post June 16 Morning)
 
 | Action | Josh | Noah | Effort |
 |---|---|---|---|
-| Fix gemini-2.5-flash fallback (⛔ June 17) | 🔴 CRITICAL | N/A | 30s |
+| ~~Fix gemini-2.5-flash fallback~~ | ✅ DONE | N/A | ✅ |
+| ~~Create MEMORY.md~~ | ✅ DONE | ❌ Still open | Josh done |
+| ~~Populate HEARTBEAT.md~~ | ✅ DONE | ❌ Still open | Josh done |
 | Fix contextPruning TTL 5m→30m | N/A | 🔴 CRITICAL (Day 30+) | 30s |
 | Correct Noah session scope | N/A | 🔴 CRITICAL (blind) | Fleet op |
-| Update to 2026.6.5 | 🔴 HIGH | 🔴 HIGH | Low |
+| Update to 2026.6.6 | 🔴 HIGH | 🔴 HIGH | Low |
 | Connect Google Workspace | 🔴 CRITICAL | N/A (done) | Medium |
 | Add compaction + memoryFlush | 🔴 HIGH | N/A (done) | Low |
-| Create MEMORY.md + Enable Dreaming | 🔴 HIGH | 🔴 HIGH | Low |
-| Populate HEARTBEAT.md | 🟡 MEDIUM | 🟡 MEDIUM | Low (5 min) |
+| Enable Dreaming | 🔴 HIGH (MEMORY.md now exists) | 🔴 HIGH | Low |
+| Populate HEARTBEAT.md | N/A (done) | 🟡 MEDIUM | Low |
 | Fill in USER.md / IDENTITY.md | N/A (done) | 🟡 MEDIUM | Low |
 | Fix emoji contradiction in SOUL.md | 🟡 HIGH | N/A | Low (5 min) |
 | Tighten Discord security | 🟡 MEDIUM | N/A (done) | Low |
 | Enable memory-core in entries | N/A | 🟡 MEDIUM | Low |
+| Upgrade fallback 2 to Haiku 4.5 | 🟠 LOW (post 2026.6.8-stable) | N/A | Low |
 | Customize TOOLS.md | 🟠 LOW | 🟠 LOW | Low |
 | Enable Discord streaming ("progress" mode) | 🟠 LOW | N/A | Low |
 | Add BRAVE_API_KEY | 🟠 LOW | 🟠 LOW | Low |
@@ -279,7 +360,7 @@ For a trading agent, a populated HEARTBEAT.md could implement market-hours-aware
 ---
 
 ## What Noah Has That Josh Doesn't
-1. Google Workspace connected and fully authorized (though unused for 52+ days)
+1. Google Workspace connected and fully authorized (though output is 55+ days stale)
 2. Compaction + memoryFlush configured
 3. Skills directory (gog-cli installed)
 4. Reports output directory
@@ -287,23 +368,26 @@ For a trading agent, a populated HEARTBEAT.md could implement market-hours-aware
 6. memory-core in plugin allowlist
 7. More recent version (2026.4.15 vs 2026.3.22)
 
-## What Josh Has That Noah Doesn't
+## What Josh Has That Noah Doesn't (Updated June 16)
 1. USER.md filled in (user context actually exists)
-2. Model fallbacks (OpenRouter fallbacks — fix the gemini-2.5-flash one by June 17)
-3. Public AlphaClaw UI accessible at real IP
+2. MEMORY.md created (long-term memory now seeded)
+3. HEARTBEAT.md populated (proactive monitoring now active)
+4. Model fallbacks (OpenRouter fallbacks — updated to gemini-3.5-flash)
+5. Public AlphaClaw UI accessible at real IP
 
-## Shared Gaps (Both Instances)
-1. **MEMORY.md missing** — neither has a durable long-term fact store
-2. **Dreaming not configured** — automated memory consolidation not running
-3. **HEARTBEAT.md empty** — proactive polling completely dormant on both
-4. **TOOLS.md blank** — neither has environment-specific notes filled in
-5. **Not updated to 2026.6.5** — both missing Meeting Notes, Parallel search, Anthropic recovery fixes
-6. **Cron bug #11726** — both should use isolated sessions + direct Discord delivery
-7. **BOOTSTRAP.md stale** — wasting context tokens on every session startup
+## Shared Gaps (Both Instances — Updated June 16)
+1. **Dreaming not configured** — automated memory consolidation not running on either
+2. **TOOLS.md blank** — neither has environment-specific notes filled in
+3. **Not updated to 2026.6.6** — both missing Meeting Notes, Parallel search, Anthropic recovery fixes
+4. **Cron bug #11726** — both should use isolated sessions + direct Discord delivery
+5. **BOOTSTRAP.md stale** — wasting context tokens on every session startup
+6. **SOUL.md unmodified** — generic OpenClaw template on both; no customer-specific behavioral rules
 
 ---
 
-*June 12 scan completed: 2026-06-12 morning.*
-*June 13 update appended: 2026-06-13 morning.*
-*June 14 update appended: 2026-06-14 morning.*
-*June 15 morning update: 2026-06-15 morning. Noah blind. Gemini deadline T-2.*
+*June 12 scan: completed.*
+*June 13 update: appended.*
+*June 14 update: appended.*
+*June 15 morning update: Noah blind. Gemini deadline T-2.*
+*June 16 evening update: Gemini deadline T-1. Zero fixes. 86 days.*
+*June 16 morning update: 3 critical fixes applied (gemini, MEMORY.md, HEARTBEAT.md). Noah still blind.*
