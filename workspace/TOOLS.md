@@ -1,40 +1,57 @@
 # TOOLS.md - Local Notes
 
-Skills define _how_ tools work. This file is for _your_ specifics — the stuff that's unique to your setup.
+Skills define _how_ tools work. This file is for _your_ specifics — the stuff that's unique to Josh's setup.
 
-## What Goes Here
+## AlphaClaw Setup
 
-Things like:
+- **Control UI:** https://5.78.142.81.sslip.io
+- **Gateway port:** 18789
+- **Workspace path:** /data/.openclaw/workspace
+- **VPS host:** 5.78.142.81
 
-- Camera names and locations
-- SSH hosts and aliases
-- Preferred voices for TTS
-- Speaker/room names
-- Device nicknames
-- Anything environment-specific
+### AlphaClaw UI Quick Reference
 
-## Examples
+| Tab | URL | Purpose |
+|-----|-----|--------|
+| General | https://5.78.142.81.sslip.io#general | Gateway status, Google Workspace OAuth, channel health |
+| Watchdog | https://5.78.142.81.sslip.io#watchdog | Crash-loop visibility, restart diagnostics |
+| Providers | https://5.78.142.81.sslip.io#providers | AI provider credentials (Gemini, OpenRouter, etc.) |
+| Envars | https://5.78.142.81.sslip.io#envars | Environment variables — use this, not /data/.env directly |
+| Browse | https://5.78.142.81.sslip.io#browse | File browser, git-aware save workflow |
 
-```markdown
-### Cameras
+## Discord
 
-- living-room → Main area, 180° wide angle
-- front-door → Entrance, motion-triggered
+- **Guild ID:** 1484448262290276464
+- **@mention required:** No (requireMention: false for this guild)
+- **Streaming:** Disabled (enable post-upgrade to 2026.6.6+)
+- **DM scope:** per-channel-peer
+- **Reactions:** ⛔ DISABLED — Josh has strictly prohibited emoji reactions
 
-### SSH
+## Google Workspace
 
-- home-server → 192.168.1.100, user: admin
+- **Google API key:** Configured (google:default, api_key mode in openclaw.json)
+- **Google Workspace OAuth:** NOT connected as of June 2026
+- **What's blocked until OAuth:** Gmail, Calendar, Contacts, Drive
+- **How to fix:** Josh connects at https://5.78.142.81.sslip.io#general
+- **Full instructions:** See memory/onboarding-google.md
+- **Note:** The "No Google accounts" line in bootstrap/TOOLS.md refers to OAuth status, not the API key
 
-### TTS
+## iMessage
 
-- Preferred voice: "Nova" (warm, slightly British)
-- Default speaker: Kitchen HomePod
-```
+- **Status:** PAUSED since ~April 27, 2026 (~50 days as of June 2026)
+- **How to check:** Read memory/inbox-state.json — `imessage_monitoring_paused: true` = still paused
+- **IMPORTANT:** Do NOT manually edit inbox-state.json — has a malformed duplicate key; SQLite migration during OpenClaw upgrade to 2026.6.6 will fix it cleanly
 
-## Why Separate?
+## Platform
 
-Skills are shared. Your setup is yours. Keeping them apart means you can update skills without losing your notes, and share skills without leaking your infrastructure.
+- **OpenClaw version:** 2026.3.22 (target: 2026.6.6)
+- **Staged upgrade path:** 2026.3.22 → 2026.5.27 → 2026.6.2 → 2026.6.5 → 2026.6.6
+- **Upgrade command (VPS):** `openclaw update`
+- **After 2026.6.8-stable (expected late June):** claude-haiku-4-5 becomes available as a fallback upgrade
 
----
+## Models (Current Config)
 
-Add whatever helps you do your job. This is your cheat sheet.
+- **Primary:** google/gemini-3-flash-preview
+- **Fallback 1:** openrouter/google/gemini-3.5-flash (updated June 16, 2026 — replaced deprecated gemini-2.5-flash)
+- **Fallback 2:** openrouter/anthropic/claude-3.5-haiku (upgrade to claude-haiku-4-5 after 2026.6.8-stable)
+- **Note:** Google deprecates flash models every 6–9 months — periodically verify fallbacks aren't pointing to dead endpoints.

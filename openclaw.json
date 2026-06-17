@@ -31,7 +31,6 @@
         ]
       },
       "models": {
-        "google/gemini-2.5-flash": {},
         "google/gemini-3-flash-preview": {}
       },
       "workspace": "/data/.openclaw/workspace"
