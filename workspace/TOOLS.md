@@ -14,7 +14,7 @@ Skills define _how_ tools work. This file is for _your_ specifics — the stuff 
 | Tab | URL | Purpose |
 |-----|-----|--------|
 | General | https://5.78.142.81.sslip.io#general | Gateway status, Google Workspace OAuth, channel health |
-| Watchdog | https://5.78.142.81.sslip.io#watchdog | Crash-loop visibility, restart diagnostics |
+| Watchdog | https://5.78.142.81.sslip.io#watchdog | Crash-loop visibility, restart diagnostics, AlphaClaw version |
 | Providers | https://5.78.142.81.sslip.io#providers | AI provider credentials (Gemini, OpenRouter, etc.) |
 | Envars | https://5.78.142.81.sslip.io#envars | Environment variables — use this, not /data/.env directly |
 | Browse | https://5.78.142.81.sslip.io#browse | File browser, git-aware save workflow |
@@ -26,6 +26,7 @@ Skills define _how_ tools work. This file is for _your_ specifics — the stuff 
 - **Streaming:** Disabled (enable post-upgrade to 2026.6.6+)
 - **DM scope:** per-channel-peer
 - **Reactions:** ⛔ DISABLED — Josh has strictly prohibited emoji reactions
+- **Auto-thread titles:** Available after upgrade to 2026.6.8 (auto-generated, 60s timeout, 4,096-token reasoning budget)
 
 ## Google Workspace
 
@@ -38,20 +39,20 @@ Skills define _how_ tools work. This file is for _your_ specifics — the stuff 
 
 ## iMessage
 
-- **Status:** PAUSED since ~April 27, 2026 (~50 days as of June 2026)
+- **Status:** PAUSED since ~April 27, 2026 (~52 days as of June 18, 2026)
 - **How to check:** Read memory/inbox-state.json — `imessage_monitoring_paused: true` = still paused
-- **IMPORTANT:** Do NOT manually edit inbox-state.json — has a malformed duplicate key; SQLite migration during OpenClaw upgrade to 2026.6.6 will fix it cleanly
+- **IMPORTANT:** Do NOT manually edit inbox-state.json — has a malformed duplicate key; SQLite migration during OpenClaw upgrade to 2026.6.8 will fix it cleanly
 
 ## Platform
 
-- **OpenClaw version:** 2026.3.22 (target: 2026.6.6)
-- **Staged upgrade path:** 2026.3.22 → 2026.5.27 → 2026.6.2 → 2026.6.5 → 2026.6.6
+- **OpenClaw version:** 2026.3.22 (target: **2026.6.8**)
+- **Staged upgrade path:** 2026.3.22 → 2026.5.27 → 2026.6.2 → 2026.6.5 → 2026.6.6 → 2026.6.8
 - **Upgrade command (VPS):** `openclaw update`
-- **After 2026.6.8-stable (expected late June):** claude-haiku-4-5 becomes available as a fallback upgrade
+- **Haiku 4.5 upgrade:** NOW available — update fallback 2 in openclaw.json after reaching 2026.6.8 (2026.6.8 is stable as of June 16, 2026)
 
 ## Models (Current Config)
 
 - **Primary:** google/gemini-3-flash-preview
 - **Fallback 1:** openrouter/google/gemini-3.5-flash (updated June 16, 2026 — replaced deprecated gemini-2.5-flash)
-- **Fallback 2:** openrouter/anthropic/claude-3.5-haiku (upgrade to claude-haiku-4-5 after 2026.6.8-stable)
+- **Fallback 2:** openrouter/anthropic/claude-3.5-haiku (upgrade to `openrouter/anthropic/claude-haiku-4-5` after reaching 2026.6.8)
 - **Note:** Google deprecates flash models every 6–9 months — periodically verify fallbacks aren't pointing to dead endpoints.
