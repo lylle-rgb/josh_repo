@@ -23,10 +23,10 @@ Skills define _how_ tools work. This file is for _your_ specifics — the stuff 
 
 - **Guild ID:** 1484448262290276464
 - **@mention required:** No (requireMention: false for this guild)
-- **Streaming:** Disabled (enable post-upgrade to 2026.6.6+)
+- **Streaming:** Disabled (enable post-upgrade to 2026.6.9-stable)
 - **DM scope:** per-channel-peer
 - **Reactions:** ⛔ DISABLED — Josh has strictly prohibited emoji reactions
-- **Auto-thread titles:** Available after upgrade to 2026.6.8 (auto-generated, 60s timeout, 4,096-token reasoning budget)
+- **Auto-thread titles:** Available after upgrade to 2026.6.9-stable (auto-generated, 60s timeout, 4,096-token reasoning budget)
 
 ## Google Workspace
 
@@ -39,20 +39,35 @@ Skills define _how_ tools work. This file is for _your_ specifics — the stuff 
 
 ## iMessage
 
-- **Status:** PAUSED since ~April 27, 2026 (~52 days as of June 18, 2026)
+- **Status:** PAUSED since ~April 27, 2026 (~53 days as of June 19, 2026)
 - **How to check:** Read memory/inbox-state.json — `imessage_monitoring_paused: true` = still paused
-- **IMPORTANT:** Do NOT manually edit inbox-state.json — has a malformed duplicate key; SQLite migration during OpenClaw upgrade to 2026.6.8 will fix it cleanly
+- **IMPORTANT:** Do NOT manually edit inbox-state.json — has a malformed duplicate key; SQLite migration during OpenClaw upgrade will fix it cleanly
 
 ## Platform
 
-- **OpenClaw version:** 2026.3.22 (target: **2026.6.8**)
-- **Staged upgrade path:** 2026.3.22 → 2026.5.27 → 2026.6.2 → 2026.6.5 → 2026.6.6 → 2026.6.8
+- **OpenClaw version:** 2026.3.22
+- **Current safe target:** **2026.6.6** (npm `latest` stable channel as of June 19, 2026)
+
+> ⚠️ **HOLD: Do NOT upgrade to 2026.6.8**
+> v2026.6.8 has critical regressions in Discord image tools (#94266), memory-search (#94316),
+> cron isolation, sub-agent tools, and misleading fallbacks. ClawStat.us verdict: "Wait for next release."
+> npm `latest` still points to 2026.6.6 — 2026.6.8 was NOT promoted to stable.
+> Wait for **2026.6.9-stable** before upgrading beyond 2026.6.6.
+
+- **Staged upgrade path:** 2026.3.22 → 2026.5.27 → 2026.6.2 → 2026.6.5 → 2026.6.6 → **[STOP — wait for 2026.6.9-stable]**
 - **Upgrade command (VPS):** `openclaw update`
-- **Haiku 4.5 upgrade:** NOW available — update fallback 2 in openclaw.json after reaching 2026.6.8 (2026.6.8 is stable as of June 16, 2026)
+
+### Before Running `openclaw update`
+1. Check `fleet-research/` for the latest findings file — confirm the current safe target
+2. Confirm the staged path above still stops at the right version
+3. Run one version at a time, testing Discord and memory after each step
+
+- **Haiku 4.5 upgrade:** Available after upgrade to 2026.6.9-stable — update fallback 2 in openclaw.json to `openrouter/anthropic/claude-haiku-4-5`
+- **Note:** Google deprecates flash models every 6–9 months — periodically verify fallbacks aren't pointing to dead endpoints.
 
 ## Models (Current Config)
 
 - **Primary:** google/gemini-3-flash-preview
 - **Fallback 1:** openrouter/google/gemini-3.5-flash (updated June 16, 2026 — replaced deprecated gemini-2.5-flash)
-- **Fallback 2:** openrouter/anthropic/claude-3.5-haiku (upgrade to `openrouter/anthropic/claude-haiku-4-5` after reaching 2026.6.8)
+- **Fallback 2:** openrouter/anthropic/claude-3.5-haiku (upgrade to `openrouter/anthropic/claude-haiku-4-5` after reaching 2026.6.9-stable)
 - **Note:** Google deprecates flash models every 6–9 months — periodically verify fallbacks aren't pointing to dead endpoints.
