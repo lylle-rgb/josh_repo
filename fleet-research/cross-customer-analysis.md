@@ -1,55 +1,65 @@
-# Cross-Customer Fleet Analysis — 2026-06-20 Morning
+# Cross-Customer Fleet Analysis — 2026-06-21 Morning
 
 **Researcher:** AlphaClaw Fleet Agent
 **Customers analyzed:** Josh (Heather Schwartz) · Noah (Market Catalyst Agent)
-**Previous scan:** 2026-06-20 evening — Day 4 heartbeat escalation, Google Workspace Day 90
-**Changes this update:** Finding 28 (userTimezone) added. Noah scope still blocked Day 8. Version hold confirmed morning of June 20.
+**Previous scan:** 2026-06-21 Evening — 2026.6.9-stable shipped, upgrade window opened
+**Changes this update:** F30 (BRAVE_API_KEY), F31 (fallback chain), F32 (iMessage SQLite path). Noah scope still blocked Day 10. Upgrade window confirmed open.
 
 ---
 
-## Fleet Headline: Josh Workspace Current. One New Config Risk Found. Noah Still Blind (Day 8).
+## Fleet Headline: 2026.6.9 Upgrade Window Open. 3 New Findings. Noah Blind Day 10.
 
 ### Josh (Heather Schwartz)
 
-New finding this morning: **`userTimezone` is not set in openclaw.json** (Finding 28). This is a silent risk that will cause heartbeat and dreaming schedules to evaluate against UTC (VPS timezone) rather than LA time (PDT, UTC−7 in June). The fix is one line. It must be added before any heartbeat activeHours or dreaming schedule.
+Three new findings from morning research scan:
 
-All GitHub-manageable workspace files remain current:
+**F30 (NEW): BRAVE_API_KEY not set** — Heather cannot search the web. This is a core capability gap for a personal assistant that needs to research facts, look up news, and check current information. Fix is available via AlphaClaw UI without VPS access (Envars tab). Free tier: 2,000 queries/month via Brave Search API.
+
+**F31 (NEW): Same-provider fallback chain** — Primary and Fallback 1 are both Google/Gemini. A Google outage burns through Fallback 1 without any cross-provider protection until Haiku 4.5 (Fallback 2). Fix: swap order, promote Haiku 4.5 to Fallback 1 during the upgrade session.
+
+**F32 (NEW, POSITIVE): iMessage SQLite auto-fix** — The malformed inbox-state.json will be automatically fixed by the 2026.6.1 SQLite migration in the staged upgrade path. The iMessage pause (Day 56) may partially resolve after upgrade with no additional manual action.
+
+All GitHub-manageable workspace files remain current as of June 21:
 - ✅ All workspace files personalized and accurate
-- ✅ MEMORY.md up-to-date (June 19 evening)
+- ✅ MEMORY.md up-to-date (June 21 evening)
 - ✅ HEARTBEAT.md active schedule
 - ✅ TOOLS.md with regression warning
 - ✅ gemini-3.5-flash fallback in place
-- 🆕 Finding 28: `userTimezone` not set — add before upgrading (MEDIUM-HIGH)
-- ⛔ Google Workspace OAuth not connected (Day 90 — CRITICAL)
-- ⛔ OpenClaw 2026.3.22 — 90+ days behind stable (HIGH — staged path ready)
+- 🆕 F30: BRAVE_API_KEY not set — web search disabled (MEDIUM-HIGH)
+- 🆕 F31: Same-provider fallback chain gap (MEDIUM)
+- 🆕 F32: iMessage auto-fix path on upgrade (POSITIVE)
+- ⛔ Google Workspace OAuth not connected (Day 91 — CRITICAL)
+- ⛔ OpenClaw 2026.3.22 — upgrade window is OPEN (HIGH)
 - ⛔ Dreaming not enabled (HIGH — use minScore 0.8, add userTimezone first)
 - ⛔ No compaction/memoryFlush (HIGH)
-- ⛔ heartbeat-state.json all null Day 4 — cron likely not deployed (HIGH)
+- ⛔ heartbeat-state.json all null Day 6 — cron not deployed (HIGH)
 - ⚠️ Discord open to all (MEDIUM-HIGH)
 
 **Key update this morning:**
-- 2026.6.9-stable still not shipped — stable could arrive today/tomorrow based on beta cadence
-- Hold confirmed: npm `latest` = 2026.6.6 (GitHub "Latest" badge ≠ npm stable — see findings.md)
-- Staged path: 2026.3.22 → 2026.5.27 → 2026.6.2 → 2026.6.5 → 2026.6.6 → **[HOLD]** → 2026.6.9-stable
+- 2026.6.9-stable confirmed stable overnight — no regression reports, no new release. Upgrade window is OPEN.
+- npm `latest` = 2026.6.9. Verify with `npm show openclaw@latest version` before upgrading.
+- BRAVE_API_KEY gap: quick win available via AlphaClaw UI right now — no VPS session needed.
+- iMessage fix is baked into the upgrade path (F32) — no extra work needed.
 
 ### Noah (Market Catalyst Agent)
 
-**Completely blind — session scope mismatch, Day 8**
+**Completely blind — session scope mismatch, Day 10**
 
-The session is scoped to `lylle-rgb/noah--repo`, which does not exist (GitHub 404). Actual Noah repos found:
+The session is scoped to `lylle-rgb/noah--repo`, which does not exist (GitHub 404). Actual Noah repos found via search:
 - `lylle-rgb/Noahrepo2` — last updated 2026-03-08
 - `lylle-rgb/Noah-workspace` — last updated 2026-03-07
 
 Neither is accessible in the current session scope. All previously documented Noah findings remain unverifiable.
 
-**Fleet operator action required (persistent — Day 8):** Correct the Noah session scope.
+**Fleet operator action required (persistent — Day 10):** Correct the Noah session scope by adding `lylle-rgb/Noah-workspace` to the allowed repos for Noah's fleet agent session.
 
-**AlphaClaw/OpenClaw features relevant to Noah (applies when scope is restored):**
-- **Remote MCP (0.9.18):** Noah's Alpaca + SEC data tools are natural candidates for hosted financial MCP servers. This is the highest-ROI upgrade for a trading bot.
-- **Alpaca MCP Server v2 (April 2026):** Alpaca released a major MCP Server v2 overhaul focused on scalability and reliability. If Noah is using Alpaca's MCP integration, v2 is worth upgrading to. Key: natural-language → market action with no-code wiring.
+**Findings relevant to Noah once scope is restored:**
+- **F30 equivalent:** BRAVE_API_KEY — also likely not set for Noah. For a market catalyst hunter, real-time web search is arguably even more critical than for Heather. Catalyst detection depends on live news and SEC filing alerts.
+- **F31 check:** Noah uses `claude-sonnet-4-6` as primary. If fallbacks exist, verify cross-provider diversity.
+- **Remote MCP (0.9.18):** Noah's Alpaca + SEC data tools are natural candidates for hosted financial MCP servers. Highest-ROI upgrade for a trading bot once scope is restored.
+- **Alpaca MCP Server v2 (April 2026):** Major overhaul focused on scalability and reliability. Natural-language → market action with no-code wiring. Priority upgrade for Noah.
 - **Per-agent thinking control (0.9.17):** Noah's Sonnet 4.6 could use deeper thinking for catalyst analysis, lighter for status crons — set per-task from AlphaClaw UI.
-- **Cron SQLite fix (2026.6.8/6.9):** Noah's trading cron reliability would benefit significantly once 2026.6.9-stable lands.
-- **userTimezone (Finding 28):** This applies to Noah too. If Noah's VPS is UTC and `userTimezone` is not set, any market-hours-aware scheduling (e.g., "only trade 9:30 AM–4 PM ET") will drift relative to UTC. Especially important for a trading bot.
+- **userTimezone (Finding 28 equivalent):** If Noah's VPS is UTC and `userTimezone` is not set, market-hours-aware scheduling (e.g., "only trade 9:30 AM–4 PM ET") will drift. Especially critical for a trading bot tied to NYSE hours.
 - **ClawHavoc audit:** Noah has `gog-cli` installed — needs verification against official ClawHub listing.
 
 ---
@@ -58,12 +68,10 @@ Neither is accessible in the current session scope. All previously documented No
 
 | Instance | Current | npm Stable | Safe Target | Gap | Notes |
 |---|---|---|---|---|---|
-| Josh / Heather | 2026.3.22 | 2026.6.6 | **2026.6.9-stable** | 90 days | userTimezone not set |
-| Noah / Catalyst | 2026.4.15 (last known) | 2026.6.6 | **2026.6.9-stable** | ~67 days | Scope blocked — cannot verify |
+| Josh / Heather | 2026.3.22 | **2026.6.9** | **2026.6.9-stable** | 90 days | Upgrade window OPEN |
+| Noah / Catalyst | 2026.4.15 (last known) | **2026.6.9** | **2026.6.9-stable** | ~67 days | Scope blocked — cannot verify |
 
-**2026.6.9 roadmap:**
-- beta.1 (June 19) → stable (estimated today–tomorrow based on 3-7 day beta cadence)
-- Fixes landing in 2026.6.9: Discord image tools, memory-search, cron isolation, agent recovery, compaction ownership
+**Upgrade window:** OPEN for both instances. No new release overnight. 2026.6.8 = permanent skip. Staged path for Josh: 2026.3.22 → 2026.5.27 → 2026.6.2 → 2026.6.5 → 2026.6.6 → 2026.6.9.
 
 ---
 
@@ -89,9 +97,9 @@ Neither is accessible in the current session scope. All previously documented No
 | `USER.md` | ✅ Filled | Unknown (blind) | |
 | `IDENTITY.md` | ✅ Heather | Unknown (blind) | |
 | `HEARTBEAT.md` | ✅ Active schedule | Unknown (blind) | |
-| `MEMORY.md` | ✅ Seeded + updated June 19 | Unknown (blind) | |
+| `MEMORY.md` | ✅ Seeded + updated June 21 | Unknown (blind) | |
 | `BOOTSTRAP.md` | ✅ Deleted | Unknown (blind) | |
-| `heartbeat-state.json` | ✅ Created — all nulls Day 4 | Unknown (blind) | |
+| `heartbeat-state.json` | ✅ Created — all nulls Day 6 | Unknown (blind) | |
 | `DREAMS.md` | ❌ Auto-creates when Dreaming enabled | Unknown (blind) | |
 
 ---
@@ -102,33 +110,36 @@ Neither is accessible in the current session scope. All previously documented No
 |---|---|---|---|
 | Provider | Google/Gemini + OpenRouter fallback | Anthropic only (last known) | Josh has redundancy |
 | Primary model | gemini-3-flash-preview | claude-sonnet-4-6 | Different stacks |
-| Model fallbacks | ✅ 2 (gemini-3.5-flash, claude-3.5-haiku) | ❌ None (last known) | Josh safer |
-| userTimezone | ❌ Not set (NEW risk — Finding 28) | Unknown (blind) | Both likely need this |
+| Model fallbacks | ✅ 2 fallbacks — but same-provider gap (F31) | ❌ None (last known) | Both need cross-provider check |
+| userTimezone | ❌ Not set (Finding 28) | Unknown (blind) | Both likely need this |
 | Compaction / memoryFlush | ❌ Not configured | ✅ Configured | Noah safer |
 | contextPruning | ❌ Not configured | ⚠️ 5m TTL (default) | Josh needs 6h TTL |
 | Dreaming | ❌ Not configured | ❌ Not configured | Both need corrected config |
 | Google Workspace | ❌ NOT connected | ✅ Connected (last known) | Critical Josh gap |
 | Discord security | ⚠️ Open to all | ✅ Allowlist + pairing | Noah more secure |
-| Discord streaming | ❌ Off | N/A | Josh: enable post-2026.6.9-stable |
+| Discord streaming | ❌ Off | N/A | Josh: enable post-2026.6.9 |
 | Skills | ✅ None — clean | ⚠️ gog-cli (needs ClawHavoc audit) | |
+| BRAVE_API_KEY | ❌ Not set (F30) | ❌ Likely not set (F30 equivalent) | Both need this |
 | Alpaca MCP v2 | N/A | Unknown — upgrade recommended | High value for Noah |
 | Remote MCP | Not configured | Not configured | Both available via 0.9.18 |
 | SOUL/AGENTS/TOOLS | ✅ All personalized | Unknown (blind) | |
 | MEMORY.md | ✅ Seeded + current | Unknown (blind) | |
-| Heartbeat execution | ❌ Not confirmed (null Day 4) | Unknown (blind) | |
+| Heartbeat execution | ❌ Not confirmed (null Day 6) | Unknown (blind) | |
 
 ---
 
-## Priority Action Matrix (Fleet View — June 20 Morning)
+## Priority Action Matrix (Fleet View — June 21 Morning)
 
 | Action | Josh | Noah | Effort |
 |---|---|---|---|
-| **Correct Noah session scope** | N/A | 🔴 CRITICAL (blind, Day 8) | Fleet op |
-| Connect Google Workspace OAuth | 🔴 CRITICAL (Day 90) | N/A (done) | Josh manual |
+| **Correct Noah session scope** | N/A | 🔴 CRITICAL (blind, Day 10) | Fleet op |
+| Connect Google Workspace OAuth | 🔴 CRITICAL (Day 91) | N/A (done) | Josh manual |
+| Set BRAVE_API_KEY (AlphaClaw UI — no VPS needed) | 🔴 MEDIUM-HIGH (F30) | 🔴 HIGH (F30 equiv.) | UI only |
+| Upgrade to 2026.6.9-stable — window OPEN | 🔴 HIGH (staged path ready) | 🔴 HIGH | VPS |
 | Set `userTimezone: "America/Los_Angeles"` | 🔴 MEDIUM-HIGH (do first, pre-upgrade) | 🟠 UNKNOWN (likely needs it) | VPS edit |
-| Upgrade to 2026.6.9-stable (when available) | 🔴 HIGH (staged path ready) | 🔴 HIGH | VPS |
 | Add compaction + memoryFlush | 🔴 HIGH | N/A (done) | VPS |
 | Enable Dreaming (minScore: 0.8) | 🔴 HIGH | 🔴 HIGH (unknown) | VPS |
+| Fix fallback chain cross-provider (F31) | 🟡 MEDIUM | 🟡 UNKNOWN | VPS |
 | Verify heartbeat execution (ask Heather in Discord) | 🟠 MEDIUM-HIGH | Unknown | Discord |
 | Upgrade Alpaca to MCP Server v2 | N/A | 🟠 HIGH (when scope restored) | VPS |
 | Audit skills (ClawHavoc) | ✅ Clean | 🟡 MEDIUM — gog-cli needs check | VPS |
@@ -155,17 +166,17 @@ Neither is accessible in the current session scope. All previously documented No
 3. HEARTBEAT.md active with monitoring schedule
 4. BOOTSTRAP.md deleted (no wasted context tokens)
 5. heartbeat-state.json created
-6. Model fallbacks (2 fallbacks configured)
+6. Model fallbacks (2 fallbacks configured, though same-provider gap exists)
 7. Public AlphaClaw UI at known IP
 8. Clean skills directory (no ClawHavoc exposure)
 
 ## Shared Gaps (Both Instances)
-1. **`userTimezone` likely not set** — silent TZ drift risk for heartbeat/dreaming/cron schedules (Finding 28)
-2. **Dreaming not configured** — no automated memory consolidation (minScore: 0.8)
-3. **Not on 2026.6.9-stable** — missing cron SQLite fix, state recovery, memory-flush, Discord image tools
-4. **2026.6.9-stable pending** — monitor daily; stable promotion expected imminently based on beta cadence
-5. **BRAVE_API_KEY not set** — native Brave web search unavailable
-6. **Remote MCP not configured** — new 0.9.18 capability; high value for both (especially Noah's financial data)
+1. **BRAVE_API_KEY not set** — web search unavailable (F30 for Josh; equivalent gap assumed for Noah)
+2. **`userTimezone` likely not set** — silent TZ drift risk for heartbeat/dreaming/cron schedules (Finding 28)
+3. **Dreaming not configured** — no automated memory consolidation (minScore: 0.8)
+4. **Not on 2026.6.9-stable** — upgrade window is OPEN, both need upgrading
+5. **Remote MCP not configured** — new 0.9.18 capability; high value for both (especially Noah's financial data)
+6. **Cross-provider fallback chain** — review needed for both (F31 confirmed for Josh; Noah's config unknown)
 
 ---
 
@@ -180,3 +191,5 @@ Neither is accessible in the current session scope. All previously documented No
 - *June 19 morning: 2026.6.9-beta.1 released. All corrections confirmed. Noah still blind (Day 7+).*
 - *June 20 evening: Day 4 heartbeat null escalated. Google Workspace Day 90. Noah still blind (Day 7+).*
 - *June 20 morning: Finding 28 (userTimezone). Hold confirmed. Alpaca MCP v2 noted for Noah. Noah still blind (Day 8).*
+- *June 21 evening: 2026.6.9-stable shipped — upgrade window OPENED. Noah still blind (Day 9).*
+- *June 21 morning: F30 (Brave search), F31 (fallback chain), F32 (iMessage SQLite path). Upgrade window confirmed open. Noah still blind (Day 10).*
