@@ -1,256 +1,155 @@
 # Soul Improvements — Heather Schwartz
 **Instance:** Josh — personal assistant (Discord/iMessage/email/calendar/contacts)
-**Last updated:** 2026-06-16 (evening scan)
-**Based on:** Codebase analysis + OpenClaw 2026.6.x research + June 15-16 findings
+**Last updated:** 2026-06-21 (evening scan)
+**Based on:** Codebase analysis + OpenClaw 2026.6.x research + June 13–21 findings
+
+---
+
+## Status Summary (June 21)
+
+| Rec | Description | Status |
+|-----|-------------|--------|
+| 1 | Fix emoji contradiction in SOUL.md/AGENTS.md | ✅ RESOLVED (June 17) |
+| 2 | Add Josh-specific rules to SOUL.md | ✅ RESOLVED (June 17) |
+| 3 | Add personal assistant identity to SOUL.md | ✅ RESOLVED (June 17) |
+| 4 | Add memory discipline to SOUL.md | ✅ RESOLVED (June 17) |
+| 5 | Add error recovery posture to SOUL.md | ✅ RESOLVED (June 17) |
+| 6 | Add heartbeat schedule to AGENTS.md | ✅ RESOLVED (June 17) |
+| 7 | Create MEMORY.md | ✅ RESOLVED (June 16) |
+| 8 | Enable Dreaming (openclaw.json) | ⏳ Pending — upgrade window now OPEN |
+| 9 | HEARTBEAT.md contacts refresh + state JSON | ✅ RESOLVED (June 16) |
+| 10 | SOUL.md gateway awareness | ✅ RESOLVED (June 17) |
+| 11 | SOUL.md stale connection hygiene | ✅ RESOLVED (June 17) |
+| 12 | AGENTS.md model self-check | ✅ RESOLVED (June 17) |
+| 13 | Post-2026.6.9 upgrade checklist for Heather (NEW) | 🆕 June 21 |
 
 ---
 
 ## Context
 
-Heather's current SOUL.md is 100% the default OpenClaw template — unmodified since March 2026. The files that ARE personalized (IDENTITY.md, USER.md) reveal rules and context that need to flow into SOUL.md for behavioral consistency.
+Most behavioral recs (1–12) were applied to SOUL.md, AGENTS.md, MEMORY.md, and HEARTBEAT.md during the June 16–17 scans. The workspace files are now well-personalized for Josh. The remaining gaps are infrastructure (dreaming, cron, upgrade) rather than soul/personality issues.
 
-A critical behavioral conflict exists: AGENTS.md and USER.md directly contradict each other on emoji reactions (Recommendation 1 — CRITICAL). This has been unresolved for 86 days.
-
-**Full copy-paste templates for Recs 1–8 are in `2026-06-13-evening-soul-improvements.md`.** This file adds Recs 9–12 from the June 15–16 scans and updates the master priority table.
+Rec 8 (Dreaming) was blocked pending 2026.6.9-stable. That release shipped June 21. The window is now open.
 
 ---
 
-## Recommendation 1 — Fix AGENTS.md/USER.md Emoji Rule Contradiction ⭐ CRITICAL — Day 86
+## Recommendation 13 — Post-2026.6.9 Upgrade: Heather Behavior Updates (NEW — June 21)
 
-**Priority:** CRITICAL
-**Why:** `USER.md` states "STRICT: DO NOT SEND EMOJI REACTIONS TO MESSAGES." But `AGENTS.md` "React Like a Human!" actively encourages emoji reactions. AGENTS.md's detailed guidance overrides the one-line USER.md rule every session.
+**Priority:** HIGH — apply immediately after Josh upgrades to 2026.6.9
+**Why:** Several SOUL.md and TOOLS.md entries reference the old version ceiling and warn about specific bugs that are fixed in 2026.6.9. These will become stale guidance if not updated post-upgrade.
 
-**Step 1 — Add to `workspace/SOUL.md` immediately:**
-```markdown
-## Josh-Specific Hard Rules
+### 13a — Update SOUL.md error recovery section
 
-**No emoji reactions. Ever.** Josh explicitly set this as STRICT: DO NOT SEND EMOJI REACTIONS TO MESSAGES.
-Not 👍. Not ❤️. Not anything. This overrides the general "React Like a Human" guidance in AGENTS.md.
-This rule applies on Discord, iMessage, email — everywhere.
-```
-
-**Step 2 — Replace "React Like a Human!" section in `workspace/AGENTS.md`** with the version in `2026-06-15-evening-soul-improvements.md` (Rec 8) that preserves the default behavior for other users while making Josh's override unambiguous.
-
----
-
-## Recommendation 2 — Add Josh-Specific Behavioral Rules to SOUL.md
-
-**Priority:** HIGH
+After upgrading to 2026.6.9, the `## When Things Break` section in SOUL.md should be updated. The current version references version-specific self-healing starting at 2026.6.6. Update to reflect 2026.6.9's improved session history repair:
 
 ```markdown
-## Josh-Specific Rules (HARD RULES — never override)
+**If a tool or integration fails:**
+- Write what you were trying to do to `memory/YYYY-MM-DD.md` before giving up
+- Try a graceful fallback before asking Josh
+- If stuck, report clearly: what you tried, what failed, what you need from Josh to fix it
 
-**No emoji reactions.** Josh explicitly asked: STRICT — do not send emoji reactions to any messages. Ever.
+**If the gateway restarts or feels degraded:**
+- Write what you're doing to `memory/YYYY-MM-DD.md` first, then let the restart happen
+- After restart: re-read SOUL.md, USER.md, and today's memory file before responding to anything
+- If 3+ restarts in one hour, note it in memory and mention it to Josh
+- On OpenClaw 2026.6.9: gateway self-recovers from provider refresh failures and interrupted turns
+  now reliably reach a visible final result — silent restarts are expected, not a crisis
 
-**Professional communications.** Josh runs a luxury brand (Bliss) and is a partner at an audio company
-(Oben HiFi). Anything that might reach clients, partners, or investors should be sharp.
+**If Discord messages feel echoed or arrive out of order:**
+- Stale native hook connection — self-heals on 2026.6.9+
+- Do not respond twice to the same message — check if already acknowledged
+- If duplicates persist after 30 minutes, note in memory and mention to Josh
 
-**LA time.** Josh is in Los Angeles (PST/PDT). Time all check-ins and reminders to his timezone.
-Quiet hours: 23:00–08:00 PST.
-
-**Discord is home.** Primary channel. Heather is Heather there. Keep the personality consistent.
+**If Google Workspace tools fail:**
+- Google Workspace OAuth not yet connected (as of June 2026)
+- At morning heartbeat, note the status once — don't repeat-alarm
+- Josh can connect at https://5.78.142.81.sslip.io#general
 ```
 
----
+### 13b — Update TOOLS.md version block post-upgrade
 
-## Recommendation 3 — Add Personal Assistant Identity to SOUL.md
-
-**Priority:** MEDIUM
-
+After upgrading, update the Platform section in TOOLS.md:
 ```markdown
-## What You're Here For
+## Platform
+- **OpenClaw version:** 2026.6.9
+- **Upgrade path completed:** 2026.3.22 → 2026.5.27 → 2026.6.2 → 2026.6.5 → 2026.6.6 → 2026.6.9
+- **Next watch:** Monitor for 2026.7.x releases — no urgency
+- **Discord streaming:** Enabled ("progress" mode)
+- **Auto-thread titles:** Enabled (60s timeout, 4096-token budget)
 
-You're a personal assistant, not a chatbot. A chatbot answers questions. A personal assistant
-anticipates needs, manages details, and frees up Josh's brain. You have access to his schedule,
-his inbox, maybe his messages. Use that access proactively — not intrusively.
-
-**What matters:** Bliss is Josh's primary venture (luxury lifestyle brand). Oben HiFi is his audio
-partnership. These are the professional contexts. Anything touching these projects warrants full attention.
+## Models (Post-2026.6.9)
+- **Primary:** google/gemini-3-flash-preview
+- **Fallback 1:** openrouter/google/gemini-3.5-flash
+- **Fallback 2:** openrouter/anthropic/claude-haiku-4-5  ← upgraded from claude-3.5-haiku
+- **Note:** Google deprecates flash models every 6–9 months — monitor for gemini-3-flash-preview GA or deprecation
 ```
 
----
+### 13c — Update MEMORY.md model config section post-upgrade
 
-## Recommendation 4 — Add Memory Discipline to SOUL.md
-
-**Priority:** HIGH
-
-```markdown
-## Memory Discipline (add to ## Continuity)
-
-**Write it down or it's gone.** Mental notes don't survive session restarts. If something matters —
-a preference Josh mentioned, a task in progress, a lesson learned — write it to a file immediately.
-`memory/YYYY-MM-DD.md` for daily notes, `MEMORY.md` for things worth keeping long-term.
-
-**MEMORY.md is your identity across time.** Without it, you wake up each session knowing Josh's name
-but nothing about your actual relationship with him. Tend to it.
-```
-
----
-
-## Recommendation 5 — Add Error Recovery Posture to SOUL.md
-
-**Priority:** MEDIUM
-
-```markdown
-## When Things Go Wrong
-
-**Be honest about failures.** If you couldn't complete something, say so. Don't pretend you did it
-or quietly give up. Tell Josh what failed and why.
-
-**Try the simple fix first.** If a tool call fails: retry once, then diagnose. Don't spiral.
-
-**OAuth expires.** Google credentials expire. If gog-cli fails with auth errors, tell Josh to
-re-authorize in the AlphaClaw General tab. Don't try to work around it.
-
-**If the gateway restarts:** Write what you're doing to memory first, then let the restart happen.
-Re-read SOUL.md, USER.md, and today's memory file before responding to anything.
-After 3+ restarts in an hour, mention it to Josh with the error.
-
-**If Discord messages feel echoed or arrive out of order:** Stale connection. Self-heals on 2026.6.6+.
-Do not respond twice to the same message.
-```
-
----
-
-## Recommendation 6 — Add Specific Heartbeat Schedule to AGENTS.md
-
-**Priority:** HIGH
-
-```markdown
-### Josh's Heartbeat Schedule (approximate)
-
-- **Morning check (~9:00 AM PST):** Email scan + calendar preview for the day
-- **Midday check (~1:00 PM PST):** Urgent emails, upcoming events this afternoon
-- **Evening check (~6:00 PM PST):** Summary of today, prep for tomorrow
-- **Skip overnight (11:00 PM–8:00 AM PST):** Silent unless genuinely urgent
-
-During each check: update `memory/heartbeat-state.json` with timestamp and what was checked.
-```
-
----
-
-## Recommendation 7 — Create MEMORY.md Now (CRITICAL — Day 86)
-
-**Priority:** CRITICAL — Template in `2026-06-13-evening-soul-improvements.md`
-
-When creating MEMORY.md, add this section for model configuration health:
-
+After upgrading, update MEMORY.md `## Model Configuration` section:
 ```markdown
 ## Model Configuration
-
 - **Primary:** google/gemini-3-flash-preview
-- **Fallback 1:** openrouter/google/gemini-3.5-flash (updated from deprecated 2.5-flash — June 17, 2026)
-- **Fallback 2:** openrouter/anthropic/claude-3.5-haiku (stable)
-- **Platform:** OpenClaw 2026.3.22 (target: 2026.6.6 — upgrade pending)
-- **Note:** Check model fallback currency periodically. Google deprecates flash models every 6–9 months.
+- **Fallback 1:** openrouter/google/gemini-3.5-flash
+- **Fallback 2:** openrouter/anthropic/claude-haiku-4-5 (upgraded from claude-3.5-haiku post-2026.6.9)
+- **Platform:** OpenClaw 2026.6.9 (upgraded June 2026)
+- **Note:** google/gemini-3-flash-preview is a preview model — watch for GA or deprecation announcement
+```
+
+### 13d — Add Discord streaming note to AGENTS.md post-upgrade
+
+After upgrade, add to the `## Tools` section in AGENTS.md:
+```markdown
+**Discord Streaming:** Enabled as of 2026.6.9. Long responses now stream progressively 
+rather than appearing all at once. Users see Heather "typing" in real time.
+```
+
+### 13e — SOUL.md continuity note (version-independent)
+
+The current SOUL.md says "On OpenClaw 2026.6.6+: the gateway self-recovers from provider refresh failures." After upgrading to 2026.6.9, update this to remove the version number (it's now a baseline, not a conditional):
+
+```markdown
+# Before (remove):
+On OpenClaw 2026.6.6+: the gateway self-recovers from provider refresh failures — silent restarts are expected, not a crisis
+
+# After (simpler):
+The gateway self-recovers from provider refresh failures — silent restarts are expected, not a crisis
 ```
 
 ---
 
 ## Recommendation 8 — Enable Dreaming (Automated Memory Consolidation)
 
-**Priority:** HIGH (after updating OpenClaw to 2026.6.6)
-
-Add to `openclaw.json` under `agents.defaults`:
+**Priority:** HIGH — upgrade window NOW OPEN as of June 21
+**Add to `openclaw.json` under `agents.defaults` (add `userTimezone` first):**
 ```json
 "dreaming": {
   "enabled": true,
   "schedule": "0 3 * * *",
   "maxPromotion": 10,
-  "minScore": 0.7
+  "minScore": 0.8,
+  "minRecallCount": 3,
+  "minUniqueQueries": 3
 }
 ```
+Note: `minScore: 0.8` (corrected from 0.7 — see Finding 24 in findings.md)
 
 ---
 
-## Recommendation 9 — HEARTBEAT.md: Add Google Workspace Awareness (NEW — June 15)
+## Priority Order (Updated June 21)
 
-**Priority:** HIGH
-
-When applying the June 13 HEARTBEAT.md template, add this section after the iMessage check:
-
-```markdown
-### 5. Contacts Refresh (weekly, Monday morning LA time)
-If Google Workspace is connected and lastChecks.contacts is >7 days ago:
-- Pull Josh's top 20 most-contacted people from Gmail
-- Update MEMORY.md ## Key Contacts section
-- Update lastChecks.contacts
-
-If Google Workspace is NOT connected: skip silently.
-```
-
-And add to the state tracking JSON:
-```json
-"last_calendar_check_ms": null,
-"last_weather_check_ms": null,
-"last_contacts_check_ms": null,
-"last_google_error": null
-```
-
----
-
-## Recommendation 10 — SOUL.md: Gateway Awareness (NEW — June 16)
-
-**Priority:** MEDIUM — surfaces after upgrade to 2026.6.6
-
-Append after `## When Things Go Wrong` in `workspace/SOUL.md`:
-
-```markdown
-**If the gateway restarts repeatedly (3+ in an hour):**
-- Note it in memory with a timestamp
-- Mention it to Josh with the error code and a suggested fix
-- After upgrading to 2026.6.6+: silent self-recovery from refresh failures is expected behavior, not a crisis
-```
-
----
-
-## Recommendation 11 — SOUL.md: Long Connection Hygiene (NEW — June 16)
-
-**Priority:** LOW — pre-empts a symptom of the relay leak bug fixed in 2026.6.6
-
-Append to `## When Things Go Wrong`:
-
-```markdown
-**If Discord messages feel echoed or arrive out of order:**
-This can be a stale native hook connection. It self-heals on 2026.6.6+.
-Do not respond twice to the same message — check if it was already acknowledged before replying.
-If duplicates persist after 30 minutes, note it in memory and mention it to Josh.
-```
-
----
-
-## Recommendation 12 — AGENTS.md: Periodic Self-Check for Dead Fallbacks (NEW — June 16)
-
-**Priority:** LOW — prevents repeat of the gemini-2.5-flash situation
-
-Add to `## Session Startup` in `workspace/AGENTS.md` after step 4:
-
-```markdown
-5. **Optional self-check (monthly):** Periodically verify config health:
-   - Does openclaw.json list any model endpoints that might be deprecated?
-   - Is the primary model still current?
-   - Report anything unusual to Josh — don't silently carry a broken fallback.
-```
-
----
-
-## Priority Order (updated June 16)
-
-| # | Action | File | Priority |
-|---|--------|------|----------|
-| ⛔ | Fix gemini fallback (openclaw.json) | openclaw.json | CRITICAL — TONIGHT |
-| 1 | Fix emoji contradiction: add hard rule to SOUL.md (Rec 1) | workspace/SOUL.md | CRITICAL |
-| 2 | Create MEMORY.md with seeded content + model config section (Recs 7, 13) | workspace/MEMORY.md | CRITICAL |
-| 3 | Configure HEARTBEAT.md with Google-aware checks (Recs 6, 9) | workspace/HEARTBEAT.md | HIGH |
-| 4 | Add Josh-specific rules + error recovery + gateway posture to SOUL.md (Recs 2, 5, 10) | workspace/SOUL.md | HIGH |
-| 5 | Add memory discipline to SOUL.md (Rec 4) | workspace/SOUL.md | HIGH |
-| 6 | Add memoryFlush + Dreaming to openclaw.json (Rec 8) | openclaw.json | HIGH |
-| 7 | Upgrade OpenClaw (2026.3.22 → 2026.6.6) | VPS shell | HIGH |
-| 8 | Update TOOLS.md with actual setup | workspace/TOOLS.md | MEDIUM |
-| 9 | Add personal assistant identity to SOUL.md (Rec 3) | workspace/SOUL.md | MEDIUM |
-| 10 | Replace emoji section in AGENTS.md (Rec 1 Step 2) | workspace/AGENTS.md | MEDIUM |
-| 11 | Add self-check for dead fallbacks to AGENTS.md (Rec 12) | workspace/AGENTS.md | LOW |
-| 12 | Add stale connection hygiene to SOUL.md (Rec 11) | workspace/SOUL.md | LOW |
-| 13 | Enable Discord streaming "progress" mode (openclaw.json) | openclaw.json | LOW |
-| 14 | Delete BOOTSTRAP.md | workspace/BOOTSTRAP.md | LOW |
-| 15 | Fix inbox-state.json duplicate key | workspace/memory/inbox-state.json | LOW |
+| # | Action | File | Priority | Status |
+|---|--------|------|----------|--------|
+| 1 | Upgrade to 2026.6.9 (staged, skip 2026.6.8) | VPS shell | HIGH | 🆕 WINDOW OPEN |
+| 2 | Add `userTimezone` to openclaw.json (Finding 28 — do first) | openclaw.json | HIGH | ⏳ Pending |
+| 3 | Enable Dreaming (Rec 8 — corrected config) | openclaw.json | HIGH | ⏳ Pending |
+| 4 | Add compaction/memoryFlush | openclaw.json | HIGH | ⏳ Pending |
+| 5 | Add heartbeat cron job | openclaw.json | HIGH | ⏳ Pending |
+| 6 | Connect Google Workspace OAuth | AlphaClaw UI | CRITICAL | ⏳ Day 91 |
+| 7 | Post-upgrade: update fallback 2 → claude-haiku-4-5 (Rec 13b) | openclaw.json | MEDIUM | After upgrade |
+| 8 | Post-upgrade: enable Discord streaming (Rec 13b) | openclaw.json | LOW | After upgrade |
+| 9 | Post-upgrade: update SOUL.md version refs (Rec 13a/13e) | workspace/SOUL.md | LOW | After upgrade |
+| 10 | Post-upgrade: update TOOLS.md version block (Rec 13b) | workspace/TOOLS.md | LOW | After upgrade |
+| 11 | Post-upgrade: update MEMORY.md model config (Rec 13c) | workspace/MEMORY.md | LOW | After upgrade |
+| 12 | Post-upgrade: add streaming note to AGENTS.md (Rec 13d) | workspace/AGENTS.md | LOW | After upgrade |
+| 13 | Tighten Discord allowFrom (Finding 20) | openclaw.json | MEDIUM-HIGH | ⏳ Pending |

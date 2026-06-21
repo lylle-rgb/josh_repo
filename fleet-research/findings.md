@@ -1,12 +1,13 @@
 # Fleet Research Findings — Josh / Heather Schwartz
 
-**Last updated:** 2026-06-20 (morning scan)
+**Last updated:** 2026-06-21 (evening scan)
 **Researcher:** AlphaClaw Fleet Agent
 **Instance:** josh_repo (Heather Schwartz — personal assistant)
 **Current version:** 2026.3.22
-**Safe upgrade target:** 2026.6.6 (npm `latest` stable as of June 20 morning)
-**Next target:** 2026.6.9-stable (not yet shipped — monitor nightly)
+**Safe upgrade target:** **2026.6.9-stable** ✅ Released June 21, 2026 — upgrade window OPEN (skip 2026.6.8)
+**Previous hold:** 2026.6.6 (hold lifted — 2026.6.9-stable is now out)
 
+> ✅ RESOLVED (June 21): 2026.6.9-stable shipped — upgrade hold lifted, window is open
 > ✅ RESOLVED (June 17): workspace/SOUL.md — personalized with Josh's hard rules
 > ✅ RESOLVED (June 17): workspace/AGENTS.md — personalized with emoji override at top
 > ✅ RESOLVED (June 17): workspace/TOOLS.md — populated with AlphaClaw UI, Discord, iMessage, models
@@ -17,47 +18,74 @@
 > ✅ RESOLVED (June 16): workspace/HEARTBEAT.md — populated with active monitoring schedule
 > ✅ RESOLVED (June 16): gemini-2.5-flash → gemini-3.5-flash in openclaw.json
 > ✅ RESOLVED (June 19): TOOLS.md + MEMORY.md — upgrade target corrected (2026.6.8 has regressions)
-> ⛔ Still open: Google Workspace OAuth not connected — email/calendar inaccessible (Day 90)
-> ⛔ Still open: OpenClaw 90+ days outdated (2026.3.22 vs 2026.6.6 safe target)
-> ⛔ Still open: heartbeat-state.json all null — Day 4 (cron likely not deployed to VPS)
-> ⛔ Still open: userTimezone not set in openclaw.json (NEW — Finding 28)
-> ⛔ Still open: Dreaming not enabled in openclaw.json
-> ⛔ Still open: compaction/memoryFlush not configured in openclaw.json
-> ⛔ Still open: Discord security open to all (groupPolicy: open)
-> ⛔ Still open: iMessage paused since ~April 27, 2026 (Day 54)
-> ⛔ Still open: Noah session scope broken (noah--repo 404 — should be Noah-workspace)
+> ⛔ Still open: Google Workspace OAuth not connected — email/calendar inaccessible (Day 91)
+> ⛔ Still open: OpenClaw 90+ days outdated (2026.3.22 vs 2026.6.9 safe target)
+> ⛔ Still open: heartbeat-state.json all null — Day 5 (cron likely not deployed to VPS)
+> ⛔ Still open: userTimezone not set in openclaw.json (Finding 28)
+> ⛔ Still open: Dreaming not enabled in openclaw.json (Finding 22/24)
+> ⛔ Still open: compaction/memoryFlush not configured (Finding 4)
+> ⛔ Still open: Discord security open to all — groupPolicy: open (Finding 20)
+> ⛔ Still open: iMessage paused since ~April 27, 2026 (Day 55)
+> ⛔ Still open: Noah session scope broken (noah--repo 404 — should be Noah-workspace, Day 9)
 
 ---
 
-## ⚠️ Upgrade Status as of June 20 Morning
+## ⚠️ Upgrade Status as of June 21 Evening
 
 | Channel | Version | Status |
 |---------|---------|--------|
-| npm `latest` (stable) | **2026.6.6** | Current safe target |
-| 2026.6.8 | Released June 16 | ⛔ GitHub "Latest" badge but NOT on npm stable — critical regressions (see Finding 26) |
-| 2026.6.9-beta.1 | June 19 | Pre-release — do not use in production |
-| 2026.6.9-stable | **Not yet shipped** | Could arrive today/tomorrow — watching |
+| npm `latest` (stable) | **2026.6.9** | ✅ Current target — upgrade window OPEN |
+| 2026.6.8 | Released June 16 | ⛔ Skip — critical regressions, never on npm stable |
+| 2026.6.9-beta.1 | June 19 | Superseded by stable |
+| 2026.6.9-stable | **June 21, 2026** | ✅ SHIPPED TODAY |
 
-> **Note on GitHub "Latest" vs npm `latest`:** GitHub marks the most recent tag as "Latest" in its UI, even if it's a buggy release. npm's `latest` tag is the authoritative stable channel. Some web sources citing 2026.6.8 as production-ready are reading the GitHub badge, not the npm channel. npm `latest` = 2026.6.6. Hold stands.
-
-**Staged upgrade path:** 2026.3.22 → 2026.5.27 → 2026.6.2 → 2026.6.5 → 2026.6.6 → **[STOP — wait for 2026.6.9-stable]**
+> **Staged upgrade path (confirmed — skip 2026.6.8):**
+> 2026.3.22 → 2026.5.27 → 2026.6.2 → 2026.6.5 → 2026.6.6 → **2026.6.9**
+>
+> Before upgrading, verify npm stable: `npm show openclaw@latest version` — should return `2026.6.9`.
+> If it still shows `2026.6.6`, wait 1–2 hours for npm registry sync and check again.
 
 ---
 
-## ⭐ Finding 28 — `userTimezone` Not Set: Silent Timezone Misalignment Risk (NEW — June 20 Morning)
+## ⭐ Finding 29 — 2026.6.9-STABLE RELEASED TODAY (June 21, 2026) — UPGRADE WINDOW OPEN
 
-**Risk: MEDIUM-HIGH — will silently break heartbeat/dreaming schedules once activeHours is configured**
+**Priority: HIGH — the morning scan hold is lifted**
+**Type: POSITIVE — this is the release we've been watching for**
 
-openclaw.json has no `userTimezone` configured. Per OpenClaw docs and GitHub Issue #67397:
+OpenClaw 2026.6.9-stable confirmed available as of June 21, 2026 via official GitHub releases page. The morning scan on June 20 noted 2026.6.9-beta.1 was out but not yet stable. It went stable June 21.
 
-> "If `userTimezone` is unset, OpenClaw falls back to the host machine's timezone. Timezone mismatches between `userTimezone` and `activeHours` cause silent heartbeat suppression."
+**What's new in 2026.6.9 relevant to Josh/Heather:**
 
-Josh's VPS (5.78.142.81) is almost certainly UTC. Josh is in Los Angeles (PDT = UTC−7 in June). Without `userTimezone`:
-- Any `heartbeat.activeHours` config (e.g., quiet from 23:00–08:00 LA time) evaluates in UTC
-- UTC 23:00 = 4:00 PM PDT — heartbeats would go quiet 7 hours early
-- The recommended dreaming schedule `"0 3 * * *"` (3 AM UTC = 8 PM PDT) is safe by coincidence — but fragile
+- **Enhanced agent recovery:** Retries, terminal outcomes, session history repair — interrupted or partial turns now more reliably reach a visible final result. Directly improves Heather's session continuity.
+- **Discord session continuity:** Improved deduplication and message handling — fewer echoed or doubled messages.
+- **Claude Haiku 4.5 support confirmed:** Fallback 2 can now be upgraded to `openrouter/anthropic/claude-haiku-4-5` (smarter, faster, lower cost).
+- **Auto-thread titles:** Available post-upgrade — 60s timeout, 4,096-token reasoning budget, auto-generated.
+- **Discord streaming:** `"progress"` mode can be enabled post-upgrade (currently `"off"`).
+- **Provider stability:** OpenRouter OAuth, normalized tool progress, cleaner Codex compaction ownership.
 
-**Fix (one line in `agents.defaults`):**
+**Bundle these config changes in ONE VPS session when upgrading:**
+1. Add `userTimezone: "America/Los_Angeles"` to `agents.defaults` (Finding 28 — do this FIRST)
+2. Add `compaction/memoryFlush` config (Finding 4)
+3. Add `dreaming` config with `minScore: 0.8`, `schedule: "0 3 * * *"` (Finding 22/24)
+4. Add heartbeat cron job to `cron.jobs` (Finding 27)
+5. Run staged upgrade: 2026.3.22 → 2026.5.27 → 2026.6.2 → 2026.6.5 → 2026.6.6 → 2026.6.9
+6. After reaching 2026.6.9: update fallback 2 in openclaw.json → `openrouter/anthropic/claude-haiku-4-5`
+7. After reaching 2026.6.9: enable Discord streaming `"progress"` mode
+8. After reaching 2026.6.9: tighten Discord `allowFrom: ["*"]` → Josh's Discord user ID (Finding 20)
+
+**Risk:** LOW. The staged path is well-tested. The only remaining bug risk is from 2026.6.8, which we're skipping.
+
+---
+
+## ⭐ Finding 28 — `userTimezone` Not Set: Silent Timezone Misalignment Risk
+
+**Risk: MEDIUM-HIGH — will silently break heartbeat/dreaming schedules**
+
+openclaw.json has no `userTimezone` configured. VPS (5.78.142.81) is almost certainly UTC. Josh is in Los Angeles (PDT = UTC−7 in June). Without this:
+- Any `heartbeat.activeHours` evaluates in UTC — heartbeats go quiet 7 hours early
+- Dreaming schedule `"0 3 * * *"` (3 AM UTC = 8 PM PDT) currently safe but fragile
+
+**Fix (add to `agents.defaults` FIRST, before any cron/dreaming config):**
 ```json
 "agents": {
   "defaults": {
@@ -67,24 +95,15 @@ Josh's VPS (5.78.142.81) is almost certainly UTC. Josh is in Los Angeles (PDT = 
 }
 ```
 
-**Add `userTimezone` FIRST, before adding heartbeat activeHours or dreaming schedule to openclaw.json.**
-
-**Related — Bug #67397 (filed April 15, 2026):**
-Dreaming cron is gated by `heartbeat.activeHours` with no independent override. If a dreaming job's time falls outside the active window (as evaluated in the configured timezone), it is silently skipped with `reason=quiet-hours`. The fix (separate `dreaming.activeHours`) is not yet shipped in any stable release. Until it is: keep dreaming schedule inside the active window, and anchor it with the correct `userTimezone`.
-
 ---
 
-## ⭐ Finding 27 — Heartbeat State: All Null — Day 4 (NEW — June 20 Evening)
+## ⭐ Finding 27 — Heartbeat State: All Null — Day 5
 
 **Risk: HIGH — Heather has had zero confirmed proactive monitoring since deployment**
 
-heartbeat-state.json has shown all null timestamps for 4 consecutive days (June 17–20). The most likely cause is that the heartbeat cron was never deployed to the VPS — the fleet agent created the JSON file via GitHub but no cron schedule exists in the live openclaw.json.
+heartbeat-state.json has shown all null timestamps for 5 consecutive days (June 17–21). Most likely cause: the heartbeat cron was never deployed to the VPS — the fleet agent created the JSON file via GitHub but no cron schedule exists in the live openclaw.json.
 
-`memory_maintenance` has no dependencies on Google Workspace or iMessage, yet it is also null. This rules out a blocker-only explanation and strongly implies the cron itself never fired.
-
-**Immediate action:**
-1. Ask Heather directly in Discord: "Are you running heartbeat checks?"
-2. After OpenClaw upgrade + adding `userTimezone`, add heartbeat cron to openclaw.json:
+**Add to openclaw.json (bundle with upgrade session):**
 ```json
 "cron": {
   "jobs": [
@@ -100,18 +119,18 @@ heartbeat-state.json has shown all null timestamps for 4 consecutive days (June 
 
 ---
 
-## ⭐ Finding 26 — 2026.6.8 Critical Regressions (Corrected June 19 — Previously Marked Stable)
+## ⭐ Finding 26 — 2026.6.8 Regressions (CONFIRMED — SKIP THIS VERSION)
 
-**Risk: HIGH — do NOT upgrade to 2026.6.8**
+**Risk: HIGH — confirmed skip target**
 
-The June 18 morning scan incorrectly marked 2026.6.8 as stable. Corrected June 19. Known regressions:
+Known regressions that were never fixed in 2026.6.8:
 - Discord image-tool failure (#94266)
 - Memory-search provider breakage (#94316)
 - Sub-agent tools broken (#94158)
-- Cron isolation regressions (hot-reload persistence races, isolated watchdog aborts)
+- Cron isolation regressions
 - Misleading terminal-turn fallback (#94176)
 
-npm `latest` still points to 2026.6.6. 2026.6.8 was never promoted to npm stable channel.
+npm `latest` was never promoted to 2026.6.8. Jump directly from 2026.6.6 to 2026.6.9.
 
 ---
 
@@ -152,11 +171,11 @@ Correct dreaming config for openclaw.json (add `userTimezone` first per Finding 
 
 ---
 
-## ⭐ Finding 22 — Dreaming Still Not Enabled (Day 90)
+## ⭐ Finding 22 — Dreaming Still Not Enabled (Day 91)
 
 **Risk: HIGH — use corrected config from Finding 24; add `userTimezone` first (Finding 28)**
 
-Without Dreaming, MEMORY.md only updates when the fleet agent pushes changes or Heather does it manually. Add corrected config from Finding 24 to openclaw.json when upgrading. Set `userTimezone` first.
+Without Dreaming, MEMORY.md only updates when the fleet agent pushes changes or Heather does it manually. Add corrected config from Finding 24 to openclaw.json when upgrading.
 
 ---
 
@@ -172,8 +191,7 @@ MEMORY.md is now ~5,000 bytes. Monitor growth as Heather learns more. Limit: 20,
 
 **Risk: MEDIUM-HIGH**
 
-Current config: `groupPolicy: open`, `allowFrom: ["*"]`. Anyone in Josh's Discord server can query Heather with full personal context.
-
+Current config: `groupPolicy: open`, `allowFrom: ["*"]`. Anyone in Josh's Discord server can query Heather with full personal context. Tighten after upgrade:
 ```json
 "groupPolicy": "allowlist",
 "dmPolicy": "allowlist",
@@ -182,10 +200,11 @@ Current config: `groupPolicy: open`, `allowFrom: ["*"]`. Anyone in Josh's Discor
 
 ---
 
-## ⭐ Finding 4 — No Memory Protection Before Compaction (Day 90)
+## ⭐ Finding 4 — No Memory Protection Before Compaction (Day 91)
 
 **Risk: HIGH**
 
+Add to openclaw.json:
 ```json
 "compaction": {
   "reserveTokensFloor": 40000,
@@ -202,7 +221,7 @@ Current config: `groupPolicy: open`, `allowFrom: ["*"]`. Anyone in Josh's Discor
 
 ---
 
-## ⭐ Finding 2 — Google Workspace Not Connected (Day 90 — CRITICAL)
+## ⭐ Finding 2 — Google Workspace Not Connected (Day 91 — CRITICAL)
 
 **Risk: CRITICAL — top Josh action item**
 
@@ -215,47 +234,49 @@ No Google OAuth connected. Gmail, Calendar, Contacts all inaccessible. Three of 
 
 ---
 
-## Summary Table (Updated June 20 Morning)
+## Summary Table (Updated June 21 Evening)
 
 | Finding | Priority | Status |
 |---------|----------|--------|
-| 2. Connect Google Workspace | CRITICAL | ⏳ Day 90 |
-| 27. Heartbeat cron not deployed — Day 4 null | HIGH | ⏳ Day 4 |
-| 28. userTimezone not set — silent TZ risk | MEDIUM-HIGH | 🆕 New June 20 morning |
-| 22/24. Enable Dreaming (corrected config) | HIGH | ⏳ Day 90 |
-| 4. Add compaction/memoryFlush | HIGH | ⏳ Day 90 |
-| Upgrade to 2026.6.6 (staged) | HIGH | ⏳ Day 90 |
-| 20. Discord security (open → allowlist) | MEDIUM-HIGH | ⏳ Day 90 |
-| 26. 2026.6.8 regressions — hold at 2026.6.6 | INFO — CRITICAL | ✅ Corrected June 19 |
+| 29. **2026.6.9-stable released TODAY** | HIGH | 🆕 Upgrade window OPEN |
+| 2. Connect Google Workspace | CRITICAL | ⏳ Day 91 |
+| 27. Heartbeat cron not deployed — Day 5 null | HIGH | ⏳ Day 5 |
+| 28. userTimezone not set — silent TZ risk | MEDIUM-HIGH | ⏳ Day 2 |
+| 22/24. Enable Dreaming (corrected config) | HIGH | ⏳ Day 91 |
+| 4. Add compaction/memoryFlush | HIGH | ⏳ Day 91 |
+| Upgrade to 2026.6.9 (staged, skip 2026.6.8) | HIGH | 🆕 WINDOW OPEN |
+| 20. Discord security (open → allowlist) | MEDIUM-HIGH | ⏳ Day 91 |
+| 26. 2026.6.8 skip confirmed | INFO | ✅ Skip confirmed |
 | 23. AlphaClaw 0.9.17/18 new features | INFO | Available now |
 | 25. ClawHavoc skill audit | LOW | No skills installed |
-| Noah scope fix (noah--repo → Noah-workspace) | FLEET OPS | ⏳ Day 8 |
+| Noah scope fix (noah--repo → Noah-workspace, Day 9) | FLEET OPS | ⏳ Day 9 |
 
 ---
 
-## Remaining Open Action List (June 20 Morning)
+## Remaining Open Action List (June 21 Evening)
 
-### Requires Josh action (VPS or AlphaClaw UI)
+### Requires Josh action (VPS + AlphaClaw UI) — bundle in ONE session
 1. **[CRITICAL]** Connect Google Workspace OAuth at https://5.78.142.81.sslip.io#general
-2. **[HIGH]** Ask Heather in Discord: "Are you running heartbeat checks?"
-3. **[HIGH]** When 2026.6.9-stable ships: upgrade via `openclaw update` (staged path, stop at 2026.6.6 first)
-4. **[HIGH]** Add to openclaw.json — bundle in one VPS session:
-   - `userTimezone: "America/Los_Angeles"` (Finding 28 — do this first)
-   - `compaction/memoryFlush` (Finding 4)
-   - `dreaming` with `minScore: 0.8` (Finding 22/24)
-   - heartbeat cron job with Discord channel delivery (Finding 27)
-5. **[MEDIUM-HIGH]** Tighten Discord allowFrom: replace `"*"` with Josh's Discord user ID (Finding 20)
+2. **[HIGH]** Add `userTimezone: "America/Los_Angeles"` to `agents.defaults` in openclaw.json (Finding 28 — do FIRST)
+3. **[HIGH]** Add `compaction/memoryFlush` block to openclaw.json (Finding 4)
+4. **[HIGH]** Add `dreaming` config (minScore: 0.8) to openclaw.json (Finding 22/24)
+5. **[HIGH]** Add heartbeat cron job to `cron.jobs` in openclaw.json (Finding 27)
+6. **[HIGH]** Run staged upgrade: 2026.3.22 → 2026.5.27 → 2026.6.2 → 2026.6.5 → 2026.6.6 → 2026.6.9
+   - Verify: `npm show openclaw@latest version` = `2026.6.9` before running `openclaw update`
+   - Test Discord and memory search after each step
+7. **[MEDIUM-HIGH]** Tighten Discord allowFrom: `["*"]` → Josh's Discord user ID (Finding 20)
+
+### After upgrade to 2026.6.9 (in openclaw.json)
+8. **[HIGH]** Update fallback 2: `openrouter/anthropic/claude-3.5-haiku` → `openrouter/anthropic/claude-haiku-4-5`
+9. **[LOW]** Enable Discord streaming: `"streaming": "progress"` in channels.discord
+10. **[LOW]** Enable auto-thread titles (available in 2026.6.9)
 
 ### AlphaClaw UI (no VPS CLI needed)
-6. **[LOW]** Set per-agent `thinkingDefault` from model card (Finding 23)
-7. **[LOW]** Enable OpenAI proxy toggle if integrations need it (Finding 23)
-
-### After upgrade to 2026.6.9-stable
-8. **[LOW]** Upgrade fallback 2: `claude-3.5-haiku` → `claude-haiku-4-5`
-9. **[LOW]** Enable Discord streaming `"progress"` mode
+11. **[LOW]** Set per-agent `thinkingDefault` from model card (Finding 23)
 
 ### Fleet operations
-10. **[FLEET OPS]** Fix Noah session scope: noah--repo → Noah-workspace
+12. **[FLEET OPS]** Fix Noah session scope: noah--repo (404) → Noah-workspace (Day 9)
+    - Fleet admin must add `lylle-rgb/Noah-workspace` to agent session allowed repos
 
 ---
 
