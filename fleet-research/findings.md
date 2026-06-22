@@ -1,12 +1,13 @@
 # Fleet Research Findings — Josh / Heather Schwartz
 
-**Last updated:** 2026-06-21 (morning scan)
+**Last updated:** 2026-06-22 (morning scan)
 **Researcher:** AlphaClaw Fleet Agent
 **Instance:** josh_repo (Heather Schwartz — personal assistant)
 **Current version:** 2026.3.22
 **Safe upgrade target:** **2026.6.9-stable** ✅ Released June 21, 2026 — upgrade window OPEN (skip 2026.6.8)
 **Previous hold:** 2026.6.6 (hold lifted — 2026.6.9-stable is now out)
 
+> ✅ RESOLVED (June 22): TOOLS.md — stale "HOLD/STOP" upgrade warning removed (Finding 37)
 > ✅ RESOLVED (June 21): 2026.6.9-stable shipped — upgrade hold lifted, window is open
 > ✅ RESOLVED (June 17): workspace/SOUL.md — personalized with Josh's hard rules
 > ✅ RESOLVED (June 17): workspace/AGENTS.md — personalized with emoji override at top
@@ -18,29 +19,34 @@
 > ✅ RESOLVED (June 16): workspace/HEARTBEAT.md — populated with active monitoring schedule
 > ✅ RESOLVED (June 16): gemini-2.5-flash → gemini-3.5-flash in openclaw.json
 > ✅ RESOLVED (June 19): TOOLS.md + MEMORY.md — upgrade target corrected (2026.6.8 has regressions)
+> 🆕 NEW (June 22 morning): Finding 37 — TOOLS.md stale hold removed (RESOLVED this scan)
+> 🆕 NEW (June 22 morning): Finding 36 — dreaming config key path needs verification before applying (LOW)
+> 🆕 NEW (June 22 morning): Finding 35 — AlphaClaw in-app update removed, VPS-only upgrade confirmed (INFO)
+> 🆕 NEW (June 22 morning): Finding 34 — AlphaClaw git sync reliability fix (POSITIVE — auto-applied)
+> 🆕 NEW (June 22 morning): Finding 33 — 2026.6.10-beta.2 auto fast mode (INFO — do not install)
 > 🆕 NEW (June 21 morning): Finding 32 — iMessage SQLite migration auto-fix path confirmed (POSITIVE)
 > 🆕 NEW (June 21 morning): Finding 31 — same-provider fallback chain gap (MEDIUM)
 > 🆕 NEW (June 21 morning): Finding 30 — BRAVE_API_KEY not set, web search disabled (MEDIUM-HIGH)
-> ⛔ Still open: Google Workspace OAuth not connected — email/calendar inaccessible (Day 91)
+> ⛔ Still open: Google Workspace OAuth not connected — email/calendar inaccessible (Day 92)
 > ⛔ Still open: OpenClaw 90+ days outdated (2026.3.22 vs 2026.6.9 safe target)
-> ⛔ Still open: heartbeat-state.json all null — Day 6 (cron likely not deployed to VPS)
+> ⛔ Still open: heartbeat-state.json all null — Day 7+ (cron not deployed to VPS)
 > ⛔ Still open: userTimezone not set in openclaw.json (Finding 28)
 > ⛔ Still open: Dreaming not enabled in openclaw.json (Finding 22/24)
 > ⛔ Still open: compaction/memoryFlush not configured (Finding 4)
 > ⛔ Still open: Discord security open to all — groupPolicy: open (Finding 20)
-> ⛔ Still open: iMessage paused since ~April 27, 2026 (Day 56 — auto-fix path on upgrade, F32)
-> ⛔ Still open: Noah session scope broken (noah--repo 404 — should be Noah-workspace, Day 10)
+> ⛔ Still open: iMessage paused since ~April 27, 2026 (Day 57 — auto-fix on upgrade, Finding 32)
+> ⛔ Still open: Noah session scope broken (noah--repo 404 — should be Noah-workspace, Day 11)
 
 ---
 
-## ⚠️ Upgrade Status as of June 21 Morning
+## ⚠️ Upgrade Status as of June 22 Morning
 
 | Channel | Version | Status |
 |---------|---------|--------|
-| npm `latest` (stable) | **2026.6.9** | ✅ Current target — upgrade window OPEN |
+| npm `latest` (stable) | **2026.6.9** | ✅ Current target — upgrade window OPEN (Day 2) |
+| 2026.6.10-beta.2 | Released June 22 | 🔬 Beta — do not install; auto fast mode feature |
 | 2026.6.8 | Released June 16 | ⛔ Skip — critical regressions, never on npm stable |
-| 2026.6.9-beta.1 | June 19 | Superseded by stable |
-| 2026.6.9-stable | **June 21, 2026** | ✅ SHIPPED — no new release overnight |
+| 2026.6.9-stable | June 21, 2026 | ✅ Confirmed stable — no overnight hotfix |
 
 > **Staged upgrade path (confirmed — skip 2026.6.8):**
 > 2026.3.22 → 2026.5.27 → 2026.6.2 → 2026.6.5 → 2026.6.6 → **2026.6.9**
@@ -49,18 +55,74 @@
 
 ---
 
+## ⭐ Finding 37 — TOOLS.md Stale Upgrade Warning Removed (RESOLVED June 22)
+
+**Priority: LOW — documentation housekeeping**
+**Status: RESOLVED — TOOLS.md updated in this commit**
+
+workspace/TOOLS.md contained a `⚠️ HOLD: Do NOT upgrade to 2026.6.8` banner and a `[STOP — wait for 2026.6.9-stable]` marker in the staged upgrade path. Both were stale since 2026.6.9-stable shipped June 21. Updated this scan: hold banner replaced with a concise skip note, current safe target corrected to 2026.6.9-stable, VPS-only upgrade path clarified.
+
+---
+
+## ⭐ Finding 36 — Dreaming Config: Verify Key Path Before Applying
+
+**Priority: LOW — clarifies Finding 22/24**
+**Risk: LOW — values correct, just need to confirm placement**
+
+Research surfaces a possible ambiguity: dreaming config may live under `plugins.entries.memory-core.config.dreaming` rather than as a top-level `"dreaming"` key, depending on whether memory-core is installed as a plugin (default in 2026.5+) or built-in.
+
+**Recommended action:** Before applying the dreaming config in the upgrade session, run this on the VPS after upgrading:
+```
+openclaw config schema | grep -A 10 "dreaming"
+```
+or check live plugin state: `openclaw config get plugins.entries.memory-core`
+
+Finding 22/24 config values (minScore: 0.8, schedule: `"0 3 * * *"`, maxPromotion: 10) remain correct regardless of the key path.
+
+---
+
+## ⭐ Finding 35 — AlphaClaw In-App OpenClaw Update Removed
+
+**Priority: INFO — confirms VPS-only upgrade path**
+
+AlphaClaw removed the in-app OpenClaw self-update path for hosted/VPS deployments. The AlphaClaw control UI no longer shows an update button. This confirms: Josh's upgrade **must go through VPS CLI** (`openclaw update`), not the AlphaClaw control UI.
+
+No action required — this is a path clarification, not a blocker.
+
+---
+
+## ⭐ Finding 34 — AlphaClaw Git Sync Reliability Fix
+
+**Priority: LOW-POSITIVE — silent improvement, no action needed**
+
+AlphaClaw's hourly git sync now resolves the real git binary at runtime, fixing sync failures in containerized and hosted deployments. Josh's VPS hourly workspace backup to `josh_repo` is more reliable across AlphaClaw restarts and watchdog recoveries.
+
+No action required — applies automatically on next AlphaClaw restart.
+
+---
+
+## ⭐ Finding 33 — OpenClaw 2026.6.10-beta.2: Auto Fast Mode
+
+**Priority: INFO — future capability, do not install**
+
+2026.6.10-beta.2 released June 22 with **automatic fast mode**: OpenClaw detects short conversational turns and enables fast mode automatically, returning to normal mode for longer analytical runs with bounded fallback and delivery behavior.
+
+This is directly relevant to Heather — casual Discord exchanges with Josh would be noticeably faster.
+
+**Action:** Do not install. Stay on 2026.6.9-stable. If 2026.6.10 stabilizes quickly, the next upgrade cycle can target it. Monitor.
+
+---
+
 ## ⭐ Finding 32 — iMessage SQLite Migration Will Auto-Fix inbox-state.json (POSITIVE)
 
 **Priority: POSITIVE — expected outcome on upgrade**
 **Risk: LOW (handled automatically by upgrade)**
 
-OpenClaw 2026.6.1 introduced a storage schema migration moving iMessage monitor state and inbound queues from JSON files to SQLite. Josh's `inbox-state.json` has a malformed duplicate key that cannot be manually repaired (per MEMORY.md). The staged upgrade **automatically runs this migration on first startup through 2026.6.1**, cleaning the malformed state without manual intervention.
+OpenClaw 2026.6.1 introduced a storage schema migration moving iMessage monitor state from JSON files to SQLite. Josh's `inbox-state.json` has a malformed duplicate key that cannot be manually repaired. The staged upgrade **automatically runs this migration on first startup through 2026.6.1**, cleaning the malformed state.
 
 Additionally, 2026.6.6 added "verify SQLite auth migration before cleanup" — a safety check ensuring the migration completes before cleanup runs. This makes the staged path through 2026.6.6 → 2026.6.9 doubly safe for iMessage state.
 
-**Expected outcome:** After upgrade, iMessage monitoring may partially or fully resume. At minimum, the corrupted state blocking it will be cleared. The iMessage pause (Day 56) has an automatic fix path baked into the upgrade.
-
-**No action required** beyond running the upgrade.
+**Expected outcome:** After upgrade, iMessage monitoring may partially or fully resume. The iMessage pause (Day 57) has an automatic fix path baked into the upgrade. **No action required** beyond running the upgrade.
 
 ---
 
@@ -74,9 +136,9 @@ Josh's current model chain:
 - **Fallback 1:** `openrouter/google/gemini-3.5-flash`
 - **Fallback 2:** `openrouter/anthropic/claude-haiku-4-5` (pending upgrade from claude-3.5-haiku)
 
-Fallback 1 and Primary are **both Google**. A Google-wide rate-limit or outage silently burns through Fallback 1 before Haiku 4.5 catches it. Community best practice (OpenRouter multi-model routing guide, VelvetShark): first fallback should always be a different provider.
+Fallback 1 and Primary are **both Google**. A Google-wide rate-limit or outage silently burns through Fallback 1 before Haiku 4.5 catches it. Community best practice: first fallback should always be a different provider.
 
-**Recommended fix — bundle with the fallback 2 upgrade in the upgrade session:**
+**Recommended fix — bundle with the upgrade session:**
 ```json
 "model": {
   "default": "google/gemini-3-flash-preview",
@@ -86,7 +148,7 @@ Fallback 1 and Primary are **both Google**. A Google-wide rate-limit or outage s
   ]
 }
 ```
-Swaps the order: Anthropic Haiku 4.5 becomes the first cross-provider safety net; Gemini Flash stays as the second (Google-preference) fallback.
+Swaps the order: Haiku 4.5 becomes the first cross-provider safety net; Gemini Flash stays as the second (Google-preference) fallback.
 
 ---
 
@@ -95,54 +157,44 @@ Swaps the order: Anthropic Haiku 4.5 becomes the first cross-provider safety net
 **Priority: MEDIUM-HIGH**
 **Risk: MEDIUM-HIGH — core research capability unavailable**
 
-No Brave Search API key is configured. Heather cannot autonomously search the web. For a personal assistant, this means research requests, fact-checking, and news lookups silently fall back to stale model knowledge or fail. Brave Search is rated highest for agent use (Agent Score 14.89, AIMultiple Feb 2026); ~700,000 OpenClaw users use it as primary web search.
+No Brave Search API key is configured. Heather cannot autonomously search the web. Research requests, fact-checking, and news lookups silently fall back to stale model knowledge or fail.
 
-**Fix — two options:**
+**Fix — Option A (no VPS needed):** AlphaClaw UI → Envars tab → add `BRAVE_API_KEY` = your key.
 
-Option A — openclaw.json `env` block (requires VPS session):
+**Fix — Option B (VPS session):**
 ```json
 "env": {
   "BRAVE_API_KEY": "BSAxxxxxxxx"
 }
 ```
 
-Option B — AlphaClaw UI → Envars tab (no VPS SSH required):
-Add `BRAVE_API_KEY` = your key in the Envars tab for Josh's agent.
-
-API key: https://api.search.brave.com/app/keys — free tier covers 2,000 queries/month, sufficient for a personal assistant.
-
-**Post-setup enhancement (after upgrade to 2026.6.9):**  
-For research-heavy tasks, consider the community "triad" approach: Brave Search (fast URL discovery) + Playwright/browser skill (rendered page extraction) + Fastio (knowledge retention). Start with Brave Search alone; add the others as needed.
+API key: https://api.search.brave.com/app/keys — free tier covers 2,000 queries/month.
 
 ---
 
 ## ⭐ Finding 29 — 2026.6.9-STABLE RELEASED (June 21, 2026) — UPGRADE WINDOW OPEN
 
-**Priority: HIGH — window confirmed open as of morning June 21**
-**Type: POSITIVE — the release we've been watching for**
-
-OpenClaw 2026.6.9-stable confirmed available as of June 21, 2026. No new release appeared overnight. Upgrade window is OPEN.
+**Priority: HIGH — window confirmed open (Day 2 as of June 22)**
 
 **What's new in 2026.6.9 relevant to Josh/Heather:**
-
-- **Enhanced agent recovery:** Retries, terminal outcomes, session history repair — interrupted or partial turns now more reliably reach a visible final result.
-- **Discord session continuity:** Improved deduplication and message handling — fewer echoed or doubled messages.
-- **Claude Haiku 4.5 support confirmed:** Fallback 2 upgrades to `openrouter/anthropic/claude-haiku-4-5`.
-- **Auto-thread titles:** Available post-upgrade — 60s timeout, 4,096-token reasoning budget.
-- **Discord streaming:** `"progress"` mode can be enabled post-upgrade.
-- **Provider stability:** OpenRouter OAuth, normalized tool progress, cleaner compaction ownership.
-- **SQLite iMessage migration fix (via 2026.6.6):** Staged path includes the migration safety check.
+- Enhanced agent recovery with retries, terminal outcomes, session history repair
+- Discord session continuity — fewer echoed/doubled messages
+- Claude Haiku 4.5 support for fallback 2
+- Auto-thread titles (post-upgrade, 60s timeout, 4,096-token reasoning budget)
+- Discord streaming `"progress"` mode available post-upgrade
+- Provider stability: OpenRouter OAuth, cleaner compaction ownership
+- SQLite iMessage migration safety check (via 2026.6.6 in staged path)
 
 **Bundle these config changes in ONE VPS session when upgrading:**
-1. Add `userTimezone: "America/Los_Angeles"` to `agents.defaults` (Finding 28 — do this FIRST)
-2. Add `compaction/memoryFlush` config (Finding 4)
-3. Add `dreaming` config with `minScore: 0.8`, `schedule: "0 3 * * *"` (Finding 22/24)
+1. Add `userTimezone: "America/Los_Angeles"` to `agents.defaults` (Finding 28 — do FIRST)
+2. Add `compaction/memoryFlush` block (Finding 4)
+3. Verify dreaming key path (Finding 36), then add dreaming config with `minScore: 0.8` (Finding 22/24)
 4. Add heartbeat cron job to `cron.jobs` (Finding 27)
 5. Run staged upgrade: 2026.3.22 → 2026.5.27 → 2026.6.2 → 2026.6.5 → 2026.6.6 → 2026.6.9
-6. After reaching 2026.6.9: update fallback chain (Finding 31) — promote Haiku 4.5 to Fallback 1
-7. After reaching 2026.6.9: enable Discord streaming `"progress"` mode
-8. After reaching 2026.6.9: tighten Discord `allowFrom: ["*"]` → Josh's Discord user ID (Finding 20)
-9. Set BRAVE_API_KEY (can do in AlphaClaw UI at any time, no upgrade needed — Finding 30)
+6. After 2026.6.9: swap fallback chain order (Finding 31) — Haiku 4.5 to Fallback 1
+7. After 2026.6.9: enable Discord streaming `"progress"` mode
+8. After 2026.6.9: tighten Discord `allowFrom: ["*"]` → Josh's Discord user ID (Finding 20)
+9. Set BRAVE_API_KEY (AlphaClaw UI, no upgrade needed — Finding 30)
 
 **Risk:** LOW. Staged path is well-tested. Only remaining bug risk is from 2026.6.8, which we skip.
 
@@ -152,9 +204,7 @@ OpenClaw 2026.6.9-stable confirmed available as of June 21, 2026. No new release
 
 **Risk: MEDIUM-HIGH — will silently break heartbeat/dreaming schedules**
 
-openclaw.json has no `userTimezone` configured. VPS (5.78.142.81) is UTC. Josh is in Los Angeles (PDT = UTC−7 in June). Without this:
-- Any `heartbeat.activeHours` evaluates in UTC — heartbeats go quiet 7 hours early
-- Dreaming schedule `"0 3 * * *"` (3 AM UTC = 8 PM PDT) is currently safe but fragile
+openclaw.json has no `userTimezone` configured. VPS (5.78.142.81) is UTC. Josh is in Los Angeles (PDT = UTC−7 in June). Without this, any `heartbeat.activeHours` evaluates in UTC — heartbeats go quiet 7 hours early.
 
 **Fix (add to `agents.defaults` FIRST, before any cron/dreaming config):**
 ```json
@@ -167,11 +217,11 @@ openclaw.json has no `userTimezone` configured. VPS (5.78.142.81) is UTC. Josh i
 
 ---
 
-## ⭐ Finding 27 — Heartbeat State: All Null — Day 6
+## ⭐ Finding 27 — Heartbeat State: All Null — Day 7+
 
-**Risk: HIGH — Heather has had zero confirmed proactive monitoring since deployment**
+**Risk: HIGH — zero confirmed proactive monitoring since deployment**
 
-heartbeat-state.json has shown all null timestamps for 6 consecutive days (June 17–21). Most likely cause: heartbeat cron was never deployed to the VPS — the fleet agent created the JSON file via GitHub but no cron schedule exists in the live openclaw.json.
+heartbeat-state.json has shown all null timestamps for 7+ consecutive days. Most likely cause: heartbeat cron was never deployed to the VPS — the fleet agent created the JSON file via GitHub but no cron schedule exists in the live openclaw.json.
 
 **Add to openclaw.json (bundle with upgrade session):**
 ```json
@@ -186,8 +236,6 @@ heartbeat-state.json has shown all null timestamps for 6 consecutive days (June 
   ]
 }
 ```
-
-**Post-upgrade option:** Add `--session isolated` flag when invoking via OS-level cron for extra reliability — gives each run a clean session that starts fresh, does its work, and is pruned after 24h.
 
 ---
 
@@ -218,7 +266,7 @@ npm `latest` was never promoted to 2026.6.8. Jump directly from 2026.6.6 to 2026
 
 **Risk: LOW (corrects Finding 22 before application)**
 
-Correct dreaming config for openclaw.json (add `userTimezone` first per Finding 28):
+Correct dreaming config (add `userTimezone` first per Finding 28; verify key path per Finding 36):
 ```json
 "dreaming": {
   "enabled": true,
@@ -236,18 +284,17 @@ Correct dreaming config for openclaw.json (add `userTimezone` first per Finding 
 ## ⭐ Finding 23 — AlphaClaw 0.9.17/0.9.18: Per-Agent Thinking, OpenAI Proxy, Remote MCP
 
 **Risk: LOW (new capabilities available now)**
-
 - Per-agent `thinkingDefault`: set in AlphaClaw UI → each agent's model card
 - OpenAI-compatible proxy: toggle in AlphaClaw Setup UI
 - Remote MCP: set `REMOTE_MCP_URL` + `REMOTE_MCP_API_TOKEN` in AlphaClaw Envars tab — alternative Google Workspace path
 
 ---
 
-## ⭐ Finding 22 — Dreaming Still Not Enabled (Day 91)
+## ⭐ Finding 22 — Dreaming Still Not Enabled (Day 92)
 
-**Risk: HIGH — use corrected config from Finding 24; add `userTimezone` first (Finding 28)**
+**Risk: HIGH — use corrected config from Finding 24; verify key path (Finding 36); add `userTimezone` first (Finding 28)**
 
-Without Dreaming, MEMORY.md only updates when the fleet agent pushes changes or Heather does it manually. Add corrected config from Finding 24 to openclaw.json when upgrading.
+Without Dreaming, MEMORY.md only updates when the fleet agent pushes changes or Heather does it manually.
 
 ---
 
@@ -255,7 +302,7 @@ Without Dreaming, MEMORY.md only updates when the fleet agent pushes changes or 
 
 **Risk: LOW (proactive hygiene)**
 
-MEMORY.md is now ~5,000 bytes. Monitor growth as Heather learns more. Limit: 20,000 chars.
+MEMORY.md is now ~5,000 bytes. Monitor growth as Heather learns more. Limit: ~20,000 chars before it noticeably impacts context budget.
 
 ---
 
@@ -272,7 +319,7 @@ Current config: `groupPolicy: open`, `allowFrom: ["*"]`. Anyone in Josh's Discor
 
 ---
 
-## ⭐ Finding 4 — No Memory Protection Before Compaction (Day 91)
+## ⭐ Finding 4 — No Memory Protection Before Compaction (Day 92)
 
 **Risk: HIGH**
 
@@ -291,11 +338,9 @@ Add to openclaw.json:
 }
 ```
 
-**Note:** Community research (Feb 2026) confirms the pre-compaction memory flush is built into OpenClaw but many setups accidentally disable it with thresholds that are too tight, or (like Josh's) don't configure it at all. The `softThresholdTokens: 4000` above is a community-recommended safe value.
-
 ---
 
-## ⭐ Finding 2 — Google Workspace Not Connected (Day 91 — CRITICAL)
+## ⭐ Finding 2 — Google Workspace Not Connected (Day 92 — CRITICAL)
 
 **Risk: CRITICAL — top Josh action item**
 
@@ -308,44 +353,49 @@ No Google OAuth connected. Gmail, Calendar, Contacts all inaccessible. Three of 
 
 ---
 
-## Summary Table (Updated June 21 Morning)
+## Summary Table (Updated June 22 Morning)
 
 | Finding | Priority | Status |
 |---------|----------|--------|
-| 32. iMessage SQLite migration auto-fix on upgrade | POSITIVE | 🆕 Confirmed — no action needed |
-| 31. Same-provider fallback chain gap | MEDIUM | 🆕 Open — fix with upgrade |
-| 30. BRAVE_API_KEY not set — web search disabled | MEDIUM-HIGH | 🆕 Open — fix anytime (AlphaClaw UI) |
-| 29. **2026.6.9-stable released June 21** | HIGH | 🆕 Upgrade window OPEN |
-| 2. Connect Google Workspace | CRITICAL | ⏳ Day 91 |
-| 27. Heartbeat cron not deployed — Day 6 null | HIGH | ⏳ Day 6 |
-| 28. userTimezone not set — silent TZ risk | MEDIUM-HIGH | ⏳ Open |
-| 22/24. Enable Dreaming (corrected config) | HIGH | ⏳ Day 91 |
-| 4. Add compaction/memoryFlush | HIGH | ⏳ Day 91 |
-| Upgrade to 2026.6.9 (staged, skip 2026.6.8) | HIGH | 🆕 WINDOW OPEN |
-| 20. Discord security (open → allowlist) | MEDIUM-HIGH | ⏳ Day 91 |
+| 37. TOOLS.md stale upgrade warning | INFO | ✅ RESOLVED this scan |
+| 34. AlphaClaw git sync reliability fix | POSITIVE | ✅ Auto-applied on restart |
+| 32. iMessage SQLite migration auto-fix on upgrade | POSITIVE | Confirmed — no action needed |
+| 33. 2026.6.10-beta.2 — auto fast mode | INFO | 🔬 Monitor — do not install |
+| 35. AlphaClaw in-app update removed | INFO | VPS-only upgrade path confirmed |
+| 36. Dreaming config key path clarification | LOW | Verify before applying |
+| 31. Same-provider fallback chain gap | MEDIUM | ⏳ Fix with upgrade |
+| 30. BRAVE_API_KEY not set — web search disabled | MEDIUM-HIGH | ⏳ Fix anytime (AlphaClaw UI) |
+| 29. **2026.6.9-stable confirmed — Day 2 of window** | HIGH | ⏳ Upgrade window open |
+| 2. Connect Google Workspace | CRITICAL | ⏳ Day 92 |
+| 27. Heartbeat cron not deployed — Day 7+ null | HIGH | ⏳ Bundle with upgrade |
+| 28. userTimezone not set — silent TZ risk | MEDIUM-HIGH | ⏳ Bundle with upgrade |
+| 22/24. Enable Dreaming (corrected config) | HIGH | ⏳ Bundle with upgrade |
+| 4. Add compaction/memoryFlush | HIGH | ⏳ Bundle with upgrade |
+| Upgrade to 2026.6.9 (staged, skip 2026.6.8) | HIGH | ⏳ WINDOW OPEN — Day 2 |
+| 20. Discord security (open → allowlist) | MEDIUM-HIGH | ⏳ After upgrade |
 | 26. 2026.6.8 skip confirmed | INFO | ✅ Skip confirmed |
 | 23. AlphaClaw 0.9.17/18 new features | INFO | Available now |
 | 25. ClawHavoc skill audit | LOW | No skills installed |
-| Noah scope fix (noah--repo → Noah-workspace, Day 10) | FLEET OPS | ⏳ Day 10 |
+| Noah scope fix (noah--repo → Noah-workspace, Day 11) | FLEET OPS | ⏳ Day 11 |
 
 ---
 
-## Remaining Open Action List (June 21 Morning)
+## Remaining Open Action List (June 22 Morning)
 
 ### Can do NOW — AlphaClaw UI only, no VPS CLI needed
-0. **[MEDIUM-HIGH]** Set BRAVE_API_KEY in AlphaClaw UI → Envars tab (Finding 30) — no VPS needed
+0. **[MEDIUM-HIGH]** Set BRAVE_API_KEY in AlphaClaw UI → Envars tab (Finding 30)
 
 ### Requires Josh action (VPS + AlphaClaw UI) — bundle in ONE session
 1. **[CRITICAL]** Connect Google Workspace OAuth at https://5.78.142.81.sslip.io#general
 2. **[HIGH]** Add `userTimezone: "America/Los_Angeles"` to `agents.defaults` in openclaw.json (Finding 28 — do FIRST)
 3. **[HIGH]** Add `compaction/memoryFlush` block to openclaw.json (Finding 4)
-4. **[HIGH]** Add `dreaming` config (minScore: 0.8) to openclaw.json (Finding 22/24)
+4. **[HIGH]** Verify dreaming config key path (Finding 36), then add dreaming config (minScore: 0.8) (Finding 22/24)
 5. **[HIGH]** Add heartbeat cron job to `cron.jobs` in openclaw.json (Finding 27)
 6. **[HIGH]** Run staged upgrade: 2026.3.22 → 2026.5.27 → 2026.6.2 → 2026.6.5 → 2026.6.6 → 2026.6.9
    - Verify: `npm show openclaw@latest version` = `2026.6.9` before running `openclaw update`
    - Test Discord and memory search after each step
 
-### After upgrade to 2026.6.9 (in openclaw.json)
+### After upgrade to 2026.6.9
 7. **[MEDIUM]** Fix fallback chain (Finding 31): swap Fallback 1 → `openrouter/anthropic/claude-haiku-4-5`, Fallback 2 → `openrouter/google/gemini-3.5-flash`
 8. **[MEDIUM-HIGH]** Tighten Discord allowFrom: `["*"]` → Josh's Discord user ID (Finding 20)
 9. **[LOW]** Enable Discord streaming: `"streaming": "progress"` in channels.discord
@@ -355,9 +405,9 @@ No Google OAuth connected. Gmail, Calendar, Contacts all inaccessible. Three of 
 11. **[LOW]** Set per-agent `thinkingDefault` from model card (Finding 23)
 
 ### Fleet operations
-12. **[FLEET OPS]** Fix Noah session scope: noah--repo (404) → Noah-workspace (Day 10)
-    - Fleet admin must add `lylle-rgb/Noah-workspace` to agent session allowed repos
+12. **[FLEET OPS]** Fix Noah session scope: noah--repo (404) → Noah-workspace (Day 11)
+    - Fleet admin must add `lylle-rgb/Noah-workspace` to session allowed repos
 
 ---
 
-*Sources: [OpenClaw GitHub Releases](https://github.com/openclaw/openclaw/releases) · [OpenClaw Memory Docs](https://docs.openclaw.ai/concepts/memory) · [VelvetShark Multi-Model Routing](https://velvetshark.com/openclaw-multi-model-routing) · [Brave Search OpenClaw Guide](https://brave.com/search/api/guides/use-with-openclaw/) · [OpenClaw Cron Docs](https://docs.openclaw.ai/automation/cron-jobs) · [AlphaClaw GitHub](https://github.com/chrysb/alphaclaw)*
+*Sources: [OpenClaw GitHub Releases](https://github.com/openclaw/openclaw/releases) · [OpenClaw Memory Docs](https://docs.openclaw.ai/concepts/memory) · [VelvetShark Multi-Model Routing](https://velvetshark.com/openclaw-multi-model-routing) · [Brave Search OpenClaw Guide](https://brave.com/search/api/guides/use-with-openclaw/) · [OpenClaw Cron Docs](https://docs.openclaw.ai/automation/cron-jobs) · [AlphaClaw GitHub](https://github.com/chrysb/alphaclaw) · [Releasebot OpenClaw](https://releasebot.io/updates/openclaw)*

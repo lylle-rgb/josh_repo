@@ -39,27 +39,26 @@ Skills define _how_ tools work. This file is for _your_ specifics — the stuff 
 
 ## iMessage
 
-- **Status:** PAUSED since ~April 27, 2026 (~53 days as of June 19, 2026)
+- **Status:** PAUSED since ~April 27, 2026 (~57 days as of June 22, 2026)
 - **How to check:** Read memory/inbox-state.json — `imessage_monitoring_paused: true` = still paused
+- **Auto-fix path:** The staged upgrade through 2026.6.1 runs a SQLite migration that clears the malformed state — iMessage monitoring may resume partially or fully after upgrade (Finding 32)
 - **IMPORTANT:** Do NOT manually edit inbox-state.json — has a malformed duplicate key; SQLite migration during OpenClaw upgrade will fix it cleanly
 
 ## Platform
 
 - **OpenClaw version:** 2026.3.22
-- **Current safe target:** **2026.6.6** (npm `latest` stable channel as of June 19, 2026)
+- **Current safe target:** **2026.6.9-stable** — upgrade window OPEN (released June 21, 2026)
 
-> ⚠️ **HOLD: Do NOT upgrade to 2026.6.8**
-> v2026.6.8 has critical regressions in Discord image tools (#94266), memory-search (#94316),
-> cron isolation, sub-agent tools, and misleading fallbacks. ClawStat.us verdict: "Wait for next release."
-> npm `latest` still points to 2026.6.6 — 2026.6.8 was NOT promoted to stable.
-> Wait for **2026.6.9-stable** before upgrading beyond 2026.6.6.
+> ⚠️ **Skip 2026.6.8** — critical regressions in Discord image tools (#94266), memory-search (#94316),
+> cron isolation, and sub-agent tools. Jump directly from 2026.6.6 → 2026.6.9.
+> npm `latest` = 2026.6.9. Verify before upgrading: `npm show openclaw@latest version`.
 
-- **Staged upgrade path:** 2026.3.22 → 2026.5.27 → 2026.6.2 → 2026.6.5 → 2026.6.6 → **[STOP — wait for 2026.6.9-stable]**
-- **Upgrade command (VPS):** `openclaw update`
+- **Staged upgrade path:** 2026.3.22 → 2026.5.27 → 2026.6.2 → 2026.6.5 → 2026.6.6 → **2026.6.9** ← TARGET
+- **Upgrade command (VPS):** `openclaw update` (SSH into VPS — AlphaClaw UI cannot run this upgrade)
 
 ### Before Running `openclaw update`
 1. Check `fleet-research/` for the latest findings file — confirm the current safe target
-2. Confirm the staged path above still stops at the right version
+2. Verify: `npm show openclaw@latest version` = `2026.6.9`
 3. Run one version at a time, testing Discord and memory after each step
 
 - **Haiku 4.5 upgrade:** Available after upgrade to 2026.6.9-stable — update fallback 2 in openclaw.json to `openrouter/anthropic/claude-haiku-4-5`
@@ -71,3 +70,4 @@ Skills define _how_ tools work. This file is for _your_ specifics — the stuff 
 - **Fallback 1:** openrouter/google/gemini-3.5-flash (updated June 16, 2026 — replaced deprecated gemini-2.5-flash)
 - **Fallback 2:** openrouter/anthropic/claude-3.5-haiku (upgrade to `openrouter/anthropic/claude-haiku-4-5` after reaching 2026.6.9-stable)
 - **Note:** Google deprecates flash models every 6–9 months — periodically verify fallbacks aren't pointing to dead endpoints.
+- **Note:** After upgrade, swap fallback order: Haiku 4.5 first, Gemini Flash second — avoids single Google failure point (Finding 31).
