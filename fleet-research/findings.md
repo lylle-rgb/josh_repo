@@ -1,14 +1,14 @@
 # Fleet Research Findings — Josh / Heather Schwartz
 
-**Last updated:** 2026-06-23 (evening scan)
+**Last updated:** 2026-06-23 (morning scan — F42 added)
 **Researcher:** AlphaClaw Fleet Agent
 **Instance:** josh_repo (Heather Schwartz — personal assistant)
 **Current version:** 2026.3.22
-**Safe upgrade target:** **2026.6.9-stable** ✅ Released June 21, 2026 — upgrade window OPEN Day 3 (skip 2026.6.8)
+**Safe upgrade target:** **2026.6.9-stable** ✅ Released June 21, 2026 — upgrade window OPEN Day 4 (skip 2026.6.8)
 **Previous hold:** 2026.6.6 (hold lifted — 2026.6.9-stable is now out)
 
-> ✅ RESOLVED (June 23): F41 — MEMORY.md day counts updated (was stale 2 days)
-> ✅ RESOLVED (June 23): F38 — HEARTBEAT.md cron-not-deployed warning applied
+> ✅ RESOLVED (June 23 eve): F41 — MEMORY.md day counts updated (was stale 2 days)
+> ✅ RESOLVED (June 23 eve): F38 — HEARTBEAT.md cron-not-deployed warning applied
 > ✅ RESOLVED (June 22): Finding 37 — TOOLS.md stale "HOLD/STOP" upgrade warning removed
 > ✅ RESOLVED (June 21): 2026.6.9-stable shipped — upgrade hold lifted, window is open
 > ✅ RESOLVED (June 17): workspace/SOUL.md — personalized with Josh's hard rules
@@ -21,10 +21,11 @@
 > ✅ RESOLVED (June 16): workspace/HEARTBEAT.md — populated with active monitoring schedule
 > ✅ RESOLVED (June 16): gemini-2.5-flash → gemini-3.5-flash in openclaw.json
 > ✅ RESOLVED (June 19): TOOLS.md + MEMORY.md — upgrade target corrected (2026.6.8 has regressions)
-> 🆕 NEW (June 23 evening): F41 — MEMORY.md day counts were stale 2 days — RESOLVED ✅
-> 🆕 NEW (June 23 evening): F38 — HEARTBEAT.md cron-not-deployed warning — RESOLVED ✅
-> 🆕 NEW (June 23 evening): F39 — Discord Components V2 post-upgrade (buttons, modals, confirmations)
-> 🆕 NEW (June 23 evening): F40 — Group chat context injection on every turn (auto in 2026.6.9)
+> 🆕 NEW (June 23 morning): F42 — Gemini preview sunset wave — 2-day warning (MEDIUM-HIGH)
+> 🆕 NEW (June 23 eve): F41 — MEMORY.md day counts were stale 2 days — RESOLVED ✅
+> 🆕 NEW (June 23 eve): F38 — HEARTBEAT.md cron-not-deployed warning — RESOLVED ✅
+> 🆕 NEW (June 23 eve): F39 — Discord Components V2 post-upgrade (buttons, modals, confirmations)
+> 🆕 NEW (June 23 eve): F40 — Group chat context injection on every turn (auto in 2026.6.9)
 > 🆕 NEW (June 22 morning): Finding 37 — TOOLS.md stale hold removed (RESOLVED)
 > 🆕 NEW (June 22 morning): Finding 36 — dreaming config key path needs verification before applying (LOW)
 > 🆕 NEW (June 22 morning): Finding 35 — AlphaClaw in-app update removed, VPS-only upgrade confirmed (INFO)
@@ -33,26 +34,26 @@
 > 🆕 NEW (June 21 morning): Finding 32 — iMessage SQLite migration auto-fix path confirmed (POSITIVE)
 > 🆕 NEW (June 21 morning): Finding 31 — same-provider fallback chain gap (MEDIUM)
 > 🆕 NEW (June 21 morning): Finding 30 — BRAVE_API_KEY not set, web search disabled (MEDIUM-HIGH)
-> ⛔ Still open: Google Workspace OAuth not connected — email/calendar inaccessible (Day 93)
-> ⛔ Still open: OpenClaw 93 days outdated (2026.3.22 vs 2026.6.9 safe target)
-> ⛔ Still open: heartbeat-state.json all null — Day 8 (cron not deployed to VPS)
+> ⛔ Still open: Google Workspace OAuth not connected — email/calendar inaccessible (Day 94)
+> ⛔ Still open: OpenClaw 94 days outdated (2026.3.22 vs 2026.6.9 safe target)
+> ⛔ Still open: heartbeat-state.json all null — Day 9 (cron not deployed to VPS)
 > ⛔ Still open: userTimezone not set in openclaw.json (Finding 28)
 > ⛔ Still open: Dreaming not enabled in openclaw.json (Finding 22/24)
 > ⛔ Still open: compaction/memoryFlush not configured (Finding 4)
 > ⛔ Still open: Discord security open to all — groupPolicy: open (Finding 20)
-> ⛔ Still open: iMessage paused since ~April 27, 2026 (Day 58 — auto-fix on upgrade, Finding 32)
-> ⛔ Still open: Noah session scope broken (noah--repo 404 — Day 12)
+> ⛔ Still open: iMessage paused since ~April 27, 2026 (Day 59 — auto-fix on upgrade, Finding 32)
+> ⛔ Still open: Noah session scope broken (noah--repo 404 — Day 13)
 
 ---
 
-## ⚠️ Upgrade Status as of June 23 Evening
+## ⚠️ Upgrade Status as of June 23 Morning
 
 | Channel | Version | Status |
 |---------|---------|--------|
-| npm `latest` (stable) | **2026.6.9** | ✅ Current target — upgrade window OPEN (Day 3) |
-| 2026.6.10-beta.2 | Released June 22 | 🔬 Beta Day 2 — auto fast mode; DO NOT install |
+| npm `latest` (stable) | **2026.6.9** | ✅ Current target — upgrade window OPEN (Day 4) |
+| 2026.6.10-beta.2 | Released June 22 | 🔬 Beta Day 3 — auto fast mode; DO NOT install |
 | 2026.6.8 | Released June 16 | ⛔ Skip — critical regressions, never on npm stable |
-| 2026.6.9-stable | June 21, 2026 | ✅ Confirmed stable — no patches |
+| 2026.6.9-stable | June 21, 2026 | ✅ Confirmed stable 4 days — no patches |
 
 > **Staged upgrade path (confirmed — skip 2026.6.8):**
 > 2026.3.22 → 2026.5.27 → 2026.6.2 → 2026.6.5 → 2026.6.6 → **2026.6.9**
@@ -61,9 +62,41 @@
 
 ---
 
+## ⭐ Finding F42 — Gemini Preview Model Sunset Wave: 2-Day Warning ⚠️
+
+**Priority: MEDIUM-HIGH — Added June 23 Morning**
+
+Google is actively retiring Gemini preview models in a rolling wave:
+- `gemini-3.1-flash-image-preview` + `gemini-3-pro-image-preview` → shut down **June 25, 2026** (2 DAYS)
+- `gemini-3.1-flash-lite-preview` → shut down July 9, 2026
+- `gemini-3-pro-preview` → already shut down March 9, 2026
+
+Josh's primary model is `google/gemini-3-flash-preview` — a preview-tier model in the same family. No confirmed shutdown date for this specific model ID as of this scan, but the pattern is unambiguous: Google is systematically retiring preview-generation Gemini models as stable GA versions (Gemini 3.5 Flash) become available.
+
+**Concrete risk:** If `gemini-3-flash-preview` is deprecated, Heather silently falls to Fallback 1 (OpenRouter Gemini 3.5 Flash — acceptable) then Fallback 2 (Haiku 4.5 — acceptable). Josh gets no explicit notification. The failover chain would catch it, but at the cost of slower performance and no visibility.
+
+**Action — add to upgrade bundle:**
+1. Before or during the upgrade session: check https://ai.google.dev/gemini-api/docs/deprecations for `gemini-3-flash-preview`
+2. Recommended migration target: `google/gemini-3.5-flash` (GA, stable, faster than preview)
+3. Bundle with Finding 31 fix for cleaner fallback chain:
+```json
+"model": {
+  "primary": "google/gemini-3.5-flash",
+  "fallbacks": [
+    "openrouter/anthropic/claude-haiku-4-5",
+    "openrouter/google/gemini-3.5-flash"
+  ]
+}
+```
+This resolves F31 (same-provider fallback gap) at the same time — Haiku 4.5 becomes cross-provider safety net, Gemini 3.5 Flash stable is the warm backup.
+
+**Risk level:** MEDIUM-HIGH. Shutdown not confirmed for this exact model ID, but 2 sister models shut down in 2 days and the migration path is clear.
+
+---
+
 ## ⭐ Finding F41 — MEMORY.md Day Counts Stale (RESOLVED June 23) ✅
 
-MEMORY.md was last updated June 21. Day counts were off by 2: Google Workspace (Day 91→93), Heartbeat null (5 days→8 days), iMessage paused (56→58 days). Applied this scan. Lessons Learned section also refreshed with TOOLS.md/MEMORY.md drift risk, beta track awareness, and cron-not-deployed note.
+MEMORY.md was last updated June 21. Day counts were off by 2: Google Workspace (Day 91→93), Heartbeat null (5 days→8 days), iMessage paused (56→58 days). Applied evening scan June 23. Lessons Learned section also refreshed with TOOLS.md/MEMORY.md drift risk, beta track awareness, and cron-not-deployed note.
 
 ---
 
@@ -81,7 +114,7 @@ After upgrading to 2026.6.9, Heather gains Discord Components V2: buttons, selec
 
 ## ⭐ Finding F38 — HEARTBEAT.md Missing Cron-Not-Deployed Warning (RESOLVED June 23) ✅
 
-HEARTBEAT.md described heartbeat check procedures but had no acknowledgment that the cron is not deployed to the VPS. On a fresh session, Heather could wait for triggers that never arrive. Warning block added to top of workspace/HEARTBEAT.md in this commit.
+HEARTBEAT.md described heartbeat check procedures but had no acknowledgment that the cron is not deployed to the VPS. On a fresh session, Heather could wait for triggers that never arrive. Warning block added to top of workspace/HEARTBEAT.md in the June 23 evening commit.
 
 ---
 
@@ -129,16 +162,16 @@ OpenClaw 2026.6.1 introduced a storage schema migration that automatically clean
 
 ## ⭐ Finding 31 — Same-Provider Fallback Chain: Single Google Failure Point
 
-**Priority: MEDIUM**
+**Priority: MEDIUM — now combined with F42**
 
-Current chain: Primary (Google) → Fallback 1 (Google via OpenRouter) → Fallback 2 (Haiku). Two Google endpoints fail together on an outage. Fix — bundle with upgrade session:
+Current chain: Primary (Google) → Fallback 1 (Google via OpenRouter) → Fallback 2 (Haiku). Two Google endpoints fail together on an outage. Fix — bundle with upgrade session (and F42 primary migration):
 ```json
 "fallbacks": [
   "openrouter/anthropic/claude-haiku-4-5",
   "openrouter/google/gemini-3.5-flash"
 ]
 ```
-Haiku 4.5 becomes the cross-provider safety net; Gemini Flash stays as second.
+Haiku 4.5 becomes the cross-provider safety net; Gemini 3.5 Flash (stable) stays as second.
 
 ---
 
@@ -150,7 +183,7 @@ No Brave Search API key configured. Heather cannot autonomously search the web. 
 
 ---
 
-## ⭐ Finding 29 — 2026.6.9-STABLE: UPGRADE WINDOW OPEN (Day 3)
+## ⭐ Finding 29 — 2026.6.9-STABLE: UPGRADE WINDOW OPEN (Day 4)
 
 **Priority: HIGH**
 
@@ -169,8 +202,8 @@ Key 2026.6.9 improvements for Josh/Heather:
 2. Add `compaction/memoryFlush` block (Finding 4)
 3. Verify dreaming key path (Finding 36), add dreaming config (Finding 22/24)
 4. Add heartbeat cron job to `cron.jobs` (Finding 27)
-5. Run staged upgrade: 2026.3.22 → 2026.5.27 → 2026.6.2 → 2026.6.5 → 2026.6.6 → 2026.6.9
-6. After 2026.6.9: swap fallback chain (Finding 31)
+5. Migrate primary model: `gemini-3-flash-preview` → `gemini-3.5-flash` (F42) + fix fallback chain (F31)
+6. Run staged upgrade: 2026.3.22 → 2026.5.27 → 2026.6.2 → 2026.6.5 → 2026.6.6 → 2026.6.9
 7. After 2026.6.9: enable Discord streaming `"progress"` mode
 8. After 2026.6.9: tighten Discord `allowFrom` (Finding 20)
 9. Set BRAVE_API_KEY anytime via AlphaClaw UI (Finding 30)
@@ -188,11 +221,11 @@ VPS is UTC; Josh is in LA (PDT = UTC−7 in June). Without `userTimezone`, heart
 
 ---
 
-## ⭐ Finding 27 — Heartbeat State: All Null — Day 8
+## ⭐ Finding 27 — Heartbeat State: All Null — Day 9
 
 **Risk: HIGH**
 
-heartbeat-state.json all-null for 8+ consecutive days. Cron was never deployed to VPS (fleet agent created the JSON via GitHub but no cron schedule exists in live openclaw.json). Add with upgrade session:
+heartbeat-state.json all-null for 9+ consecutive days. Cron was never deployed to VPS (fleet agent created the JSON via GitHub but no cron schedule exists in live openclaw.json). Add with upgrade session:
 ```json
 "cron": {
   "jobs": [{
@@ -214,7 +247,7 @@ Discord image tools (#94266), memory-search (#94316), sub-agent tools (#94158), 
 
 ## ⭐ Finding 25 — ClawHavoc: Audit Installed Skills
 
-341 malicious skills planted on ClawHub in January 2026 via typosquatting. Josh's skills directory is empty — no current risk. Run `openclaw skill list` after upgrade to confirm.
+800+ malicious skills planted on ClawHub. Josh's skills directory is empty — no current risk. Run `openclaw skill list` after upgrade to confirm.
 
 ---
 
@@ -242,7 +275,7 @@ Correct dreaming config (add `userTimezone` first; verify key path per Finding 3
 
 ---
 
-## ⭐ Finding 22 — Dreaming Still Not Enabled (Day 93)
+## ⭐ Finding 22 — Dreaming Still Not Enabled (Day 94)
 
 **Risk: HIGH** — without Dreaming, MEMORY.md only updates when fleet agent or Heather manually updates it. Use corrected config from Finding 24; verify key path (Finding 36); add `userTimezone` first (Finding 28).
 
@@ -267,7 +300,7 @@ MEMORY.md now ~6,200 bytes. Monitor growth. Limit: ~20,000 chars before noticeab
 
 ---
 
-## ⭐ Finding 4 — No Memory Protection Before Compaction (Day 93)
+## ⭐ Finding 4 — No Memory Protection Before Compaction (Day 94)
 
 **Risk: HIGH** — add to openclaw.json:
 ```json
@@ -280,7 +313,7 @@ MEMORY.md now ~6,200 bytes. Monitor growth. Limit: ~20,000 chars before noticeab
 
 ---
 
-## ⭐ Finding 2 — Google Workspace Not Connected (Day 93 — CRITICAL)
+## ⭐ Finding 2 — Google Workspace Not Connected (Day 94 — CRITICAL)
 
 No Google OAuth connected. Gmail, Calendar, Contacts all inaccessible. Three of five heartbeat checks permanently blocked.
 1. AlphaClaw UI: https://5.78.142.81.sslip.io#general → Google Workspace → OAuth
@@ -289,12 +322,13 @@ No Google OAuth connected. Gmail, Calendar, Contacts all inaccessible. Three of 
 
 ---
 
-## Summary Table (Updated June 23 Evening)
+## Summary Table (Updated June 23 Morning)
 
 | Finding | Priority | Status |
 |---------|----------|--------|
-| F41. MEMORY.md day counts stale | LOW | ✅ RESOLVED June 23 |
-| F38. HEARTBEAT.md cron warning missing | MEDIUM | ✅ RESOLVED June 23 |
+| F42. Gemini preview sunset wave — 2-day warning | MEDIUM-HIGH | ⏳ NEW — verify + plan migration |
+| F41. MEMORY.md day counts stale | LOW | ✅ RESOLVED June 23 eve |
+| F38. HEARTBEAT.md cron warning missing | MEDIUM | ✅ RESOLVED June 23 eve |
 | F39. Discord Components V2 post-upgrade | INFO | 🔬 Post-upgrade capability |
 | F40. Group chat context every turn | INFO | 🔬 Auto in 2026.6.9 |
 | 37. TOOLS.md stale upgrade warning | INFO | ✅ RESOLVED June 22 |
@@ -303,24 +337,24 @@ No Google OAuth connected. Gmail, Calendar, Contacts all inaccessible. Three of 
 | 33. 2026.6.10-beta.2 auto fast mode | INFO | 🔬 Monitor — do not install |
 | 35. AlphaClaw in-app update removed | INFO | VPS-only path confirmed |
 | 36. Dreaming config key path | LOW | Verify before applying |
-| 31. Same-provider fallback chain gap | MEDIUM | ⏳ Fix with upgrade |
+| 31. Same-provider fallback chain gap | MEDIUM | ⏳ Fix with upgrade (bundle F42) |
 | 30. BRAVE_API_KEY not set | MEDIUM-HIGH | ⏳ Fix anytime (AlphaClaw UI) |
-| 29. **2026.6.9-stable — Day 3 of window** | HIGH | ⏳ Upgrade window open |
-| 2. Connect Google Workspace | CRITICAL | ⏳ Day 93 |
-| 27. Heartbeat cron not deployed — Day 8 | HIGH | ⏳ Bundle with upgrade |
+| 29. **2026.6.9-stable — Day 4 of window** | HIGH | ⏳ Upgrade window open |
+| 2. Connect Google Workspace | CRITICAL | ⏳ Day 94 |
+| 27. Heartbeat cron not deployed — Day 9 | HIGH | ⏳ Bundle with upgrade |
 | 28. userTimezone not set | MEDIUM-HIGH | ⏳ Bundle with upgrade |
 | 22/24. Enable Dreaming | HIGH | ⏳ Bundle with upgrade |
 | 4. Add compaction/memoryFlush | HIGH | ⏳ Bundle with upgrade |
-| Upgrade to 2026.6.9 (staged, skip 2026.6.8) | HIGH | ⏳ WINDOW OPEN — Day 3 |
+| Upgrade to 2026.6.9 (staged, skip 2026.6.8) | HIGH | ⏳ WINDOW OPEN — Day 4 |
 | 20. Discord security (open → allowlist) | MEDIUM-HIGH | ⏳ After upgrade |
 | 26. 2026.6.8 skip confirmed | INFO | ✅ Skip confirmed |
 | 23. AlphaClaw 0.9.17/18 features | INFO | Available now |
 | 25. ClawHavoc skill audit | LOW | No skills installed — safe |
-| Noah scope fix (Day 12) | FLEET OPS | ⏳ Day 12 |
+| Noah scope fix (Day 13) | FLEET OPS | ⏳ Day 13 |
 
 ---
 
-## Remaining Open Action List (June 23 Evening)
+## Remaining Open Action List (June 23 Morning)
 
 ### Can do NOW — AlphaClaw UI only
 0. **[MEDIUM-HIGH]** Set BRAVE_API_KEY in AlphaClaw UI → Envars tab (Finding 30)
@@ -331,11 +365,11 @@ No Google OAuth connected. Gmail, Calendar, Contacts all inaccessible. Three of 
 3. **[HIGH]** Add `compaction/memoryFlush` block (Finding 4)
 4. **[HIGH]** Verify dreaming key path (Finding 36), add dreaming config (Finding 22/24)
 5. **[HIGH]** Add heartbeat cron job to `cron.jobs` (Finding 27)
-6. **[HIGH]** Run staged upgrade: 2026.3.22 → 2026.5.27 → 2026.6.2 → 2026.6.5 → 2026.6.6 → 2026.6.9
+6. **[MEDIUM-HIGH NEW]** F42: Check gemini-3-flash-preview on deprecation page; migrate primary to `gemini-3.5-flash` + fix fallback chain (combines F31)
+7. **[HIGH]** Run staged upgrade: 2026.3.22 → 2026.5.27 → 2026.6.2 → 2026.6.5 → 2026.6.6 → 2026.6.9
    - Verify first: `npm show openclaw@latest version` = `2026.6.9`
 
 ### After upgrade to 2026.6.9
-7. **[MEDIUM]** Swap fallback chain (Finding 31): Haiku 4.5 → Fallback 1, Gemini Flash → Fallback 2
 8. **[MEDIUM-HIGH]** Tighten Discord allowFrom: `["*"]` → Josh's Discord user ID (Finding 20)
 9. **[LOW]** Enable Discord streaming: `"streaming": "progress"`
 10. **[LOW]** Enable auto-thread titles
@@ -345,8 +379,8 @@ No Google OAuth connected. Gmail, Calendar, Contacts all inaccessible. Three of 
 12. **[LOW]** Set per-agent `thinkingDefault` from model card (Finding 23)
 
 ### Fleet operations
-13. **[FLEET OPS]** Fix Noah session scope: noah--repo (404) → Noah-workspace or Noahrepo2 (Day 12)
+13. **[FLEET OPS]** Fix Noah session scope: noah--repo (404) → Noah-workspace or Noahrepo2 (Day 13)
 
 ---
 
-*Sources: [OpenClaw GitHub Releases](https://github.com/openclaw/openclaw/releases) · [OpenClaw Memory Docs](https://docs.openclaw.ai/concepts/memory) · [Brave Search API](https://brave.com/search/api/) · [OpenClaw Cron Docs](https://docs.openclaw.ai/automation/cron-jobs) · [AlphaClaw GitHub](https://github.com/chrysb/alphaclaw)*
+*Sources: [OpenClaw GitHub Releases](https://github.com/openclaw/openclaw/releases) · [Google Gemini Deprecations](https://ai.google.dev/gemini-api/docs/deprecations) · [OpenClaw Memory Docs](https://docs.openclaw.ai/concepts/memory) · [Brave Search API](https://brave.com/search/api/) · [OpenClaw Cron Docs](https://docs.openclaw.ai/automation/cron-jobs) · [AlphaClaw GitHub](https://github.com/chrysb/alphaclaw)*
