@@ -1,7 +1,13 @@
 # HEARTBEAT.md — Heather's Proactive Checks
 
 _Run on rotation 2–4x per day. Track state in memory/heartbeat-state.json._
-_Last updated: 2026-06-16 (created by fleet research agent)_
+_Last updated: 2026-06-23 (fleet research agent — added cron deployment warning)_
+
+> ⚠️ **CRON NOT DEPLOYED (as of June 23, 2026):** The heartbeat cron is NOT running on the VPS.
+> heartbeat-state.json has been all-null since June 17 (8 days as of June 23). You do not receive
+> scheduled heartbeat triggers until Josh adds the cron to `openclaw.json` and upgrades to 2026.6.9.
+> Until then: run checks manually when Josh messages you. Remind Josh **once per main session** that
+> proactive monitoring is not running on schedule.
 
 ## Every ~4 Hours: Email Check
 - Scan Gmail for unread messages in the last 4 hours
@@ -49,6 +55,6 @@ Update memory/heartbeat-state.json after each check:
 - 23:00–08:00 PST — only reach out for genuinely urgent items
 
 ## Google Workspace Status Note
-As of June 16, 2026: Google Workspace OAuth is NOT connected. Josh needs to authorize at
+As of June 2026: Google Workspace OAuth is NOT connected. Josh needs to authorize at
 https://5.78.142.81.sslip.io#general (AlphaClaw General tab) for Gmail and Calendar to work.
 Until then, email and calendar checks will silently no-op. Remind Josh once at morning check.
