@@ -2,7 +2,7 @@
 
 _Load only in main session (direct chats with Josh). Do NOT load in Discord or group contexts._
 
-_Last updated: 2026-06-21 (updated by fleet research agent — evening scan)_
+_Last updated: 2026-06-23 (updated by fleet research agent — evening scan)_
 
 ## About Josh
 - Full name: Joshua Meyers
@@ -16,13 +16,13 @@ _Last updated: 2026-06-21 (updated by fleet research agent — evening scan)_
 - Don't be performative — skip "Great question!" and "Happy to help!"
 - Be concise by default; thorough when it matters
 
-## Known Configuration Issues (as of 2026-06-21)
-- iMessage monitoring paused since ~April 27, 2026 (~55 days as of June 21)
+## Known Configuration Issues (as of 2026-06-23)
+- iMessage monitoring paused since ~April 27, 2026 (~58 days as of June 23)
 - inbox-state.json has a malformed duplicate key — do NOT manually edit it (SQLite migration will handle it on upgrade)
 - Bootstrap TOOLS.md (hooks/bootstrap/TOOLS.md) incorrectly shows "No Google accounts" — Google API key IS configured in openclaw.json
 - OpenClaw version 2026.3.22 — **current safe target is 2026.6.9-stable** (released June 21, 2026). Skip 2026.6.8 (critical regressions). Staged path: 2026.3.22 → 2026.5.27 → 2026.6.2 → 2026.6.5 → 2026.6.6 → 2026.6.9. Verify first: `npm show openclaw@latest version` should return `2026.6.9`.
-- Google Workspace OAuth NOT connected — email and calendar are inaccessible (this is the biggest operational gap — Day 91)
-- Heartbeat cron: **LIKELY NOT DEPLOYED** on VPS — heartbeat-state.json has been all-null since created June 17 (5+ days). Fleet confirmed this is a deployment gap. Until a cron is added to openclaw.json and the server is upgraded, proactive checks will not run on schedule. Josh can trigger manual checks by messaging you directly in Discord.
+- Google Workspace OAuth NOT connected — email and calendar are inaccessible (this is the biggest operational gap — Day 93)
+- Heartbeat cron: **NOT DEPLOYED** on VPS — heartbeat-state.json has been all-null since June 17 (8 days as of June 23). Until a cron is added to openclaw.json and the server is upgraded, proactive checks will not run on schedule. Josh can trigger manual checks by messaging you directly in Discord.
 
 ## Model Configuration
 - **Primary:** google/gemini-3-flash-preview
@@ -31,8 +31,9 @@ _Last updated: 2026-06-21 (updated by fleet research agent — evening scan)_
 - **Platform:** OpenClaw 2026.3.22 (safe upgrade target: **2026.6.9-stable** — released June 21, 2026; skip 2026.6.8)
 - **Note:** Google deprecates flash models every 6–9 months. Periodically verify fallbacks are not pointing to dead endpoints. `gemini-3-flash-preview` is a preview model — monitor for deprecation or stable release.
 
-## Platform Version Status (June 21, 2026)
-- **2026.6.9-stable released TODAY (June 21)** — upgrade window is open
+## Platform Version Status (June 23, 2026)
+- **2026.6.9-stable released June 21** — upgrade window open (Day 3 as of June 23)
+- **2026.6.10-beta.2 released June 22** — beta only, DO NOT install; auto fast mode feature (informational)
 - 2026.6.8 has critical regressions — Discord image tools broken, memory-search broken, cron jobs affected — SKIP this version entirely
 - Staged upgrade path: 2026.3.22 → 2026.5.27 → 2026.6.2 → 2026.6.5 → 2026.6.6 → 2026.6.9
 - Before running `openclaw update`, verify: `npm show openclaw@latest version` = `2026.6.9`
@@ -58,13 +59,16 @@ _Last updated: 2026-06-21 (updated by fleet research agent — evening scan)_
 - Before acting on any upgrade instruction: read the most recent fleet-research/ findings file first — the safe target version changes
 - If you haven't sent Josh anything proactively in >24 hours: check heartbeat-state.json and self-report if something is stuck
 - Skip 2026.6.8 entirely — jump from 2026.6.6 directly to 2026.6.9 when upgrading
+- TOOLS.md and MEMORY.md can drift out of sync on version targets — always read MEMORY.md for the authoritative upgrade target, not TOOLS.md
+- 2026.6.10-beta track is active — DO NOT upgrade to beta versions; stay on stable channel only
+- Heartbeat cron is NOT deployed to VPS — only run checks when Josh messages manually (Day 8 of null state as of June 23)
 
-## Status as of June 21, 2026
-- **2026.6.9-stable released today** — Josh can now run the upgrade (staged path in TOOLS.md)
-- heartbeat-state.json has been all-null for 5 consecutive days (June 17–21) — heartbeat cron was never deployed to VPS. Mention this to Josh.
-- Google Workspace OAuth still disconnected — Day 91. Top priority for Josh to action.
+## Status as of June 23, 2026
+- **Upgrade window open** — Josh can run staged upgrade to 2026.6.9 any time (Day 3 of window)
+- heartbeat-state.json has been all-null for 8 consecutive days (June 17–23) — heartbeat cron was never deployed to VPS. Mention this to Josh.
+- Google Workspace OAuth still disconnected — Day 93. Top priority for Josh to action.
 - On your first main session: read this file, verify its accuracy, update with anything you learn, keep it current
 - Top priority for Josh: connect Google Workspace via AlphaClaw UI at https://5.78.142.81.sslip.io#general
 - Second priority for Josh: upgrade OpenClaw to 2026.6.9 via VPS (staged path — skip 2026.6.8)
 - Third priority for Josh: bundle config changes (userTimezone, dreaming, compaction, heartbeat cron) into the upgrade session
-- Fourth priority for Josh: ask Heather in Discord if heartbeat checks are running (or just check heartbeat-state.json)
+- Fourth priority for Josh: set BRAVE_API_KEY in AlphaClaw UI Envars tab — enables web search now, no upgrade needed
