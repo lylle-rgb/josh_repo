@@ -1,11 +1,11 @@
 # Soul Improvements — Heather Schwartz
 **Instance:** Josh — personal assistant (Discord/iMessage/email/calendar/contacts)
-**Last updated:** 2026-06-23 (evening scan)
-**Based on:** Codebase analysis + OpenClaw 2026.6.x research + June 13–23 findings
+**Last updated:** 2026-06-24 (evening scan — Rec 17-18 added)
+**Based on:** Codebase analysis + OpenClaw 2026.6.x research + June 13–24 findings
 
 ---
 
-## Status Summary (June 23)
+## Status Summary (June 24)
 
 | Rec | Description | Status |
 |-----|-------------|--------|
@@ -16,7 +16,7 @@
 | 5 | Add error recovery posture to SOUL.md | ✅ RESOLVED (June 17) |
 | 6 | Add heartbeat schedule to AGENTS.md | ✅ RESOLVED (June 17) |
 | 7 | Create MEMORY.md | ✅ RESOLVED (June 16) |
-| 8 | Enable Dreaming (openclaw.json) | ⏳ Pending — upgrade window open Day 3 |
+| 8 | Enable Dreaming (openclaw.json) | ⏳ Pending — upgrade window open Day 5 |
 | 9 | HEARTBEAT.md contacts refresh + state JSON | ✅ RESOLVED (June 16) |
 | 10 | SOUL.md gateway awareness | ✅ RESOLVED (June 17) |
 | 11 | SOUL.md stale connection hygiene | ✅ RESOLVED (June 17) |
@@ -25,23 +25,73 @@
 | 14 | Post-upgrade: Discord Components V2 behavioral guidance | ⏳ June 23 — pending upgrade |
 | 15 | HEARTBEAT.md cron-not-deployed warning | ✅ RESOLVED June 23 |
 | 16 | MEMORY.md day count staleness | ✅ RESOLVED June 23 |
+| 17 | Add monthly model health check to HEARTBEAT.md | 🆕 Added June 24 — apply anytime |
+| 18 | SOUL.md: add silent model failure awareness | 🆕 Added June 24 — apply anytime |
 
 ---
 
 ## Context
 
-Most behavioral recs (1–12) were applied during the June 16–17 scans. The workspace files are well-personalized for Josh. Remaining gaps are infrastructure (dreaming, cron, upgrade) rather than soul/personality issues.
+Most behavioral recs (1–12, 15–16) were applied during the June 16–23 scans. The workspace files
+are well-personalized for Josh. The primary remaining gaps are infrastructure (dreaming, cron, upgrade)
+rather than soul/personality issues.
 
-Rec 15 (HEARTBEAT.md cron warning) and Rec 16 (MEMORY.md day counts) were applied in the June 23 evening scan.
-
-Recs 13 and 14 are post-upgrade items — apply after Josh completes the 2026.6.9 upgrade.
+Recs 17–18 were added June 24 evening in response to the Gemini deprecation wave (F42/F43). They
+address a behavioral gap: Heather has no protocol for detecting or reporting silent model failover,
+and no recurring check to catch upcoming deprecations before they hit.
 
 ---
 
-## Recommendation 14 — Post-Upgrade: Discord Components V2 Behavioral Guidance (NEW — June 23)
+## Recommendation 18 — SOUL.md: Silent Model Failure Awareness (NEW — June 24)
+
+**Priority:** LOW to MEDIUM — apply anytime via Browse tab
+**Why:** SOUL.md has no guidance for when Heather's primary model silently fails over to a fallback.
+The Gemini deprecation wave (F42/F43) makes this a real risk. Without this awareness, Heather
+doesn't know she's running degraded and Josh gets no notification.
+
+### Add to `workspace/SOUL.md` under `## When Things Break`:
+
+```markdown
+**If responses feel slower or quality seems lower than usual:**
+- This may mean the primary model was deprecated and you're running on a fallback
+- Check MEMORY.md model config to confirm what the expected primary model is
+- Verify the primary model isn't deprecated: https://ai.google.dev/gemini-api/docs/deprecations
+- If fallback is running: notify Josh with which model failed and which you're now using
+- Update MEMORY.md with what you observe — don't silently absorb a degraded state
+- OpenClaw does not alert on primary-model silent failover — diagnose this proactively
+```
+
+**Risk:** LOW. Behavioral guidance only. Apply via AlphaClaw Browse tab — no upgrade needed.
+
+---
+
+## Recommendation 17 — Add Monthly Model Health Check to HEARTBEAT.md (NEW — June 24)
+
+**Priority:** MEDIUM — apply now (no upgrade needed)
+**Why:** Google retires Gemini preview models on a rolling schedule with minimal notice and no
+notification to running agents. Two sister models to Heather's primary shut down June 25. A monthly
+check prevents silent model degradation from going undetected for weeks.
+
+### Add to `workspace/HEARTBEAT.md` as a new "Monthly" section:
+
+```markdown
+## Monthly: Model Health Check
+- Check https://ai.google.dev/gemini-api/docs/deprecations — look for current primary model
+  (gemini-3-flash-preview or its successor)
+- If listed with shutdown date: flag to Josh immediately with migration target
+  (gemini-3.5-flash stable is the safe GA target)
+- Check OpenRouter provider status for any degraded endpoints in the fallback chain
+- Send Josh a brief Discord DM with findings — even if all-clear (confirms the check ran)
+- Update MEMORY.md model config section if any change is needed
+```
+
+**Risk:** LOW. No upgrade needed; edit HEARTBEAT.md via AlphaClaw Browse tab today.
+
+---
+
+## Recommendation 14 — Post-Upgrade: Discord Components V2 Behavioral Guidance (June 23)
 
 **Priority:** LOW — apply immediately after Josh upgrades to 2026.6.9
-**Why:** 2026.6.9 brings full Discord Components V2 support. Heather can offer native button confirmations, select menus, and modals. Directly serves Josh's "ask before acting externally" preference in SOUL.md — a button confirmation is cleaner and less disruptive than a text question.
 
 ### 14a — Add to `workspace/SOUL.md` `## Boundaries` section post-upgrade
 
@@ -97,7 +147,7 @@ action can actually be cancelled — don't add confirmation friction to time-sen
 - **Discord Components V2:** Enabled — buttons, select menus, modals available
 
 ## Models (Post-2026.6.9)
-- **Primary:** google/gemini-3-flash-preview
+- **Primary:** google/gemini-3.5-flash  ← migrated from preview (F42/F43)
 - **Fallback 1:** openrouter/anthropic/claude-haiku-4-5  ← cross-provider first
 - **Fallback 2:** openrouter/google/gemini-3.5-flash
 ```
@@ -106,11 +156,10 @@ action can actually be cancelled — don't add confirmation friction to time-sen
 
 ```markdown
 ## Model Configuration
-- **Primary:** google/gemini-3-flash-preview
+- **Primary:** google/gemini-3.5-flash (migrated from gemini-3-flash-preview — F42/F43)
 - **Fallback 1:** openrouter/anthropic/claude-haiku-4-5 (upgraded + reordered post-2026.6.9)
 - **Fallback 2:** openrouter/google/gemini-3.5-flash
 - **Platform:** OpenClaw 2026.6.9 (upgraded June 2026)
-- **Note:** gemini-3-flash-preview is a preview model — watch for GA or deprecation
 ```
 
 ### 13d — Add Discord streaming note to AGENTS.md post-upgrade
@@ -122,15 +171,15 @@ Users see Heather typing in real time rather than waiting for a full response.
 
 ### 13e — Simplify SOUL.md version reference post-upgrade
 
-Replace: `On OpenClaw 2026.6.6+: the gateway self-recovers from provider refresh failures — silent restarts are expected, not a crisis`
+Replace: `On OpenClaw 2026.6.6+: the gateway self-recovers from provider refresh failures`
 
-With: `The gateway self-recovers from provider refresh failures — silent restarts are expected, not a crisis`
+With: `The gateway self-recovers from provider refresh failures`
 
 ---
 
 ## Recommendation 8 — Enable Dreaming (Automated Memory Consolidation)
 
-**Priority:** HIGH — upgrade window OPEN (Day 3 as of June 23)
+**Priority:** HIGH — upgrade window OPEN (Day 5 as of June 24)
 
 Add to `openclaw.json` under `agents.defaults` (add `userTimezone` first; verify key path per Finding 36):
 ```json
@@ -146,21 +195,24 @@ Add to `openclaw.json` under `agents.defaults` (add `userTimezone` first; verify
 
 ---
 
-## Priority Order (Updated June 23)
+## Priority Order (Updated June 24)
 
 | # | Action | File | Priority | Status |
 |---|--------|------|----------|--------|
-| 1 | Upgrade to 2026.6.9 (staged, skip 2026.6.8) | VPS shell | HIGH | ⏳ Window open Day 3 |
+| 0 | Check gemini-3-flash-preview deprecation TONIGHT (F43) | AlphaClaw Browse | CRITICAL | ⏳ Act TONIGHT |
+| 1 | Upgrade to 2026.6.9 (staged, skip 2026.6.8) | VPS shell | HIGH | ⏳ Window open Day 5 |
 | 2 | Add `userTimezone` to openclaw.json (FIRST) | openclaw.json | HIGH | ⏳ Pending |
 | 3 | Enable Dreaming (verify key path first) | openclaw.json | HIGH | ⏳ Pending |
 | 4 | Add compaction/memoryFlush block | openclaw.json | HIGH | ⏳ Pending |
 | 5 | Add heartbeat cron job | openclaw.json | HIGH | ⏳ Pending |
-| 6 | Connect Google Workspace OAuth | AlphaClaw UI | CRITICAL | ⏳ Day 93 |
-| 7 | Post-upgrade: Components V2 guidance (Rec 14a/14b) | SOUL.md + AGENTS.md | LOW | After upgrade |
-| 8 | Post-upgrade: fallback chain reorder (Rec 13b / F31) | openclaw.json | MEDIUM | After upgrade |
-| 9 | Post-upgrade: enable Discord streaming (Rec 13b) | openclaw.json | LOW | After upgrade |
-| 10 | Post-upgrade: update SOUL.md error recovery (Rec 13a/13e) | workspace/SOUL.md | LOW | After upgrade |
-| 11 | Post-upgrade: update TOOLS.md version block (Rec 13b) | workspace/TOOLS.md | LOW | After upgrade |
-| 12 | Post-upgrade: update MEMORY.md model config (Rec 13c) | workspace/MEMORY.md | LOW | After upgrade |
-| 13 | Post-upgrade: add streaming note to AGENTS.md (Rec 13d) | workspace/AGENTS.md | LOW | After upgrade |
-| 14 | Tighten Discord allowFrom (Finding 20) | openclaw.json | MEDIUM-HIGH | ⏳ Pending |
+| 6 | Connect Google Workspace OAuth | AlphaClaw UI | CRITICAL | ⏳ Day 95 |
+| 7 | Apply Rec 17: monthly model health check | HEARTBEAT.md | MEDIUM | 🆕 Anytime via Browse tab |
+| 8 | Apply Rec 18: silent model failure awareness | SOUL.md | MEDIUM | 🆕 Anytime via Browse tab |
+| 9 | Post-upgrade: Components V2 guidance (Rec 14a/14b) | SOUL.md + AGENTS.md | LOW | After upgrade |
+| 10 | Post-upgrade: fallback chain reorder (Rec 13b / F31/F43) | openclaw.json | MEDIUM | After upgrade |
+| 11 | Post-upgrade: enable Discord streaming (Rec 13b) | openclaw.json | LOW | After upgrade |
+| 12 | Post-upgrade: update SOUL.md error recovery (Rec 13a/13e) | workspace/SOUL.md | LOW | After upgrade |
+| 13 | Post-upgrade: update TOOLS.md version block (Rec 13b) | workspace/TOOLS.md | LOW | After upgrade |
+| 14 | Post-upgrade: update MEMORY.md model config (Rec 13c) | workspace/MEMORY.md | LOW | After upgrade |
+| 15 | Post-upgrade: add streaming note to AGENTS.md (Rec 13d) | workspace/AGENTS.md | LOW | After upgrade |
+| 16 | Tighten Discord allowFrom (Finding 20) | openclaw.json | MEDIUM-HIGH | ⏳ After upgrade |
