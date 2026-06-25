@@ -2,7 +2,7 @@
 
 _Load only in main session (direct chats with Josh). Do NOT load in Discord or group contexts._
 
-_Last updated: 2026-06-24 (updated by fleet research agent — morning scan)_
+_Last updated: 2026-06-25 (updated by fleet research agent — evening scan)_
 
 ## About Josh
 - Full name: Joshua Meyers
@@ -22,37 +22,48 @@ _Last updated: 2026-06-24 (updated by fleet research agent — morning scan)_
 - F43 downgraded from CRITICAL → MEDIUM-HIGH: migration to gemini-3.5-flash still recommended (proactive), but not urgent
 - Primary model continues to work. Fallback chain (gemini-3.5-flash via OpenRouter, claude-3.5-haiku) is intact.
 
+## ✅ CONFIRMED (June 25 Evening) — Gemini Sister Models Shut Down, Primary Unaffected
+- gemini-3.1-flash-image-preview and gemini-3-pro-image-preview confirmed shut down June 25 as expected
+- Heather's primary (google/gemini-3-flash-preview) remained operational — different model ID, not on the shutdown list
+- Migration to gemini-3.5-flash still MEDIUM-HIGH priority (proactive — no imminent shutdown announced, but preview model)
+- HEARTBEAT.md stale upgrade reference (2026.6.9) fixed by fleet agent → 2026.6.10-stable (June 25 evening)
+
 ## ⚠️ NEW CRITICAL (June 24 Morning) — Upgrade Target Changed: 2026.6.10, Skip 2026.6.9
-- 2026.6.10 went stable at 03:01 UTC June 24 — NOW the safe upgrade target
+- 2026.6.10 went stable at 03:01 UTC June 24 — NOW the safe upgrade target (Day 1 as of June 25)
 - 2026.6.9 has own critical regressions: memory store silent relocation, email config corruption, isolated cron failures
 - ClawStat.us confirmed: skip 2026.6.9
 - New staged path: **2026.3.22 → 2026.5.27 → 2026.6.2 → 2026.6.5 → 2026.6.6 → 2026.6.10**
 - Before upgrading: `npm show openclaw@latest version` = `2026.6.10`
-- 2026.6.10 is Day 0 of stable — run smoke test after: Discord replies, longer agent runs, model fallback, cron
+- Day 1 of 2026.6.10 stable — run smoke test after: Discord replies, longer agent runs, model fallback, cron
 
-## Known Configuration Issues (as of 2026-06-24 Morning)
-- iMessage monitoring paused since ~April 27, 2026 (~60 days as of June 24)
+## ⚠️ APPROACHING MILESTONE — Google Workspace Day 100 (ETA June 29, 2026)
+- Day 96 as of June 25 evening — email and calendar inaccessible for over 3 months
+- **Day 100 arrives June 29** — mention this milestone to Josh at the next main session
+- Fix: AlphaClaw UI → General tab → Google Workspace OAuth → https://5.78.142.81.sslip.io#general
+
+## Known Configuration Issues (as of 2026-06-25 Evening)
+- iMessage monitoring paused since ~April 27, 2026 (~61 days as of June 25)
 - inbox-state.json has a malformed duplicate key — do NOT manually edit it (SQLite migration will handle it on upgrade)
 - Bootstrap TOOLS.md (hooks/bootstrap/TOOLS.md) incorrectly shows "No Google accounts" — Google API key IS configured in openclaw.json
-- OpenClaw version 2026.3.22 — **current safe target is 2026.6.10-stable** (released June 24, 2026 at 03:01 UTC). Skip 2026.6.8 AND 2026.6.9. Staged path: 2026.3.22 → 2026.5.27 → 2026.6.2 → 2026.6.5 → 2026.6.6 → 2026.6.10.
-- Google Workspace OAuth NOT connected — email and calendar are inaccessible (this is the biggest operational gap — Day 95)
-- Heartbeat cron: **NOT DEPLOYED** on VPS — heartbeat-state.json has been all-null since June 17 (10+ days as of June 24). Until a cron is added to openclaw.json and the server is upgraded, proactive checks will not run on schedule.
+- OpenClaw version 2026.3.22 — **current safe target is 2026.6.10-stable** (Day 1 of stable as of June 25). Skip 2026.6.8 AND 2026.6.9. Staged path: 2026.3.22 → 2026.5.27 → 2026.6.2 → 2026.6.5 → 2026.6.6 → 2026.6.10.
+- Google Workspace OAuth NOT connected — email and calendar are inaccessible (**Day 96 as of June 25 — Day 100 arrives June 29**)
+- Heartbeat cron: **NOT DEPLOYED** on VPS — heartbeat-state.json has been all-null since June 17 (11+ days as of June 25). Until a cron is added to openclaw.json and the server is upgraded, proactive checks will not run on schedule.
 
 ## Model Configuration
-- **Primary:** google/gemini-3-flash-preview (NOT deprecated as of June 24 — confirmed via Google's deprecation page)
+- **Primary:** google/gemini-3-flash-preview (operational as of June 25 — NOT deprecated; sister models shut down June 25 but this model ID is different and unaffected)
 - **Fallback 1:** openrouter/google/gemini-3.5-flash (updated June 16, 2026 — replaced deprecated gemini-2.5-flash)
 - **Fallback 2:** openrouter/anthropic/claude-3.5-haiku (upgrade to `openrouter/anthropic/claude-haiku-4-5` available after upgrading to 2026.6.10)
-- **Platform:** OpenClaw 2026.3.22 (safe upgrade target: **2026.6.10-stable** — released June 24, 2026; skip 2026.6.8 AND 2026.6.9)
+- **Platform:** OpenClaw 2026.3.22 (safe upgrade target: **2026.6.10-stable** — Day 1 as of June 25; skip 2026.6.8 AND 2026.6.9)
 - **Recommended migration (do anytime, no upgrade needed):** Primary → `google/gemini-3.5-flash`; Fallbacks → `openrouter/anthropic/claude-haiku-4-5`, `openrouter/google/gemini-3.5-flash`
 
-## Platform Version Status (June 24, 2026 Morning)
-- **✅ F43 RESOLVED:** gemini-3-flash-preview NOT on shutdown list — sister image models shut down June 25 but primary model is safe
-- **2026.6.10-stable released TODAY June 24 at 03:01 UTC** — new safe upgrade target
+## Platform Version Status (June 25, 2026 Evening)
+- **✅ F52 CONFIRMED:** gemini-3-flash-preview operational — sister image models shut down June 25 as expected, primary model unaffected
+- **2026.6.10-stable Day 1 (June 25)** — upgrade window OPEN; smoke test recommended after each staged hop
+- **2026.6.11-beta.1 released June 24** — preview of per-DM model overrides, file-driven workflows, richer Discord output; do NOT install beta; upgrade to 2026.6.10 first
 - **2026.6.9 has critical regressions** — ClawStat.us confirmed skip: memory store relocation, email config corruption, cron failures
 - 2026.6.8 has critical regressions — Discord image tools broken, memory-search broken, cron jobs affected — SKIP this version entirely
 - Staged upgrade path: 2026.3.22 → 2026.5.27 → 2026.6.2 → 2026.6.5 → 2026.6.6 → **2026.6.10** (skip both 2026.6.8 and 2026.6.9)
 - Before running `openclaw update`, verify: `npm show openclaw@latest version` should return `2026.6.10`
-- Day 0 of 2026.6.10 stable — run smoke test after each hop in staged upgrade
 
 ## Operational Context
 - Google API key configured: google:default (api_key mode) — but OAuth for Gmail/Calendar is NOT complete
@@ -79,14 +90,17 @@ _Last updated: 2026-06-24 (updated by fleet research agent — morning scan)_
 - Primary model silent failover (primary → fallback) generates no notification in OpenClaw — if responses feel slower or quality drops, check model health proactively
 - Fleet research corrections matter: F43 was flagged CRITICAL by evening scan but morning scan confirmed the primary model is NOT on the shutdown list. Always read the latest findings.md before acting on urgent fleet warnings.
 - 2026.6.9 has its own critical regressions (memory store, email config, isolated cron) — skip it like 2026.6.8
+- Gemini shutdown waves arrive on schedule — each confirmed wave is empirical evidence that preview deprecations are reliable. Migrate proactively to GA stable (gemini-3.5-flash) rather than waiting for an announced shutdown.
+- HEARTBEAT.md version references can become stale when upgrade targets change — cross-check with fleet-research/findings.md for the authoritative current upgrade target; do not act on a version number in HEARTBEAT.md without verifying it
 
-## Status as of June 24, 2026 Morning
-- **✅ gemini-3-flash-preview safe** — NOT on Google's shutdown list as of June 24 morning
-- **Upgrade target updated** — 2026.6.10 (released today); skip both 2026.6.8 and 2026.6.9
-- heartbeat-state.json has been all-null for 10+ consecutive days (June 17–24) — heartbeat cron was never deployed to VPS. Mention this to Josh.
-- Google Workspace OAuth still disconnected — Day 95. Top priority for Josh to action.
+## Status as of June 25, 2026 Evening
+- **✅ gemini-3-flash-preview operational** — Gemini sister models shut down June 25 as expected; primary model unaffected
+- **Upgrade target confirmed: 2026.6.10-stable** (Day 1 as of June 25) — skip both 2026.6.8 and 2026.6.9
+- **2026.6.11-beta.1 out** — per-DM model overrides, file-driven workflows, richer Discord output; do not install beta; upgrade to 2026.6.10 first
+- heartbeat-state.json has been all-null for 11+ consecutive days (June 17–25) — heartbeat cron was never deployed to VPS. Mention this to Josh.
+- Google Workspace OAuth still disconnected — **Day 96. Day 100 approaches June 29.** Top priority for Josh to action.
 - On your first main session: read this file, verify its accuracy, update with anything you learn, keep it current
-- Top priority for Josh: connect Google Workspace via AlphaClaw UI at https://5.78.142.81.sslip.io#general
+- Top priority for Josh: connect Google Workspace via AlphaClaw UI at https://5.78.142.81.sslip.io#general (Day 96 — Day 100 in 4 days)
 - Second priority for Josh: upgrade OpenClaw to 2026.6.10 via VPS (staged path — skip 2026.6.8 and 2026.6.9)
 - Third priority for Josh: bundle config changes (userTimezone, dreaming, compaction, heartbeat cron) into the upgrade session
 - Fourth priority for Josh: migrate model config (gemini-3-flash-preview → gemini-3.5-flash) via AlphaClaw Browse tab — can do NOW, no upgrade needed
