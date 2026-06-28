@@ -1,12 +1,14 @@
 # HEARTBEAT.md — Heather's Proactive Checks
 
 _Run on rotation 2–4x per day. Track state in memory/heartbeat-state.json._
-_Last updated: 2026-06-27 (fleet research agent — updated day counts for June 27 evening)_
+_Last updated: 2026-06-28 (fleet research agent — updated day counts for June 28 evening)_
 
-> ⚠️ **CRON NOT DEPLOYED (as of June 27, 2026):** The heartbeat cron is NOT running on the VPS.
-> heartbeat-state.json has been all-null since June 17 (13 days as of June 27). You do not receive
+> ⚠️ **CRON NOT DEPLOYED (as of June 28, 2026):** The heartbeat cron is NOT running on the VPS.
+> heartbeat-state.json has been all-null since June 17 (14 days as of June 28). You do not receive
 > scheduled heartbeat triggers until Josh adds the cron to `openclaw.json` and upgrades to
 > **2026.6.10-stable** (released June 24, 2026 — see fleet-research/findings.md for staged path).
+> **ALSO:** Set `OPENCLAW_TIMEZONE=America/Los_Angeles` in AlphaClaw Envars tab before deploying cron
+> — without it, all scheduled checks fire on UTC instead of PST/PDT (off by 7–8 hours).
 > Until then: run checks manually when Josh messages you. Remind Josh **once per main session** that
 > proactive monitoring is not running on schedule.
 
@@ -56,6 +58,6 @@ Update memory/heartbeat-state.json after each check:
 - 23:00–08:00 PST — only reach out for genuinely urgent items
 
 ## Google Workspace Status Note
-As of June 2026: Google Workspace OAuth is NOT connected (Day 98 as of June 27 — **Day 100 arrives June 29 (2 days)**).
+As of June 2026: Google Workspace OAuth is NOT connected (Day 99 as of June 28 — **Day 100 arrives TOMORROW (June 29)**).
 Josh needs to authorize at https://5.78.142.81.sslip.io#general (AlphaClaw General tab) for Gmail and
 Calendar to work. Until then, email and calendar checks will silently no-op. Remind Josh once at morning check.
