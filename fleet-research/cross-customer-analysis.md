@@ -1,18 +1,18 @@
 # Cross-Customer Analysis — AlphaClaw Fleet
 
-**Last updated:** 2026-06-27 (morning scan — F59/F60/F61/F62; day counts updated)
+**Last updated:** 2026-06-28 (morning scan — F63/F64/F65; day counts updated)
 **Fleet agent:** AlphaClaw Fleet Research Agent
 **Customers in scope:** Josh (Heather Schwartz), Noah (Market Catalyst Agent)
 
 ---
 
-## ⚠️ Fleet Coverage Issue: Noah Repo Scope Broken (Day 18)
+## ⚠️ Fleet Coverage Issue: Noah Repo Scope Broken (Day 20)
 
 This analysis is **materially incomplete** due to a fleet operations issue:
 - Session scope includes `lylle-rgb/noah--repo` — this repo returns 404 (does not exist)
-- GitHub search has confirmed: `lylle-rgb/Noahrepo2` (last updated 2026-03-08) and `lylle-rgb/Noah-workspace` (last updated 2026-03-07)
+- GitHub search confirmed: `lylle-rgb/Noahrepo2` (last updated 2026-03-08) and `lylle-rgb/Noah-workspace` (last updated 2026-03-07)
 - Neither is in the session's authorized scope — fleet agent cannot read or write to Noah's repos
-- Noah has been without fleet research coverage for **18 consecutive days** (since June 10)
+- Noah has been without fleet research coverage for **20 consecutive days** (since June 10)
 - Last known Noah git sync: **March 2026 (~112+ days ago)**
 
 **Fleet admin action required:**
@@ -21,22 +21,23 @@ This analysis is **materially incomplete** due to a fleet operations issue:
 
 ---
 
-## Fleet Snapshot (June 27 Morning)
+## Fleet Snapshot (June 28 Morning)
 
 | Dimension | Josh (Heather) | Noah (Market Catalyst) |
 |-----------|----------------|------------------------|
 | **Use case** | Personal assistant — iMessage, email, calendar, contacts | Stock catalyst hunter — Alpaca paper trading, SEC filings, market data |
 | **Bot name** | Heather Schwartz | Market Catalyst Agent |
 | **Platform** | Discord | Discord |
-| **OpenClaw version** | 2026.3.22 (98 days old) | Unknown — last git sync March 2026 (~112+ days ago) |
-| **Safe upgrade target** | **2026.6.10-stable** (Day 4 — green light) | Unknown — likely same staged path |
+| **OpenClaw version** | 2026.3.22 (99 days old) | Unknown — last git sync March 2026 (~113+ days ago) |
+| **Safe upgrade target** | **2026.6.10-stable** (Day 5 — green light) | Unknown — likely same staged path |
+| **2026.6.11 status** | Beta only — do not install | Beta only — do not install |
 | **Primary model** | google/gemini-3-flash-preview (migrate to gemini-3.5-flash) | Unknown |
 | **Fallback chain** | OpenRouter Gemini 3.5-flash → Claude 3.5-haiku | Unknown |
 | **Cron/heartbeat** | Not deployed (Day 14+ null) | Unknown — critical for trading hours monitoring |
-| **Google Workspace OAuth** | NOT connected (Day 98 — **Day 100 in 2 days, June 29**) | N/A (trading bot) |
-| **iMessage** | Paused since April 27 (Day 63) | N/A |
+| **Google Workspace OAuth** | NOT connected **(Day 99 — Day 100 TOMORROW June 29)** | N/A (trading bot) |
+| **iMessage** | Paused since April 27 (Day 64) | N/A |
 | **Repo access** | ✅ `josh_repo` | ⛔ `noah--repo` (404) — correct repo is `Noahrepo2` |
-| **Fleet coverage** | ✅ Active | ⛔ BROKEN — Day 18 |
+| **Fleet coverage** | ✅ Active | ⛔ BROKEN — Day 20 |
 
 ---
 
@@ -44,10 +45,11 @@ This analysis is **materially incomplete** due to a fleet operations issue:
 
 ### 1. OpenClaw Version: Both Outdated (HIGH)
 
-Josh is confirmed on 2026.3.22 (98 days old). Noah's version is unknown but git sync stopped in March — Noah is almost certainly on an older build as well.
+Josh is confirmed on 2026.3.22 (99 days old). Noah's version is unknown but git sync stopped in March — Noah is almost certainly on an older build as well.
 
-**Current stable target: 2026.6.10** (Day 4 of stable as of June 27 — 96h clean, FULLY OPEN window).
-**Skip 2026.6.8 and 2026.6.9** — both have critical regressions.
+**Current stable target: 2026.6.10** (Day 5 of stable as of June 28 — overnight clean signal, FULLY OPEN window).
+**Skip 2026.6.8 and 2026.6.9** — both have confirmed critical regressions.
+**2026.6.11 is still beta** (F63 — confirmed June 28 morning; do not install).
 
 Staged upgrade path for either customer:
 ```
@@ -56,22 +58,22 @@ Staged upgrade path for either customer:
 
 **2026.6.10 benefits both customers:**
 - Auto fast mode for short conversational turns (Discord response speed)
-- PR #96233 heartbeat prompt contribution fix (F53) — direct fix for known heartbeat issue
+- PR #96233 heartbeat prompt contribution fix — direct fix for known heartbeat issue
 - PR #93051 cron retry backoff fix — more reliable scheduled monitoring
 - Explicit compaction, dry-run message previews, session renaming, SSH preflight (F59)
 - Cron delivery awareness persists through restarts
 - SQLite migration safety at 2026.6.6 hop (critical for Josh's iMessage fix)
 
-**2026.6.11-beta.1 preview (do not install — monitor for stable):**
-- Per-DM model overrides, file-driven operator workflows, richer Discord output
+**2026.6.11 beta features to monitor (do not install yet):**
+- Per-DM model overrides, file-driven operator workflows (`--message-file`), RAFT CLI wake bridge
+- Richer Discord output, Slack relay mode, Mattermost /oc_queue, stronger channel control
 - Codex partial delta + prompt-cache stability for interrupted long agent turns
-- RAFT CLI wake bridge for remote agent activation
 
 ### 2. Gemini Flash Preview Model Risk (MEDIUM-HIGH)
 
 Josh is confirmed on `google/gemini-3-flash-preview`. Noah's model config is unknown.
 
-**June 25-27 update:** Primary model (`gemini-3-flash-preview`) confirmed safe — sister models shut down June 25 as announced (F52). However, preview models have no GA support SLA and retirement waves arrive on schedule with no reprieves (F52 empirically confirmed). Proactive migration to `google/gemini-3.5-flash` (GA stable) recommended for both customers.
+Preview models retire on rolling schedule with minimal notice — `gemini-2.5-flash` wave confirmed June 25 (F52 empirically confirmed). Proactive migration to `google/gemini-3.5-flash` (GA stable) recommended for both customers.
 
 Recommended model config (can apply NOW via Browse tab, no upgrade needed):
 ```json
@@ -94,7 +96,7 @@ Recommended model config (can apply NOW via Browse tab, no upgrade needed):
 
 ### 4. Cron/Heartbeat Deployment (HIGH for Josh, critical-unknown for Noah)
 
-- Josh: heartbeat cron not deployed — 14+ days of null state. Bundle deployment with the 2026.6.10 upgrade. PR #96233 in 2026.6.10 directly fixes heartbeat prompt contribution — adds urgency to upgrade.
+- Josh: heartbeat cron not deployed — 14+ days of null state. Must set `OPENCLAW_TIMEZONE=America/Los_Angeles` FIRST (via Envars tab), then bundle cron deployment with the 2026.6.10 upgrade. PR #96233 in 2026.6.10 directly fixes heartbeat prompt contribution.
 - Noah: unknown. As a trading bot, cron is almost certainly more critical — market-hours monitoring and SEC filing checks require precise scheduling. Without cron, Noah likely misses time-sensitive catalyst events entirely.
 
 ### 5. Discord Security: Open to All (MEDIUM-HIGH)
@@ -110,33 +112,34 @@ Josh's config has `groupPolicy: open`, `allowFrom: ["*"]`. Noah almost certainly
 ### Josh (Heather Schwartz) — Personal Assistant
 
 **Specific to Josh:**
-- Google Workspace OAuth not connected (**Day 98 — Day 100 in 2 days, June 29**) — email and calendar completely inaccessible. Fix is a 5-minute OAuth click, independent of any upgrade. Alternative: Remote MCP via AlphaClaw 0.9.18 Envars tab (F60).
-- iMessage monitoring paused since April 27 (Day 63) — auto-fix via SQLite migration at 2026.6.6 upgrade step
+- Google Workspace OAuth not connected **(Day 99 — Day 100 TOMORROW, June 29)** — email and calendar completely inaccessible. Fix is a 5-minute OAuth click, independent of any upgrade. Alternative: Remote MCP via AlphaClaw 0.9.18 Envars tab (F60).
+- iMessage monitoring paused since April 27 (Day 64) — auto-fix via SQLite migration at 2026.6.6 upgrade step
+- OPENCLAW_TIMEZONE not set — heartbeat cron will fire on UTC, misaligned with Josh's LA/PDT timezone (F4 from June 28 evening)
 - No BRAVE_API_KEY set — Heather cannot autonomously search the web; can set NOW via AlphaClaw Envars tab
-- Dreaming not enabled — MEMORY.md only updates when manually written
-- userTimezone not set — Heather operates in UTC vs Josh's LA/PDT — silent scheduling misalignment
+- Active Memory + Dreaming not enabled — both opt-in and available after upgrade past 2026.3.22 (documented F3 June 28 evening)
 - Discord streaming disabled — can enable `partial` streaming post-upgrade for more responsive feel
-- No Discord auto-thread titles — enable post-upgrade
+- No Discord auto-thread titles — enable post-upgrade (2026.6.10)
 
-**New for June 27 morning scan:**
-- Dry-run message previews available in 2026.6.10 (F59) — directly serves Josh's "ask before acting externally" SOUL.md rule
-- Day 100 escalation framing prepared for Heather (F61)
-- Remote MCP alternative path for Google Workspace documented (F60)
+**New for June 28 morning scan:**
+- F63: 2026.6.11 confirmed beta — upgrade planning unchanged, target is 2026.6.10
+- F64: AlphaClaw Apex — fleet admin tool, not a customer-side change
+- F65: Day 100 TOMORROW — maximum escalation urgency for Heather
 
 **Priority for Josh:**
-1. Pre-upgrade (today): connect Google Workspace OAuth at https://5.78.142.81.sslip.io#general (**Day 98 — 2 days to milestone**)
-2. Pre-upgrade (today): migrate model to gemini-3.5-flash (Browse tab) + set BRAVE_API_KEY (Envars tab)
-3. Staged upgrade to 2026.6.10 (VPS/SSH) — Day 4 stable, window fully open
-4. Bundle with upgrade: userTimezone, Dreaming, compaction, heartbeat cron, fallback 2 → Haiku 4.5
+1. **Pre-upgrade (today):** Connect Google Workspace OAuth — https://5.78.142.81.sslip.io#general — **Day 99, 5 min task, Day 100 tomorrow**
+2. **Pre-upgrade (today):** Set `OPENCLAW_TIMEZONE=America/Los_Angeles` (Envars tab) + migrate model to gemini-3.5-flash (Browse tab) + set BRAVE_API_KEY (Envars tab)
+3. **Staged upgrade to 2026.6.10** (VPS/SSH) — Day 5 of stable window, fully open
+4. **Bundle with upgrade:** Enable Active Memory + Dreaming, deploy heartbeat cron, fallback 2 → Haiku 4.5
+5. **Post-upgrade:** Verify 2026.6.11 beta status; plan next hop when stable
 
 ### Noah (Market Catalyst Agent) — Trading Bot
 
-**Known gaps (pre-scope-break, June 10) + new intelligence from June 27 morning scan:**
+**Known gaps (pre-scope-break, June 10) + intelligence gathered since:**
 - Alpaca MCP Server v2 now has 65 tools (up from 43 in v1) — auto-updates from OpenAPI specs. New: order replacements, option chain exploration, market screening, account activity logs
 - Noah is highest-risk for ClawHavoc exposure due to external trading API access
-- Last git sync March 2026 (~112+ days ago) — workspace files significantly stale
+- Last git sync March 2026 (~113+ days ago) — workspace files significantly stale
 - **Agent Mesh architecture** (emerging March 2026+): Research Agent → Risk Agent → Execution Agent — Noah may benefit from restructuring into this 3-stage pipeline (F62)
-- ClawHub now has 311+ finance/investing skills — `sec-filing-watcher` and `alpaca-trading` both confirmed operational (F62)
+- ClawHub has 311+ finance/investing skills — `sec-filing-watcher` and `alpaca-trading` both confirmed operational (F62)
 
 **Unknown (requires scope fix to audit):**
 - OpenClaw version and upgrade path
@@ -156,26 +159,28 @@ Josh's config has `groupPolicy: open`, `allowFrom: ["*"]`. Noah almost certainly
 
 ---
 
-## Fleet-Wide Recommendations (June 27 Morning)
+## Fleet-Wide Recommendations (June 28 Morning)
 
 ### Immediate (today, no VPS needed)
-1. **Josh:** Connect Google Workspace OAuth — https://5.78.142.81.sslip.io#general — **Day 98, 5 min task**
-2. **Josh:** Migrate model config to `google/gemini-3.5-flash` + Haiku 4.5 fallback — AlphaClaw Browse tab
-3. **Josh:** Set BRAVE_API_KEY — AlphaClaw Envars tab
-4. **Fleet admin:** Fix Noah session scope (`noah--repo` → `Noahrepo2`) — **Day 18 without coverage**
+1. **Josh:** Connect Google Workspace OAuth — https://5.78.142.81.sslip.io#general — **Day 99, 5 min task, Day 100 TOMORROW**
+2. **Josh:** Set `OPENCLAW_TIMEZONE=America/Los_Angeles` via Envars tab — required before heartbeat cron deployment
+3. **Josh:** Migrate model config to `google/gemini-3.5-flash` + Haiku 4.5 fallback — AlphaClaw Browse tab
+4. **Josh:** Set BRAVE_API_KEY — AlphaClaw Envars tab
+5. **Fleet admin:** Fix Noah session scope (`noah--repo` → `Noahrepo2`) — **Day 20 without coverage**
+6. **Fleet admin:** Evaluate AlphaClaw Apex (F64) — unified Mac dashboard for Josh + Noah fleet management
 
 ### This Week (requires VPS)
-5. **Josh:** Execute staged upgrade to 2026.6.10 (SSH) — Day 4 of stable window, fully open
-6. **Josh:** Bundle with upgrade: userTimezone, Dreaming, compaction, heartbeat cron
-7. **Noah (after scope fix):** Full workspace audit — version, skills, model config, Alpaca integration, Discord security
-8. **Noah (after scope fix):** Staged upgrade to 2026.6.10
-9. **Noah (after scope fix):** Evaluate Alpaca MCP Server v2 + `sec-filing-watcher` skill + Agent Mesh restructuring
+7. **Josh:** Execute staged upgrade to 2026.6.10 (SSH) — Day 5 of stable window, fully open
+8. **Josh:** Bundle with upgrade: enable Active Memory + Dreaming, deploy heartbeat cron (after OPENCLAW_TIMEZONE is set)
+9. **Noah (after scope fix):** Full workspace audit — version, skills, model config, Alpaca integration, Discord security
+10. **Noah (after scope fix):** Staged upgrade to 2026.6.10
+11. **Noah (after scope fix):** Evaluate Alpaca MCP Server v2 + `sec-filing-watcher` skill + Agent Mesh restructuring
 
 ### Ongoing
-10. **Both:** Check Google Gemini deprecation page monthly — waves hit on schedule, no reprieves (F52 confirmed June 25)
-11. **Both:** Run `openclaw skill list` after each upgrade — ClawHavoc risk is ongoing
-12. **Both:** After upgrade, tighten Discord `allowFrom: ["*"]` to specific user IDs
-13. **Both:** Monitor 2026.6.11-stable release — per-DM model overrides and file-driven workflows are high-value for both use cases
+12. **Both:** Monitor 2026.6.11 for stable promotion — per-DM model overrides and file-driven workflows are high-value for both use cases. Verify: `npm show openclaw@2026.6.11 version` after reaching 2026.6.10.
+13. **Both:** Check Google Gemini deprecation page monthly — retirement waves hit on schedule, no reprieves (F52 confirmed June 25)
+14. **Both:** Run `openclaw skill list` after each upgrade — ClawHavoc risk is ongoing
+15. **Both:** After upgrade, tighten Discord `allowFrom: ["*"]` to specific user IDs
 
 ---
 
@@ -183,11 +188,11 @@ Josh's config has `groupPolicy: open`, `allowFrom: ["*"]`. Noah almost certainly
 
 | Customer | Repo | Access | Last Fleet Scan | Coverage |
 |----------|------|--------|-----------------|----------|
-| Josh | josh_repo | ✅ Active | June 27 morning (F59/F60/F61/F62) | ✅ Comprehensive |
-| Noah | Noahrepo2 (needs scope fix) | ⛔ Broken | June 10, 2026 | ⛔ DARK — Day 18 |
+| Josh | josh_repo | ✅ Active | June 28 morning (F63/F64/F65) | ✅ Comprehensive |
+| Noah | Noahrepo2 (needs scope fix) | ⛔ Broken | June 10, 2026 | ⛔ DARK — Day 20 |
 
-**Next scan priority:** Fix Noah scope first. Noah is the higher-risk customer (trading bot, external APIs, unknown OpenClaw version, potential ClawHavoc exposure) and is currently invisible to fleet monitoring.
+**Next scan priority:** Fix Noah scope first. Noah is the higher-risk customer (trading bot, external APIs, unknown OpenClaw version, potential ClawHavoc exposure, 113+ days since last git sync) and is currently invisible to fleet monitoring.
 
 ---
 
-*Sources: [OpenClaw GitHub Releases](https://github.com/openclaw/openclaw/releases) · [AlphaClaw GitHub](https://github.com/chrysb/alphaclaw/releases) · [Releasebot OpenClaw June 2026](https://releasebot.io/updates/openclaw) · [Clawbot.ai Alpaca Skill](https://clawbot.ai/skills/alpaca.html) · [Alpaca MCP Server v2](https://alpaca.markets/blog/alpaca-launches-mcp-server-v2/) · [SEC Filing Watcher](https://lobehub.com/skills/openclaw-skills-sec-filing-watcher) · [ClawStat.us](https://clawstat.us/) · [Google Gemini Deprecations](https://ai.google.dev/gemini-api/docs/deprecations) · [OpenClaw Discord Docs](https://docs.openclaw.ai/channels/discord)*
+*Sources: [OpenClaw GitHub Releases](https://github.com/openclaw/openclaw/releases) · [AlphaClaw GitHub](https://github.com/chrysb/alphaclaw/releases) · [AlphaClaw Apex Announcement](https://x.com/chrysb/status/2035479976074760664) · [Releasebot OpenClaw June 2026](https://releasebot.io/updates/openclaw) · [OpenClaw npm](https://www.npmjs.com/package/openclaw) · [Clawbot.ai Alpaca Skill](https://clawbot.ai/skills/alpaca.html) · [Alpaca MCP Server v2](https://alpaca.markets/blog/alpaca-launches-mcp-server-v2/) · [SEC Filing Watcher](https://lobehub.com/skills/openclaw-skills-sec-filing-watcher) · [ClawStat.us](https://clawstat.us/) · [OpenClaw Discord Docs](https://docs.openclaw.ai/channels/discord) · [Active Memory & Dreaming Docs](https://deepwiki.com/openclaw/docs/7.3-active-memory-and-memory-wiki)*
