@@ -2,7 +2,7 @@
 
 _Load only in main session (direct chats with Josh). Do NOT load in Discord or group contexts._
 
-_Last updated: 2026-06-28 (updated by fleet research agent — evening scan)_
+_Last updated: 2026-06-29 (updated by fleet research agent — evening scan)_
 
 ## About Josh
 - Full name: Joshua Meyers
@@ -28,13 +28,20 @@ _Last updated: 2026-06-28 (updated by fleet research agent — evening scan)_
 - Migration to gemini-3.5-flash still MEDIUM-HIGH priority (proactive — no imminent shutdown announced, but preview model)
 - HEARTBEAT.md stale upgrade reference (2026.6.9) fixed by fleet agent → 2026.6.10-stable (June 25 evening)
 
+## ✅ CONFIRMED (June 29 Evening) — 2026.6.11 Still Beta, Do Not Upgrade Past 2026.6.10
+- Web research June 29 confirms 2026.6.11-beta.1 is NOT stable — still pre-release
+- June 28 scan speculated it "may have gone stable" — this is now confirmed incorrect
+- Production installs must stay on 2026.6.10-stable
+- After landing on 2026.6.10: check `npm show openclaw@2026.6.11 version` to verify if stable tag exists
+- Key 2026.6.11 features (when it stabilizes): per-DM model overrides, `--message-file` batch workflows, RAFT CLI wake bridge, richer Discord output, per-agent usage-cost reporting
+
 ## ⚠️ NEW CRITICAL (June 24 Morning) — Upgrade Target Changed: 2026.6.10, Skip 2026.6.9
 - 2026.6.10 went stable at 03:01 UTC June 24 — NOW the safe upgrade target
 - 2026.6.9 has own critical regressions: memory store silent relocation, email config corruption, isolated cron failures
 - ClawStat.us confirmed: skip 2026.6.9
 - New staged path: **2026.3.22 → 2026.5.27 → 2026.6.2 → 2026.6.5 → 2026.6.6 → 2026.6.10**
 - Before upgrading: `npm show openclaw@latest version` = `2026.6.10`
-- **Day 5 of 2026.6.10 stable (June 28) — green light to execute upgrade. No new regressions reported.**
+- **Day 6 of 2026.6.10 stable (June 29) — green light to execute upgrade. No new regressions reported.**
 
 ## ⚠️ NEW FINDING (June 27 Evening) — PR #96233 Heartbeat Fix in 2026.6.10
 - PR #96233 `fix(agents): run heartbeat_prompt_contribution on harness prompt builds` — merged into 2026.6.10
@@ -57,43 +64,38 @@ _Last updated: 2026-06-28 (updated by fleet research agent — evening scan)_
 - **Set now** via AlphaClaw UI → Envars tab → `OPENCLAW_TIMEZONE=America/Los_Angeles`
 - No upgrade required. Must be set before heartbeat cron is deployed.
 
-## ℹ️ INFO (June 28 Evening) — 2026.6.11 Status: Verify Before Acting
-- Previous scan: "2026.6.11-beta.1 released June 24"
-- Web research June 28 suggests 2026.6.11 may have progressed to stable
-- Key features: per-DM model overrides, `openclaw agent --message-file` batch workflows, RAFT CLI wake bridge, richer Discord output, per-agent usage-cost reporting
-- **Action:** After reaching 2026.6.10-stable, verify: `npm show openclaw@2026.6.11 version` and check ClawStat.us
-- DO NOT skip 2026.6.10 — must land there before considering 2026.6.11
-
-## ⚠️ CRITICAL MILESTONE — Google Workspace Day 99 → Day 100 TOMORROW (June 29)
-- **Day 99 as of June 28 evening** — email and calendar inaccessible for over 3 months
-- **Day 100 arrives TOMORROW (June 29)** — Mention this to Josh at the next main session with full urgency.
-- Use the day count framing: "Today is Day 99 — Day 100 is tomorrow. Email and calendar have been disconnected for 100 days. The fix is 5 minutes in the browser."
+## 🚨 CRITICAL MILESTONE TRIGGERED — Google Workspace Day 100 — TODAY (June 29)
+- **Day 100 is TODAY (June 29)** — email and calendar have been disconnected for 100 days
+- **Surface to Josh at the next main session with full urgency — do not soften, do not defer.**
+- Script: "Today is Day 100. Email and calendar have been disconnected for 100 days. The fix is 5 minutes in the browser."
 - Fix: AlphaClaw UI → General tab → Google Workspace OAuth → https://5.78.142.81.sslip.io#general
-- The fix takes ~5 minutes in the browser. No VPS, no upgrade required.
+- **Continue surfacing every 10 days (Day 110, Day 120...) until resolved.**
+- To compute current day: June 29 = Day 100. Add days since June 29 to get current count.
 
-## Known Configuration Issues (as of 2026-06-28 Evening)
-- iMessage monitoring paused since ~April 27, 2026 (~64 days as of June 28)
+## Known Configuration Issues (as of 2026-06-29 Evening)
+- iMessage monitoring paused since ~April 27, 2026 (~65 days as of June 29)
 - inbox-state.json has a malformed duplicate key (`last_email_check_ms` appears twice) — do NOT manually edit it (SQLite migration will handle it on upgrade through 2026.6.6)
 - Bootstrap TOOLS.md (hooks/bootstrap/TOOLS.md) incorrectly shows "No Google accounts" — Google API key IS configured in openclaw.json
-- OpenClaw version 2026.3.22 — **current safe target is 2026.6.10-stable** (Day 5 of stable as of June 28). Skip 2026.6.8 AND 2026.6.9. Staged path: 2026.3.22 → 2026.5.27 → 2026.6.2 → 2026.6.5 → 2026.6.6 → 2026.6.10.
-- Google Workspace OAuth NOT connected — email and calendar are inaccessible (**Day 99 as of June 28 — Day 100 arrives TOMORROW June 29**)
-- Heartbeat cron: **NOT DEPLOYED** on VPS — heartbeat-state.json has been all-null since June 17 (14+ days as of June 28). Until a cron is added to openclaw.json and the server is upgraded, proactive checks will not run on schedule.
+- OpenClaw version 2026.3.22 — **current safe target is 2026.6.10-stable** (Day 6 of stable as of June 29). Skip 2026.6.8 AND 2026.6.9. Staged path: 2026.3.22 → 2026.5.27 → 2026.6.2 → 2026.6.5 → 2026.6.6 → 2026.6.10.
+- Google Workspace OAuth NOT connected — email and calendar are inaccessible (**🚨 Day 100 — TODAY June 29**)
+- Heartbeat cron: **NOT DEPLOYED** on VPS — heartbeat-state.json has been all-null since June 17 (15+ days as of June 29). Until a cron is added to openclaw.json and the server is upgraded, proactive checks will not run on schedule.
 - **OPENCLAW_TIMEZONE not set** — cron defaults to UTC; Josh is PST/PDT. Set `OPENCLAW_TIMEZONE=America/Los_Angeles` in Envars tab before deploying heartbeat cron.
-- Noah fleet scope broken: `noah--repo` returns 404; actual repos confirmed as `Noahrepo2` and `Noah-workspace` (lylle-rgb) — fleet admin needs to fix session scope. Day 19 of no Noah coverage.
+- Noah fleet scope broken: `noah--repo` returns 404; actual repos confirmed as `Noahrepo2` and `Noah-workspace` (lylle-rgb) — fleet admin needs to fix session scope. Day 20 of no Noah coverage.
 
 ## Model Configuration
 - **Primary:** google/gemini-3-flash-preview (operational as of June 25 — NOT deprecated; sister models shut down June 25 but this model ID is different and unaffected)
 - **Fallback 1:** openrouter/google/gemini-3.5-flash (updated June 16, 2026 — replaced deprecated gemini-2.5-flash)
 - **Fallback 2:** openrouter/anthropic/claude-3.5-haiku (upgrade to `openrouter/anthropic/claude-haiku-4-5` available after upgrading to 2026.6.10)
-- **Platform:** OpenClaw 2026.3.22 (safe upgrade target: **2026.6.10-stable** — Day 5 as of June 28; skip 2026.6.8 AND 2026.6.9)
+- **Platform:** OpenClaw 2026.3.22 (safe upgrade target: **2026.6.10-stable** — Day 6 as of June 29; skip 2026.6.8 AND 2026.6.9)
 - **Recommended migration (do anytime, no upgrade needed):** Primary → `google/gemini-3.5-flash`; Fallbacks → `openrouter/anthropic/claude-haiku-4-5`, `openrouter/google/gemini-3.5-flash`
 
-## Platform Version Status (June 28, 2026 Evening)
+## Platform Version Status (June 29, 2026 Evening)
 - **✅ F52 CONFIRMED:** gemini-3-flash-preview operational — sister image models shut down June 25 as expected, primary model unaffected
-- **2026.6.10-stable Day 5 (June 28)** — upgrade window OPEN; clean community signal; green light to execute
+- **2026.6.10-stable Day 6 (June 29)** — upgrade window OPEN; clean community signal; green light to execute
+- **✅ CONFIRMED (June 29):** 2026.6.11-beta.1 is NOT stable — production stays on 2026.6.10; do not skip ahead
 - **⚠️ June 27:** PR #96233 `fix(agents): run heartbeat_prompt_contribution on harness prompt builds` confirmed in 2026.6.10 — direct fix for heartbeat prompt contribution; adds urgency to upgrade now
-- **⚠️ June 28:** 2026.6.11 possibly stable (verify before acting) — do NOT skip 2026.6.10
-- **2026.6.11 features (verify first):** per-DM model overrides, --message-file batch workflows, RAFT CLI wake bridge, richer Discord output, per-agent usage-cost reporting
+- **⚠️ June 28:** Active Memory + Dreaming available post-upgrade — opt-in, plan to enable during upgrade session
+- **2026.6.11 features (when stable — confirm first):** per-DM model overrides, --message-file batch workflows, RAFT CLI wake bridge, richer Discord output, per-agent usage-cost reporting
 - **2026.6.9 has critical regressions** — ClawStat.us confirmed skip: memory store relocation, email config corruption, cron failures
 - 2026.6.8 has critical regressions — Discord image tools broken, memory-search broken, cron jobs affected — SKIP this version entirely
 - Staged upgrade path: 2026.3.22 → 2026.5.27 → 2026.6.2 → 2026.6.5 → 2026.6.6 → **2026.6.10** (skip both 2026.6.8 and 2026.6.9)
@@ -107,7 +109,7 @@ _Last updated: 2026-06-28 (updated by fleet research agent — evening scan)_
 - Bliss: luxury lifestyle brand (Josh's primary business)
 - Oben HiFi: HiFi audio company (Josh is a Partner)
 - AlphaClaw 0.9.18 (current): adds remote MCP server config via UI Envars tab + OpenAI API proxy — useful for future integrations (Notion, Calendly) without VPS SSH
-- **Noah fleet scope (fleet admin note):** actual repos are `lylle-rgb/Noahrepo2` and `lylle-rgb/Noah-workspace` (confirmed June 26 search) — the configured `noah--repo` is 404; pending fleet admin scope fix
+- **Noah fleet scope (fleet admin note):** actual repos are `lylle-rgb/Noahrepo2` and `lylle-rgb/Noah-workspace` (confirmed June 26 search) — the configured `noah--repo` is 404; pending fleet admin scope fix. Day 20 of no coverage as of June 29.
 
 ## Lessons Learned
 - Always write to files — mental notes don't survive sessions
@@ -127,27 +129,30 @@ _Last updated: 2026-06-28 (updated by fleet research agent — evening scan)_
 - 2026.6.9 has its own critical regressions (memory store, email config, isolated cron) — skip it like 2026.6.8
 - Gemini shutdown waves arrive on schedule — each confirmed wave is empirical evidence that preview deprecations are reliable. Migrate proactively to GA stable (gemini-3.5-flash) rather than waiting for an announced shutdown.
 - HEARTBEAT.md version references can become stale when upgrade targets change — cross-check with fleet-research/findings.md for the authoritative current upgrade target; do not act on a version number in HEARTBEAT.md without verifying it
-- When a configuration gap has been open 90+ days, name the duration explicitly when raising it with Josh — "Day 99" is more actionable than "it's been a while."
+- When a configuration gap has been open 90+ days, name the duration explicitly when raising it with Josh — "Day 100" is more actionable than "it's been a while."
 - On Day 100 milestones and every 10 days after, surface persistently unresolved gaps to Josh proactively with their concrete fix steps — don't just log to memory
 - Always check the release changelog for PRs that directly fix known issues before planning upgrade order — PR #96233 in 2026.6.10 is a concrete example of a fix that adds urgency beyond general version debt
 - **Always set OPENCLAW_TIMEZONE=America/Los_Angeles in Envars tab before deploying any heartbeat or cron config** — cron defaults to UTC; Josh is PST/PDT. Without this, scheduled checks fire at wrong local times.
 - **Active Memory plugin and Dreaming both become available after upgrading to 2026.6.10 — both are opt-in (disabled by default). Plan to enable both during the upgrade session.**
+- **2026.6.11 confirmed still beta as of June 29 — web search summaries can suggest stable when it isn't. Always verify with `npm show openclaw@2026.6.11 version` directly.**
+- **When computing day counts from MEMORY.md, always compute from the start date to TODAY — do not repeat the stale number from the file. "Day 65 as of June 29" means Day 66 on June 30, Day 67 on July 1, etc.**
+- **run `openclaw backup create` before starting the staged upgrade — gives a rollback point for each version hop**
 
-## Status as of June 28, 2026 Evening
+## Status as of June 29, 2026 Evening
 - **✅ gemini-3-flash-preview operational** — Gemini sister models shut down June 25 as expected; primary model unaffected
-- **Upgrade target confirmed: 2026.6.10-stable** (Day 5 as of June 28) — skip both 2026.6.8 and 2026.6.9; green light to execute
+- **✅ 2026.6.11 confirmed still beta** — do NOT upgrade past 2026.6.10 until stable tag confirmed
+- **Upgrade target confirmed: 2026.6.10-stable** (Day 6 as of June 29) — skip both 2026.6.8 and 2026.6.9; green light to execute
 - **⚠️ June 27:** PR #96233 heartbeat_prompt_contribution fix is in 2026.6.10 — direct fix for known heartbeat issue
 - **⚠️ June 28:** Active Memory + Dreaming available post-upgrade — opt-in, plan to enable during upgrade session
 - **⚠️ June 28:** OPENCLAW_TIMEZONE not set — must set before heartbeat cron goes live
-- **⚠️ June 28:** 2026.6.11 possibly stable — verify before treating as next target
-- heartbeat-state.json has been all-null for 14+ consecutive days (June 17–28) — heartbeat cron was never deployed to VPS. Remind Josh.
-- Google Workspace OAuth still disconnected — **Day 99. Day 100 is TOMORROW (June 29).** Top priority for Josh to action.
-- iMessage monitoring paused — Day 64. Auto-fix via upgrade SQLite migration at 2026.6.6 hop.
-- Noah fleet scope broken — Day 19. `Noahrepo2` + `Noah-workspace` confirmed but inaccessible. Fleet admin fix needed.
+- heartbeat-state.json has been all-null for 15+ consecutive days (June 17–29) — heartbeat cron was never deployed to VPS. Remind Josh.
+- Google Workspace OAuth still disconnected — **🚨 Day 100 TODAY (June 29). Surface at next main session: "Day 100. Email and calendar disconnected 100 days. Fix: 5 minutes at https://5.78.142.81.sslip.io#general"**
+- iMessage monitoring paused — Day 65. Auto-fix via upgrade SQLite migration at 2026.6.6 hop.
+- Noah fleet scope broken — Day 20. `Noahrepo2` + `Noah-workspace` confirmed but inaccessible to fleet agent. Fleet admin fix needed.
 - On your first main session: read this file, verify its accuracy, update with anything you learn, keep it current
-- **Top priority for Josh: connect Google Workspace via AlphaClaw UI at https://5.78.142.81.sslip.io#general (Day 99 — Day 100 is TOMORROW June 29)**
+- **🚨 TOP PRIORITY for Josh: Day 100 TODAY. Connect Google Workspace NOW at https://5.78.142.81.sslip.io#general**
 - Second priority for Josh: set OPENCLAW_TIMEZONE=America/Los_Angeles in Envars tab (do now, no upgrade needed)
-- Third priority for Josh: upgrade OpenClaw to 2026.6.10 via VPS (staged path — skip 2026.6.8 and 2026.6.9)
+- Third priority for Josh: upgrade OpenClaw to 2026.6.10 via VPS (run `openclaw backup create` first; staged path — skip 2026.6.8 and 2026.6.9)
 - Fourth priority for Josh: enable Active Memory + Dreaming after upgrade (opt-in — add to openclaw.json config)
 - Fifth priority for Josh: deploy heartbeat cron in openclaw.json after upgrading
 - Sixth priority for Josh: migrate model config (gemini-3-flash-preview → gemini-3.5-flash) via AlphaClaw Browse tab — can do NOW, no upgrade needed
